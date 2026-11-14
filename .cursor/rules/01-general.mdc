@@ -1,0 +1,33 @@
+---
+description: Règles générales du projet Lèv
+alwaysApply: true
+---
+
+# Règles générales du projet Lèv
+
+## Source de vérité
+- `docs/CDC.md` est le cahier des charges. Lis la section concernée avant de coder.
+- `docs/maquettes/` contient les maquettes. En cas d'écart, le cahier des charges fait foi.
+- Si une règle manque ou semble contradictoire, pose la question. N'invente pas de fonctionnalité.
+
+## Périmètre
+- Un seul lot à la fois (section 15). Ne commence pas le lot suivant.
+- N'ajoute jamais : statistiques, historique, compte utilisateur, mesure d'audience, appel réseau autre que la mise à jour prévue en section 13.
+- N'ajoute aucune dépendance sans la proposer et la justifier d'abord.
+
+## Code
+- TypeScript strict, aucun `any`.
+- Tout ce qui dépend de Windows passe par `src/main/platform/`. Aucun `process.platform` ailleurs.
+- Sécurité Electron : `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`.
+- Les fenêtres Application et Menu sont créées à la demande et détruites à la fermeture (section 3).
+- Le raccourci clavier global n'est enregistré que pendant l'affichage d'une notification.
+
+## Ton des textes (section 8)
+- Tutoiement, phrases courtes, invitation ou question.
+- Jamais d'ordre, d'alerte, de reproche, de compteur de pauses manquées.
+- Bouton principal d'une pause : « Je le fais ». Jamais « OK » ni « Ignorer ».
+- Pas de point d'exclamation, pas d'émoji, pas de majuscules d'insistance.
+
+## Fin de lot
+- Lance les tests et la vérification des types.
+- Résume ce qui est fait, ce qui ne l'est pas, et les questions ouvertes.

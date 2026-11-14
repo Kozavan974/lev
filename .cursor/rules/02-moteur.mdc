@@ -1,0 +1,13 @@
+---
+description: Règles du moteur de rappels
+globs: src/main/scheduler/**
+alwaysApply: false
+---
+
+# Moteur de rappels
+
+- Aucun import d'Electron dans ce dossier.
+- Aucun appel à l'horloge système (`Date.now()`, `new Date()` sans argument, `setTimeout`, `setInterval`) : l'instant courant (`maintenant: Date`) et l'inactivité (`inactiviteSec: number`) sont passés en paramètres à la fonction d'évaluation. `new Date(valeur)` reste permis pour lire une date enregistrée.
+- Toute durée est une constante nommée dans `constantes.ts`.
+- Chaque règle de la section 5 du cahier des charges a un test Vitest avec une horloge simulée.
+- Les 18 cas de la section 14 sont obligatoires.
