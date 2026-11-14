@@ -1,4 +1,5 @@
 import { app, Menu } from 'electron'
+import { arreterBoucle, demarrerBoucle } from './boucle'
 import { installerPolitiqueContenu } from './ipc'
 import { configurerPlateforme } from './platform'
 import { initialiserStore } from './store'
@@ -19,6 +20,7 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   app.on('before-quit', () => {
+    arreterBoucle()
     detruireZoneNotification()
   })
 
@@ -29,6 +31,7 @@ if (!app.requestSingleInstanceLock()) {
       initialiserStore()
       installerPolitiqueContenu()
       creerZoneNotification()
+      demarrerBoucle()
     })
     .catch((erreur: unknown) => {
       console.error(erreur)

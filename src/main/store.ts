@@ -3,6 +3,8 @@ import Store from 'electron-store'
 import type { Reglages } from './modeles'
 import { normaliser } from './reglages'
 
+let memoire: Store | null = null
+
 /**
  * Point de passage de toute évolution du format.
  * La version 1 est le premier format : rien à transformer.
@@ -19,6 +21,14 @@ export function initialiserStore(): void {
   })
   const normalises = normaliser(migrer(instance.store))
   instance.store = versEnregistrement(normalises)
+  memoire = instance
+}
+
+export function lireReglages(): Reglages {
+  if (!memoire) {
+    throw new Error('Les réglages ne sont pas prêts.')
+  }
+  return normaliser(migrer(memoire.store))
 }
 
 function versEnregistrement(reglages: Reglages): Record<string, unknown> {

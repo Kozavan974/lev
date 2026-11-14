@@ -1,0 +1,163 @@
+.notification-scene {
+  --marge-ombre: 30px;
+  --logo-notification: 24px;
+  --duree-fondu: 200ms;
+  padding: var(--marge-ombre);
+}
+
+html[data-route='notification'] body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: transparent;
+}
+
+html[data-route='notification'] #racine {
+  height: auto;
+  margin-top: auto;
+}
+
+.notification-carte {
+  position: relative;
+  background: var(--fond);
+  color: var(--texte);
+  border: 1px solid var(--lisere);
+  border-radius: var(--rayon-carte);
+  box-shadow: var(--ombre-flottante);
+  padding: var(--espace-20);
+  opacity: 1;
+  transition: opacity var(--duree-fondu) linear;
+}
+
+.notification-carte.sortie {
+  opacity: 0;
+}
+
+.notification-logo {
+  position: absolute;
+  top: var(--espace-20);
+  right: var(--espace-20);
+  width: var(--logo-notification);
+  height: var(--logo-notification);
+  color: var(--action);
+}
+
+.notification-entete {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espace-16);
+  padding-right: calc(var(--logo-notification) + var(--espace-10));
+}
+
+.notification-picto {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--cible-min);
+  height: var(--cible-min);
+  border-radius: var(--rayon-pilule);
+  background: var(--fond-picto);
+  color: var(--action);
+}
+
+.picto {
+  width: var(--logo-notification);
+  height: var(--logo-notification);
+}
+
+.notification-texte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-6);
+  padding-top: var(--espace-6);
+}
+
+.notification-titre {
+  margin: 0;
+  font-size: var(--titre-carte);
+  font-weight: var(--graisse-forte);
+  line-height: 1.25;
+}
+
+.notification-phrase,
+.notification-idee-texte,
+.notification-message {
+  margin: 0;
+}
+
+.notification-idee {
+  margin-top: var(--espace-16);
+  padding: var(--espace-16);
+  border: 1px solid var(--lisere);
+  border-radius: var(--rayon-carte);
+  background: var(--carte);
+}
+
+.notification-idee-actions,
+.notification-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espace-10);
+}
+
+.notification-idee-actions {
+  margin-top: var(--espace-16);
+}
+
+.notification-actions {
+  margin-top: var(--espace-16);
+}
+
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--cible-min);
+  padding: 0 var(--espace-20);
+  border-radius: var(--rayon-pilule);
+  font: inherit;
+  cursor: pointer;
+}
+
+.bouton-principal {
+  border: none;
+  background: var(--action);
+  color: var(--sur-action);
+  font-weight: var(--graisse-forte);
+}
+
+.bouton-principal:hover {
+  background: var(--action-survol);
+}
+
+.bouton-secondaire {
+  border: 1px solid var(--action);
+  background: var(--carte);
+  color: var(--action);
+}
+
+.bouton-secondaire:hover {
+  border-color: var(--action-survol);
+  color: var(--action-survol);
+}
+
+.bouton-discret {
+  border: none;
+  background: transparent;
+  color: var(--texte-second);
+  padding: 0 var(--espace-10);
+}
+
+.bouton-discret:hover {
+  color: var(--texte);
+}
+
+.notification-message {
+  display: flex;
+  align-items: center;
+  min-height: var(--cible-min);
+  padding-right: calc(var(--logo-notification) + var(--espace-10));
+  font-size: var(--texte-important);
+}

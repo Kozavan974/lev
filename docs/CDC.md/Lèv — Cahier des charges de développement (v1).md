@@ -379,7 +379,7 @@ Toutes partagent le même gabarit : une carte en bas à droite, un pictogramme d
 
 Particularités :
 
-- **Bouger** contient un encadré « Une idée de l'équipe d'Ekilib.re » avec une idée tirée au hasard, un bouton « Une autre idée » et un bouton « Je reste assis » (qui devient « Finalement, je me lève »). Si l'option « mouvements assis » est cochée, la variante assise s'affiche d'emblée. Une même idée ne revient pas deux fois de suite.
+- **Bouger** contient un encadré avec une idée tirée au hasard, affichée directement, un bouton « Une autre idée » et un bouton « Je reste assis » (qui devient « Finalement, je me lève »). Si l'option « mouvements assis » est cochée, la variante assise s'affiche d'emblée. Une même idée ne revient pas deux fois de suite.
 - **Fin de séquence** affiche la ligne de parcours : un tracé courbe avec un point par séquence, les séquences faites en turquoise, la grande pause en jaune.
 - Après une réponse, la carte affiche le message de la section 5.5 pendant 3 secondes, puis disparaît en fondu.
 - La notification n'a pas de bouton de fermeture : « Plus tard » en tient lieu. La touche Échap vaut « Plus tard » quand la notification a le focus.
@@ -518,14 +518,14 @@ Un L arrondi qui se redresse, surmonté d'une bulle qui évoque l'accent, la tê
 ```svg
 <!-- Dessin normal -->
 <svg viewBox="2.4 -1.3 24 24" fill="none">
-  <path d="M9.6 8 Q8.4 12.5 9 15.2 Q9.6 18 12.6 18 H20.4"
+  <path d="M9.6 8 Q8.4 12.5 9 15.2 Q9.6 18 12.6 18 H20.4" fill="none"
         stroke="#0e6f6a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="11.4" cy="3.7" r="1.9" fill="#f1be5a"/>
 </svg>
 
 <!-- Dessin simplifié, 16 et 24 px -->
 <svg viewBox="3 -1.45 24 24" fill="none">
-  <path d="M9.5 8.5 V14.5 Q9.5 18 13 18 H20.5"
+  <path d="M9.5 8.5 V14.5 Q9.5 18 13 18 H20.5" fill="none"
         stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="11" cy="3.6" r="2.5" fill="#f1be5a"/>
 </svg>

@@ -5,5 +5,41 @@
   "tray": {
     "infobulle": "Lèv",
     "quitter": "Quitter"
+  },
+  "notification": {
+    "yeux": {
+      "titre": "Tes yeux méritent une pause.",
+      "phrase": "Cligne doucement une dizaine de fois, puis regarde au loin, par la fenêtre si tu peux."
+    },
+    "bouger": {
+      "titre": "Envie d'un petit mouvement ?",
+      "phrase": "Quelques pas suffisent, à ton rythme."
+    },
+    "bougerAssis": {
+      "titre": "Un moment pour te détendre ?",
+      "phrase": "Quelques gestes discrets, à ta place."
+    },
+    "posture": {
+      "titre": "Un petit point posture ?",
+      "phrase": "Relâche les épaules, pose les pieds à plat et laisse ton dos retrouver le dossier."
+    },
+    "libre": {
+      "phrase": "C'est le moment."
+    },
+    "boutons": {
+      "jeLeFais": "Je le fais",
+      "dans5min": "Dans 5 min",
+      "plusTard": "Plus tard"
+    },
+    "messages": {
+      "jeLeFais": "Chaque petite pause compte.",
+      "dans5min": "D'accord, je reviens dans 5 minutes.",
+      "plusTard": "Pas de souci, on reprendra plus tard."
+    },
+    "idee": {
+      "autre": "Une autre idée",
+      "assis": "Je reste assis",
+      "debout": "Finalement, je me lève"
+    }
   }
 }
