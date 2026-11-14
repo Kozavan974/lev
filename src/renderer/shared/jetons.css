@@ -1,0 +1,72 @@
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  src: url('@polices/AtkinsonHyperlegible-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  src: url('@polices/AtkinsonHyperlegible-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --fond: linear-gradient(180deg, #fdf1e7 0%, #f9e6e4 55%, #ece6f3 100%);
+  --carte: rgba(255, 255, 255, 0.62);
+  --lisere: rgba(255, 255, 255, 0.7);
+  --separateur: rgba(46, 42, 63, 0.08);
+  --texte: #2e2a3f;
+  --texte-second: #5f5a73;
+  --action: #0e6f6a;
+  --action-survol: #0a5551;
+  --sur-action: #ffffff;
+  --fond-picto: #fde3d2;
+  --soleil: #f1be5a;
+  --trace: #f0d9cc;
+
+  --titre-accueil: 38px;
+  --titre-ecran: 26px;
+  --titre-carte: 25px;
+  --texte-accueil: 21px;
+  --texte-important: 19px;
+  --texte-courant: 17px;
+  --legende: 14px;
+
+  --graisse-texte: 400;
+  --graisse-forte: 700;
+
+  --espace-6: 6px;
+  --espace-10: 10px;
+  --espace-16: 16px;
+  --espace-20: 20px;
+  --espace-24: 24px;
+
+  --rayon-carte: 16px;
+  --rayon-pilule: 999px;
+  --cible-min: 48px;
+  --ombre-flottante: 0 6px 24px rgba(46, 42, 63, 0.1);
+  --contour-focus: 3px solid var(--action);
+
+  --police: 'Atkinson Hyperlegible', sans-serif;
+  color-scheme: light;
+}
+
+[data-theme='sombre'] {
+  --fond: linear-gradient(180deg, #1c1a2b 0%, #2a2238 60%, #3a2a3c 100%);
+  --carte: rgba(255, 255, 255, 0.06);
+  --lisere: rgba(255, 255, 255, 0.08);
+  --separateur: rgba(255, 255, 255, 0.08);
+  --texte: #f3e9e2;
+  --texte-second: #b3aec4;
+  --action: #5fcfc6;
+  --action-survol: #84ded6;
+  --sur-action: #1c1a2b;
+  --fond-picto: #3a2f3f;
+  --soleil: #f1be5a;
+  --trace: #3a3650;
+  color-scheme: dark;
+}

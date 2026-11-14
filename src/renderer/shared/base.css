@@ -1,0 +1,66 @@
+@import './jetons.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#racine {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--fond);
+  color: var(--texte);
+  font-family: var(--police);
+  font-size: var(--texte-courant);
+  font-weight: var(--graisse-texte);
+}
+
+html[data-fond='transparent'],
+html[data-fond='transparent'] body {
+  background: transparent;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea,
+label,
+a {
+  min-height: var(--cible-min);
+}
+
+label,
+a {
+  display: inline-flex;
+  align-items: center;
+}
+
+:focus-visible {
+  outline: var(--contour-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

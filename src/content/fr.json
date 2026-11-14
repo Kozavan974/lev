@@ -1,0 +1,9 @@
+{
+  "application": {
+    "nom": "Lèv"
+  },
+  "tray": {
+    "infobulle": "Lèv",
+    "quitter": "Quitter"
+  }
+}
