@@ -19,6 +19,11 @@
     "echeance": "{nom} à {heure}",
     "leve": "Tu t'es levé à {heure} : j'ai décalé la marche.",
     "sequence": "Démarrer une séquence de travail",
+    "arreterSequences": "Arrêter les séquences",
+    "sequenceEnCours": "Séquence {rang} sur {total}, jusqu'à {heure}",
+    "pauseSequence": "Pause, jusqu'à {heure}",
+    "grandePauseSequence": "Grande pause, jusqu'à {heure}",
+    "repriseSequence": "On reprend quand tu veux.",
     "pause": "Faire une pause maintenant",
     "veille": "Mettre les rappels en veille",
     "veille30": "Pendant 30 minutes",
@@ -153,6 +158,45 @@
       "autre": "Une autre idée",
       "assis": "Je reste assis",
       "debout": "Finalement, je me lève"
+    },
+    "finSequence": {
+      "surtitre": "Séquence de travail",
+      "rangs": {
+        "1": "Première séquence bouclée",
+        "2": "Deuxième séquence bouclée",
+        "3": "Troisième séquence bouclée",
+        "4": "Quatrième séquence bouclée",
+        "5": "Cinquième séquence bouclée",
+        "6": "Sixième séquence bouclée",
+        "7": "Septième séquence bouclée",
+        "8": "Huitième séquence bouclée",
+        "9": "Neuvième séquence bouclée",
+        "10": "Dixième séquence bouclée"
+      },
+      "rangSuite": "Séquence {rang} bouclée",
+      "phrase": "Un moment pour te détendre ? {duree}, puis on reprend à {heure}.",
+      "grandePause": "Place à une grande pause : {duree}, puis on reprend à {heure}.",
+      "uneMinute": "1 minute",
+      "minutes": "{duree} minutes",
+      "parcoursUn": "Encore une séquence avant la grande pause.",
+      "parcours": "Encore {reste} séquences avant la grande pause.",
+      "reste": {
+        "2": "deux",
+        "3": "trois",
+        "4": "quatre",
+        "5": "cinq",
+        "6": "six",
+        "7": "sept",
+        "8": "huit",
+        "9": "neuf",
+        "10": "dix"
+      },
+      "arreter": "Arrêter les séquences pour aujourd'hui"
+    },
+    "finPause": {
+      "titre": "On reprend quand tu veux.",
+      "reparti": "C'est reparti",
+      "encore": "Encore 5 min"
     }
   }
 }

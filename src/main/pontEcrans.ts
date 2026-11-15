@@ -2,12 +2,20 @@ import { randomUUID } from 'node:crypto'
 import { app, ipcMain, type BrowserWindow } from 'electron'
 import textes from '../content/fr.json'
 import { formaterInstant, remplir } from '../partage/format'
-import { CANAL_ECRAN, estActionEcran, type ActionEcran, type EtatEcran } from '../preload/contrat'
+import {
+  CANAL_ECRAN,
+  estActionEcran,
+  type ActionEcran,
+  type EtatEcran,
+  type EtatSequence
+} from '../preload/contrat'
 import { executerAction, type Annulation } from './actionsReglages'
 import { fenetreApplication, ouvrirApplication } from './applicationFenetre'
 import {
+  arreterSequences,
   demanderPauseMaintenant,
   definirApresEvaluation,
+  demarrerSequences,
   lireEtatMoteur,
   reevaluer
 } from './boucle'
@@ -59,6 +67,15 @@ function agir(action: ActionEcran): void {
     demanderPauseMaintenant()
     return
   }
+  if (action.type === 'demarrerSequence') {
+    fermerMenu()
+    demarrerSequences()
+    return
+  }
+  if (action.type === 'arreterSequences') {
+    arreterSequences()
+    return
+  }
   const resultat = executerAction(lireReglages(), annulation, action, {
     maintenant: new Date(),
     nouvelId: randomUUID(),
@@ -69,6 +86,10 @@ function agir(action: ActionEcran): void {
   }
   annulation = resultat.annulation
   enregistrerReglages(resultat.reglages)
+  if (action.type === 'sequences' && action.actif === false) {
+    arreterSequences()
+    return
+  }
   reevaluer()
 }
 
@@ -108,7 +129,34 @@ function etatCourant(): EtatEcran {
         ? formaterInstant(new Date(reglages.veilleJusqua))
         : null,
     pauseSpontanee: libellePause(moteur),
-    bandeau: bandeauCourant()
+    bandeau: bandeauCourant(),
+    sequence: etatSequence(moteur, maintenant.getTime())
+  }
+}
+
+function etatSequence(moteur: EtatMoteur, maintenantMs: number): EtatSequence {
+  const serie = moteur.serie
+  if (!serie) {
+    return null
+  }
+  if (
+    moteur.notification?.genre === 'finPause' ||
+    (serie.phase === 'pause' && maintenantMs >= serie.finMs)
+  ) {
+    return { phase: 'reprise' }
+  }
+  if (serie.phase === 'pause') {
+    return {
+      phase: 'pause',
+      grande: serie.grandePause,
+      heure: formaterInstant(new Date(serie.finMs))
+    }
+  }
+  return {
+    phase: 'travail',
+    rang: serie.rang,
+    total: serie.grandePauseApres,
+    heure: formaterInstant(new Date(serie.finMs))
   }
 }
 

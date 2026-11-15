@@ -1,9 +1,32 @@
 import { useEffect, useRef } from 'react'
 import textes from '../../content/fr.json'
 import { remplir } from '../../partage/format'
+import type { EtatSequence } from '../../preload/contrat'
 import { Marque } from '../shared/Marque'
 import { useEtatEcran } from '../shared/useEtatEcran'
 import './menu.css'
+
+function ligneSequence(sequence: EtatSequence): React.JSX.Element | null {
+  if (!sequence) {
+    return null
+  }
+  if (sequence.phase === 'reprise') {
+    return <p className="menu-echeance">{textes.menu.repriseSequence}</p>
+  }
+  if (sequence.phase === 'pause') {
+    const modele = sequence.grande ? textes.menu.grandePauseSequence : textes.menu.pauseSequence
+    return <p className="menu-echeance">{remplir(modele, { heure: sequence.heure })}</p>
+  }
+  return (
+    <p className="menu-echeance">
+      {remplir(textes.menu.sequenceEnCours, {
+        rang: String(sequence.rang),
+        total: String(sequence.total),
+        heure: sequence.heure
+      })}
+    </p>
+  )
+}
 
 export function Menu(): React.JSX.Element {
   const etat = useEtatEcran()
@@ -52,6 +75,7 @@ export function Menu(): React.JSX.Element {
         <Marque titre={textes.application.nom} detail={textes.menu.devise} niveau="menu" />
         <section className="menu-pauses">
           <h2>{textes.menu.pauses}</h2>
+          {ligneSequence(etat.sequence)}
           {etat.echeances.map((echeance) => (
             <p key={`${echeance.nom}-${echeance.heure}`} className="menu-echeance">
               {remplir(textes.menu.echeance, echeance)}
@@ -65,8 +89,19 @@ export function Menu(): React.JSX.Element {
         </section>
         <div className="menu-actions">
           {sequences ? (
-            <button type="button" className="bouton bouton-principal">
-              {textes.menu.sequence}
+            <button
+              type="button"
+              className="bouton bouton-principal"
+              onClick={() => {
+                if (!etat.sequence) {
+                  window.lev.fermerMenu()
+                }
+                window.lev.agir({
+                  type: etat.sequence ? 'arreterSequences' : 'demarrerSequence'
+                })
+              }}
+            >
+              {etat.sequence ? textes.menu.arreterSequences : textes.menu.sequence}
             </button>
           ) : null}
           <button

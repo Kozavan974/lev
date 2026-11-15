@@ -14,6 +14,7 @@ import {
   masquerNotification,
   publierMessage,
   publierNotification,
+  publierRetrait,
   recevoirHauteur,
   recevoirPrete
 } from './notificationFenetre'
@@ -27,7 +28,9 @@ import {
 import { sondageEchu } from './scheduler/sondage'
 import {
   appliquerEffets,
+  arreterSerie,
   creerEtat,
+  demarrerSerie,
   evaluer,
   noterCharge,
   poserPauseImmediate,
@@ -59,6 +62,33 @@ export function lireEtatMoteur(): EtatMoteur {
 export function reevaluer(): void {
   if (demarree) {
     tick()
+  }
+}
+
+export function demarrerSequences(): void {
+  const suivant = demarrerSerie(etat, lireReglages(), new Date())
+  if (!suivant) {
+    return
+  }
+  etat = suivant
+  if (demarree) {
+    tick()
+    return
+  }
+  apresEvaluation?.()
+}
+
+export function arreterSequences(): void {
+  const fermer =
+    etat.notification?.genre === 'finSequence' || etat.notification?.genre === 'finPause'
+  etat = arreterSerie(etat)
+  if (demarree) {
+    tick()
+  } else {
+    apresEvaluation?.()
+  }
+  if (fermer && !etat.notification) {
+    publierRetrait()
   }
 }
 
@@ -165,6 +195,9 @@ function tick(): void {
   }
   armer(decision.cadence)
   apresEvaluation?.()
+  if (decision.fermerNotification) {
+    publierRetrait()
+  }
   if (!decision.afficher || !etat.notification) {
     return
   }
@@ -183,6 +216,7 @@ function recevoirReponse(reponse: ReponseBouton): void {
   if (!etat.notification) {
     return
   }
+  const genre = etat.notification.genre
   const resultat = repondre(etat, lireReglages(), reponse, new Date())
   etat = resultat.etat
   if (resultat.message) {
@@ -190,6 +224,8 @@ function recevoirReponse(reponse: ReponseBouton): void {
       texte: textes.notification.messages[resultat.message],
       dureeMs: MESSAGE_REPONSE_MS
     })
+  } else if ((genre === 'finSequence' || genre === 'finPause') && !etat.notification) {
+    publierRetrait()
   }
   apresEvaluation?.()
 }

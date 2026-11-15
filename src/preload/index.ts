@@ -61,6 +61,15 @@ const api: ApiLev = {
   masquageTermine: () => {
     ipcRenderer.send(CANAL_NOTIFICATION.masquee)
   },
+  surRetrait: (recevoir) => {
+    const ecouter = (): void => {
+      recevoir()
+    }
+    ipcRenderer.on(CANAL_NOTIFICATION.retirer, ecouter)
+    return () => {
+      ipcRenderer.removeListener(CANAL_NOTIFICATION.retirer, ecouter)
+    }
+  },
   lireEtat: async () => {
     const valeur: unknown = await ipcRenderer.invoke(CANAL_ECRAN.lire)
     if (!estEtatEcran(valeur)) {

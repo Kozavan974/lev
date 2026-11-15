@@ -8,6 +8,7 @@ import {
   AFFICHAGE_NOTIFICATION_AUTRE_MS,
   AFFICHAGE_NOTIFICATION_YEUX_MS,
   FENETRE_PRIORITE_MS,
+  FIN_PAUSE_SANS_REPONSE_MS,
   LIGNE_PAUSE_SPONTANEE_MS,
   MESSAGE_REPONSE_MS,
   PAUSE_BOUGER_MS,
@@ -16,7 +17,9 @@ import {
 import { estDansHoraires, finVeilleDemain } from './horaires'
 import {
   appliquerEffets,
+  arreterSerie,
   creerEtat,
+  demarrerSerie,
   evaluer,
   poserPauseImmediate,
   repondre,
@@ -382,13 +385,16 @@ describe('rappels à heure fixe', () => {
   it('affiche l’heure fixe deux minutes après la fermeture de la notification précédente', () => {
     const { reglages, id } = heureFixe('15:00', 'jour')
     const yeux = parType(reglages, 'yeux')
-    const occupe = {
+    const occupe: EtatMoteur = {
       ...creerEtat(),
       notification: {
+        genre: 'rappel',
         rappelId: yeux.id,
         depuisMs: au(16, 15, 0).getTime(),
         delaiMs: AFFICHAGE_NOTIFICATION_YEUX_MS,
-        charge: { assis: false, ideeIndex: null }
+        charge: { assis: false, ideeIndex: null },
+        resteAffichee: false,
+        sequence: null
       }
     }
     const differe = evaluer(occupe, reglages, entree(au(16, 15, 0)))
@@ -831,6 +837,333 @@ describe('horaires', () => {
     expect(lundiSoir.getHours()).toBe(20)
   })
 })
+
+describe('séquences de travail', () => {
+  it('enchaîne quatre séquences 25-5 puis propose la grande pause, et suspend bouger', () => {
+    const reglages = bougerCourt(reglagesParDefaut())
+    const yeux = parType(reglages, 'yeux')
+    const bouger = parType(reglages, 'bouger')
+    let etat = lancer(reglages, au(16, 8, 0))
+
+    const tropTot = evaluer(etat, reglages, entree(au(16, 8, 15)))
+    expect(tropTot.afficher).toBeNull()
+    expect(tropTot.etat.compteursMs[bouger.id]).toBe(15 * MINUTE)
+
+    const marche = evaluer(tropTot.etat, reglages, entree(au(16, 8, 20)))
+    expect(marche.afficher?.rappelId).toBe(yeux.id)
+    etat = repondre(marche.etat, reglages, 'plusTard', au(16, 8, 20)).etat
+
+    const fin1 = evaluer(etat, reglages, entree(au(16, 8, 25)))
+    expect(fin1.etat.notification?.genre).toBe('finSequence')
+    expect(fin1.etat.notification?.sequence).toMatchObject({
+      rang: 1,
+      grandePause: false,
+      pauseMin: 5
+    })
+    etat = repondre(fin1.etat, reglages, 'jeLeFais', au(16, 8, 25)).etat
+    expect(etat.serie?.phase).toBe('pause')
+    expect(etat.serie?.finMs).toBe(au(16, 8, 30).getTime())
+
+    etat = reprendre(etat, reglages, au(16, 8, 30))
+    expect(etat.serie).toMatchObject({ rang: 2, phase: 'travail', finMs: au(16, 8, 55).getTime() })
+
+    const pendant = evaluer(etat, reglages, entree(au(16, 8, 40)))
+    expect(pendant.afficher?.rappelId).not.toBe(bouger.id)
+    etat = pendant.etat
+
+    etat = boucler(etat, reglages, au(16, 8, 55), au(16, 9, 0), false)
+    etat = boucler(etat, reglages, au(16, 9, 25), au(16, 9, 30), false)
+
+    const fin4 = evaluer(etat, reglages, entree(au(16, 9, 55)))
+    expect(fin4.etat.notification?.sequence).toMatchObject({
+      rang: 4,
+      grandePause: true,
+      pauseMin: 15,
+      repriseMs: au(16, 10, 10).getTime()
+    })
+  })
+
+  it('ne change pas l’heure de fin de séquence après une pause spontanée', () => {
+    const reglages = seulement(['yeux', 'bouger'])
+    const yeux = parType(reglages, 'yeux')
+    const finMs = au(16, 8, 25).getTime()
+    let etat = lancer(reglages, au(16, 8, 0))
+    etat = evaluer(etat, reglages, entree(au(16, 8, 10))).etat
+
+    etat = evaluer(
+      etat,
+      reglages,
+      entree(au(16, 8, 13), true, false, false, PAUSE_SPONTANEE_SEC)
+    ).etat
+    expect(etat.serie?.finMs).toBe(finMs)
+    expect(etat.absence).not.toBeNull()
+
+    const retour = evaluer(etat, reglages, entree(au(16, 8, 14), true, false, false, 0))
+    expect(retour.etat.serie?.finMs).toBe(finMs)
+    expect(retour.etat.compteursMs[yeux.id] ?? 0).toBe(0)
+    expect(retour.afficher).toBeNull()
+
+    const avant = evaluer(retour.etat, reglages, entree(au(16, 8, 24)))
+    expect(avant.afficher).toBeNull()
+    const fin = evaluer(avant.etat, reglages, entree(au(16, 8, 25)))
+    expect(fin.etat.notification?.genre).toBe('finSequence')
+    expect(fin.etat.serie?.finMs).toBe(finMs)
+  })
+
+  it('affiche une seule fin de séquence au retour si l’heure est passée', () => {
+    const reglages = seulement(['bouger'])
+    const finMs = au(16, 8, 25).getTime()
+    let etat = lancer(reglages, au(16, 8, 0))
+    etat = evaluer(etat, reglages, entree(au(16, 8, 10))).etat
+    etat = evaluer(etat, reglages, entree(au(16, 8, 11), false)).etat
+
+    const absent = evaluer(etat, reglages, entree(au(16, 8, 40), false))
+    expect(absent.afficher).toBeNull()
+    expect(absent.etat.serie?.finMs).toBe(finMs)
+
+    const retour = evaluer(absent.etat, reglages, entree(au(16, 8, 40)))
+    expect(retour.etat.notification?.genre).toBe('finSequence')
+    const encore = evaluer(retour.etat, reglages, entree(au(16, 8, 40, 15)))
+    expect(encore.afficher).toBeNull()
+    expect(encore.etat.notification?.genre).toBe('finSequence')
+
+    const veilleJusqua = au(16, 9, 0).toISOString()
+    const enVeille = { ...reglages, veilleJusqua }
+    let veille = lancer(enVeille, au(16, 8, 0))
+    veille = evaluer(veille, enVeille, entree(au(16, 8, 25))).etat
+    expect(veille.notification).toBeNull()
+    const reprise = evaluer(veille, enVeille, entree(au(16, 9, 0)))
+    expect(reprise.etat.notification?.genre).toBe('finSequence')
+    expect(reprise.etat.serie?.finMs).toBe(finMs)
+  })
+
+  it('prolonge le travail de 5 minutes, ou enchaîne sans pause', () => {
+    const reglages = seulement(['bouger'])
+    let etat = lancer(reglages, au(16, 8, 0))
+    const fin = evaluer(etat, reglages, entree(au(16, 8, 25)))
+    const prolonge = repondre(fin.etat, reglages, 'dans5min', au(16, 8, 25))
+    expect(prolonge.message).toBe('dans5min')
+    expect(prolonge.etat.serie).toMatchObject({ rang: 1, finMs: au(16, 8, 30).getTime() })
+    const tropTot = evaluer(prolonge.etat, reglages, entree(au(16, 8, 29)))
+    expect(tropTot.afficher).toBeNull()
+    const retour = evaluer(tropTot.etat, reglages, entree(au(16, 8, 30)))
+    expect(retour.etat.notification?.sequence?.rang).toBe(1)
+
+    etat = lancer(reglages, au(16, 9, 0))
+    const saute = evaluer(etat, reglages, entree(au(16, 9, 25)))
+    const suite = repondre(saute.etat, reglages, 'plusTard', au(16, 9, 25))
+    expect(suite.etat.serie).toMatchObject({
+      rang: 2,
+      phase: 'travail',
+      finMs: au(16, 9, 50).getTime()
+    })
+    expect(suite.etat.notification).toBeNull()
+
+    const sansReponse = repondre(saute.etat, reglages, 'aucune', au(16, 9, 25))
+    expect(sansReponse.message).toBeNull()
+    expect(sansReponse.etat.serie?.rang).toBe(2)
+  })
+
+  it('propose la marche une seule fois au milieu d’une longue séquence', () => {
+    const reglages = avecRythme(seulement(['bouger']), 50, 10)
+    const bouger = parType(reglages, 'bouger')
+    const etat = lancer(reglages, au(16, 8, 0))
+    const finMs = au(16, 8, 50).getTime()
+
+    const avant = evaluer(etat, reglages, entree(au(16, 8, 24)))
+    expect(avant.afficher).toBeNull()
+    const milieu = evaluer(avant.etat, reglages, entree(au(16, 8, 25)))
+    expect(milieu.afficher?.rappelId).toBe(bouger.id)
+    const fait = repondre(milieu.etat, reglages, 'jeLeFais', au(16, 8, 25))
+    expect(fait.etat.serie?.finMs).toBe(finMs)
+
+    const encore = evaluer(fait.etat, reglages, entree(au(16, 8, 36)))
+    expect(encore.afficher?.rappelId).not.toBe(bouger.id)
+    const fin = evaluer(encore.etat, reglages, entree(au(16, 8, 50)))
+    expect(fin.etat.notification?.genre).toBe('finSequence')
+    expect(fin.etat.serie?.finMs).toBe(finMs)
+  })
+
+  it('passe la fin de séquence avant un rappel à heure fixe', () => {
+    const { reglages, id } = heureFixe('08:25', 'jour')
+    const etat = lancer(reglages, au(16, 8, 0))
+    const fin = evaluer(etat, reglages, entree(au(16, 8, 25)))
+    expect(fin.etat.notification?.genre).toBe('finSequence')
+    expect(fin.effets.some((effet) => effet.rappelId === id)).toBe(false)
+    expect(fin.etat.heureFixeDifferee?.rappelId).toBe(id)
+
+    const ferme = repondre(fin.etat, reglages, 'plusTard', au(16, 8, 25))
+    const apresMessage = evaluer(
+      ferme.etat,
+      reglages,
+      entree(new Date(au(16, 8, 25).getTime() + MESSAGE_REPONSE_MS))
+    )
+    expect(apresMessage.afficher).toBeNull()
+    const heure = evaluer(
+      apresMessage.etat,
+      reglages,
+      entree(new Date(au(16, 8, 25).getTime() + MESSAGE_REPONSE_MS + FENETRE_PRIORITE_MS))
+    )
+    expect(heure.afficher?.rappelId).toBe(id)
+  })
+
+  it('reste affichée en fin de pause, puis s’arrête au bout de 15 minutes', () => {
+    const reglages = seulement(['bouger'])
+    const etat = lancer(reglages, au(16, 8, 0))
+    const fin = evaluer(etat, reglages, entree(au(16, 8, 25)))
+    const pause = repondre(fin.etat, reglages, 'jeLeFais', au(16, 8, 25)).etat
+    const reprise = evaluer(pause, reglages, entree(au(16, 8, 30)))
+    expect(reprise.etat.notification?.genre).toBe('finPause')
+    expect(reprise.etat.notification?.resteAffichee).toBe(true)
+
+    const tient = evaluer(
+      reprise.etat,
+      reglages,
+      entree(new Date(au(16, 8, 30).getTime() + FIN_PAUSE_SANS_REPONSE_MS - 1000))
+    )
+    expect(tient.etat.notification?.genre).toBe('finPause')
+    expect(tient.etat.serie).not.toBeNull()
+    expect(tient.fermerNotification).toBe(false)
+
+    const stop = evaluer(
+      tient.etat,
+      reglages,
+      entree(new Date(au(16, 8, 30).getTime() + FIN_PAUSE_SANS_REPONSE_MS))
+    )
+    expect(stop.fermerNotification).toBe(true)
+    expect(stop.etat.serie).toBeNull()
+    expect(stop.etat.notification).toBeNull()
+  })
+
+  it('prolonge la pause de 5 minutes, puis repart au rang suivant', () => {
+    const reglages = seulement(['bouger'])
+    const etat = lancer(reglages, au(16, 8, 0))
+    const fin = evaluer(etat, reglages, entree(au(16, 8, 25)))
+    const pause = repondre(fin.etat, reglages, 'jeLeFais', au(16, 8, 25)).etat
+    const reprise = evaluer(pause, reglages, entree(au(16, 8, 30)))
+    const encore = repondre(reprise.etat, reglages, 'encore5min', au(16, 8, 30))
+    expect(encore.message).toBe('dans5min')
+    expect(encore.etat.serie?.finMs).toBe(au(16, 8, 35).getTime())
+
+    const retour = evaluer(encore.etat, reglages, entree(au(16, 8, 35)))
+    expect(retour.etat.notification?.genre).toBe('finPause')
+    const suite = repondre(retour.etat, reglages, 'cestReparti', au(16, 8, 35))
+    expect(suite.message).toBeNull()
+    expect(suite.etat.serie).toMatchObject({ rang: 2, phase: 'travail' })
+    expect(suite.etat.notification).toBeNull()
+  })
+
+  it('repart à 1 après la grande pause, et « Plus tard » sur la quatrième l’évite', () => {
+    const reglages = seulement(['bouger'])
+    const premiere = avancer(reglages, au(16, 8, 0), 4)
+    const instant = new Date(premiere.serie?.finMs ?? 0)
+    const fin = evaluer(premiere, reglages, entree(instant))
+    expect(fin.etat.notification?.sequence?.grandePause).toBe(true)
+    const pause = repondre(fin.etat, reglages, 'jeLeFais', instant).etat
+    const reprise = evaluer(pause, reglages, entree(new Date(pause.serie?.finMs ?? 0)))
+    const suite = repondre(reprise.etat, reglages, 'cestReparti', new Date(pause.serie?.finMs ?? 0))
+    expect(suite.etat.serie?.rang).toBe(1)
+
+    const sautee = avancer(reglages, au(16, 11, 0), 4)
+    const finSautee = new Date(sautee.serie?.finMs ?? 0)
+    const derniere = evaluer(sautee, reglages, entree(finSautee))
+    const sansPause = repondre(derniere.etat, reglages, 'plusTard', finSautee)
+    expect(sansPause.etat.serie).toMatchObject({ rang: 1, phase: 'travail' })
+  })
+
+  it('allume la pastille deux minutes avant une longue séquence, pas avant une courte', () => {
+    const courte = seulement([])
+    const debutCourt = lancer(courte, au(16, 8, 0))
+    const pasDePastille = evaluer(debutCourt, courte, entree(au(16, 8, 23)))
+    expect(pasDePastille.bientot).toBe(false)
+
+    const longue = avecRythme(seulement([]), 50, 10)
+    const debutLong = lancer(longue, au(16, 8, 0))
+    const tot = evaluer(debutLong, longue, entree(au(16, 8, 47)))
+    expect(tot.bientot).toBe(false)
+    const pret = evaluer(tot.etat, longue, entree(au(16, 8, 48)))
+    expect(pret.bientot).toBe(true)
+    expect(pret.afficher).toBeNull()
+  })
+
+  it('fige le rythme choisi, et s’arrête sans garder la série', () => {
+    const heure = avecRythme(seulement([]), 55, 5, 'heure')
+    const demarree = demarrerSerie(creerEtat(), heure, au(16, 8, 0))
+    expect(demarree?.serie?.travailMin).toBe(55)
+    expect(demarree?.serie?.milieuMs).toBe(au(16, 8, 0).getTime() + 27.5 * MINUTE)
+
+    const autre = avecRythme(seulement([]), 12, 2, 'autre')
+    const serie = demarrerSerie(creerEtat(), autre, au(16, 8, 0))
+    expect(serie?.serie?.milieuMs).toBeNull()
+    expect(arreterSerie(serie ?? creerEtat()).serie).toBeNull()
+    expect(
+      demarrerSerie(
+        creerEtat(),
+        { ...autre, sequences: { ...autre.sequences, actif: false } },
+        au(16, 8, 0)
+      )
+    ).toBeNull()
+  })
+})
+
+function bougerCourt(reglages: Reglages): Reglages {
+  return {
+    ...reglages,
+    rappels: reglages.rappels.map((rappel) =>
+      rappel.type === 'bouger' ? { ...rappel, frequenceMin: 10 } : rappel
+    )
+  }
+}
+
+function lancer(reglages: Reglages, instant: Date): EtatMoteur {
+  const demarree = demarrerSerie(amorcer(reglages, instant), reglages, instant)
+  if (!demarree?.serie) {
+    throw new Error('Série non démarrée')
+  }
+  return demarree
+}
+
+function reprendre(etat: EtatMoteur, reglages: Reglages, instant: Date): EtatMoteur {
+  const decision = evaluer(etat, reglages, entree(instant))
+  expect(decision.etat.notification?.genre).toBe('finPause')
+  return repondre(decision.etat, reglages, 'cestReparti', instant).etat
+}
+
+function boucler(
+  etat: EtatMoteur,
+  reglages: Reglages,
+  finTravail: Date,
+  finPause: Date,
+  grande: boolean
+): EtatMoteur {
+  const fin = evaluer(etat, reglages, entree(finTravail))
+  expect(fin.etat.notification?.sequence?.grandePause).toBe(grande)
+  const pause = repondre(fin.etat, reglages, 'jeLeFais', finTravail).etat
+  return reprendre(pause, reglages, finPause)
+}
+
+function avancer(reglages: Reglages, debut: Date, rang: number): EtatMoteur {
+  let etat = lancer(reglages, debut)
+  while ((etat.serie?.rang ?? 1) < rang) {
+    const finTravail = new Date(etat.serie?.finMs ?? 0)
+    const decision = evaluer(etat, reglages, entree(finTravail))
+    const pause = repondre(decision.etat, reglages, 'jeLeFais', finTravail).etat
+    etat = reprendre(pause, reglages, new Date(pause.serie?.finMs ?? 0))
+  }
+  return etat
+}
+
+function avecRythme(
+  reglages: Reglages,
+  travailMin: number,
+  pauseMin: number,
+  rythme: Reglages['sequences']['rythme'] = '50-10'
+): Reglages {
+  return {
+    ...reglages,
+    sequences: { ...reglages.sequences, rythme, travailMin, pauseMin }
+  }
+}
 
 function avecOptions(reglages: Reglages, options: Partial<Reglages['options']>): Reglages {
   return { ...reglages, options: { ...reglages.options, ...options } }

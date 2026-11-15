@@ -18,12 +18,22 @@ export const CANAL_NOTIFICATION = {
   hauteur: 'notification:hauteur',
   autreIdee: 'notification:autre-idee',
   variante: 'notification:variante',
-  masquee: 'notification:masquee'
+  masquee: 'notification:masquee',
+  retirer: 'notification:retirer'
 } as const
 
-export type ReponseBouton = 'jeLeFais' | 'dans5min' | 'plusTard'
+export type ReponseBouton =
+  'jeLeFais' | 'dans5min' | 'plusTard' | 'cestReparti' | 'encore5min' | 'arreterSequences'
 
-export type TypeVueNotification = 'yeux' | 'bouger' | 'posture' | 'libre'
+export type TypeVueNotification =
+  'yeux' | 'bouger' | 'posture' | 'libre' | 'finSequence' | 'finPause'
+
+export type BoutonsNotification = 'trois' | 'reprise'
+
+export interface ParcoursSequence {
+  faits: number
+  total: number
+}
 
 export interface VueNotification {
   cycle: number
@@ -34,6 +44,12 @@ export interface VueNotification {
   delaiDisparitionMs: number
   idee: string | null
   assis: boolean
+  surtitre: string | null
+  parcours: ParcoursSequence | null
+  legende: string | null
+  boutons: BoutonsNotification
+  lienArret: boolean
+  resteAffichee: boolean
 }
 
 export interface VueMessage {
@@ -66,7 +82,14 @@ export interface EtatEcran {
   veilleLibelle: string | null
   pauseSpontanee: { heure: string } | null
   bandeau: { genre: 'retrait'; nom: string } | { genre: 'restauration' } | null
+  sequence: EtatSequence
 }
+
+export type EtatSequence =
+  | null
+  | { phase: 'travail'; rang: number; total: number; heure: string }
+  | { phase: 'pause'; grande: boolean; heure: string }
+  | { phase: 'reprise' }
 
 export type ActionEcran =
   | { type: 'activer'; id: string; actif: boolean }
@@ -96,6 +119,8 @@ export type ActionEcran =
   | { type: 'veille'; duree: DureeVeille }
   | { type: 'reprendre' }
   | { type: 'pause' }
+  | { type: 'demarrerSequence' }
+  | { type: 'arreterSequences' }
   | { type: 'ouvrirRappels' }
   | { type: 'quitter' }
   | { type: 'retablir' }
@@ -110,6 +135,7 @@ export interface ApiLev {
   autreIdee(): void
   definirVariante(assis: boolean): void
   masquageTermine(): void
+  surRetrait(recevoir: () => void): () => void
   lireEtat(): Promise<EtatEcran>
   surEtat(recevoir: (etat: EtatEcran) => void): () => void
   agir(action: ActionEcran): void
@@ -117,10 +143,17 @@ export interface ApiLev {
   definirHauteurMenu(hauteurPx: number): void
 }
 
-const TYPES_VUE = ['yeux', 'bouger', 'posture', 'libre'] as const
+const TYPES_VUE = ['yeux', 'bouger', 'posture', 'libre', 'finSequence', 'finPause'] as const
 
 export function estReponseBouton(valeur: unknown): valeur is ReponseBouton {
-  return valeur === 'jeLeFais' || valeur === 'dans5min' || valeur === 'plusTard'
+  return (
+    valeur === 'jeLeFais' ||
+    valeur === 'dans5min' ||
+    valeur === 'plusTard' ||
+    valeur === 'cestReparti' ||
+    valeur === 'encore5min' ||
+    valeur === 'arreterSequences'
+  )
 }
 
 export function estVueNotification(valeur: unknown): valeur is VueNotification {
@@ -135,7 +168,13 @@ export function estVueNotification(valeur: unknown): valeur is VueNotification {
     typeof valeur.phrase === 'string' &&
     typeof valeur.delaiDisparitionMs === 'number' &&
     (valeur.idee === null || typeof valeur.idee === 'string') &&
-    typeof valeur.assis === 'boolean'
+    typeof valeur.assis === 'boolean' &&
+    (valeur.surtitre === null || typeof valeur.surtitre === 'string') &&
+    estParcours(valeur.parcours) &&
+    (valeur.legende === null || typeof valeur.legende === 'string') &&
+    (valeur.boutons === 'trois' || valeur.boutons === 'reprise') &&
+    typeof valeur.lienArret === 'boolean' &&
+    typeof valeur.resteAffichee === 'boolean'
   )
 }
 
@@ -170,7 +209,9 @@ const ACTIONS_SANS_CHARGE = [
   'pause',
   'ouvrirRappels',
   'quitter',
-  'retablir'
+  'retablir',
+  'demarrerSequence',
+  'arreterSequences'
 ] as const
 
 export function estActionEcran(valeur: unknown): valeur is ActionEcran {
@@ -232,7 +273,37 @@ export function estEtatEcran(valeur: unknown): valeur is EtatEcran {
   if (!estPauseSpontanee(valeur.pauseSpontanee)) {
     return false
   }
-  return estBandeau(valeur.bandeau)
+  return estBandeau(valeur.bandeau) && estSequence(valeur.sequence)
+}
+
+function estParcours(valeur: unknown): valeur is { faits: number; total: number } | null {
+  if (valeur === null) {
+    return true
+  }
+  return estObjet(valeur) && typeof valeur.faits === 'number' && typeof valeur.total === 'number'
+}
+
+function estSequence(valeur: unknown): valeur is EtatSequence {
+  if (valeur === null) {
+    return true
+  }
+  if (!estObjet(valeur)) {
+    return false
+  }
+  if (valeur.phase === 'reprise') {
+    return true
+  }
+  if (valeur.phase === 'pause') {
+    return typeof valeur.grande === 'boolean' && typeof valeur.heure === 'string'
+  }
+  if (valeur.phase === 'travail') {
+    return (
+      typeof valeur.rang === 'number' &&
+      typeof valeur.total === 'number' &&
+      typeof valeur.heure === 'string'
+    )
+  }
+  return false
 }
 
 function estPauseSpontanee(valeur: unknown): valeur is { heure: string } | null {

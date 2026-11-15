@@ -7,7 +7,11 @@ import { reglagesParDefaut } from './reglages'
 
 export type ActionReglage = Exclude<
   ActionEcran,
-  { type: 'pause' } | { type: 'ouvrirRappels' } | { type: 'quitter' }
+  | { type: 'pause' }
+  | { type: 'ouvrirRappels' }
+  | { type: 'quitter' }
+  | { type: 'demarrerSequence' }
+  | { type: 'arreterSequences' }
 >
 
 export interface AnnulationRetrait {

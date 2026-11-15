@@ -3,6 +3,7 @@ import textes from '../../content/fr.json'
 import type { ReponseBouton, VueMessage, VueNotification } from '../../preload/contrat'
 import { Logo } from '../shared/Logo'
 import { PictoBouger, PictoLibre, PictoPosture, PictoYeux } from '../shared/Pictogrammes'
+import { Parcours } from './Parcours'
 import './notification.css'
 
 export function Notification(): React.JSX.Element {
@@ -44,6 +45,9 @@ export function Notification(): React.JSX.Element {
   const lancerDisparition = useCallback((): void => {
     arreterDisparition()
     if (!peutCompter() || survol.current || aLeFocus.current) {
+      return
+    }
+    if (vueRef.current?.resteAffichee || restant.current <= 0) {
       return
     }
     echeance.current = Date.now() + restant.current
@@ -112,10 +116,16 @@ export function Notification(): React.JSX.Element {
       arreterDisparition()
       setMessage(recu)
     })
+    const retirerCarte = window.lev.surRetrait(() => {
+      ignoreExpiration.current = true
+      arreterDisparition()
+      setSortie(true)
+    })
     window.lev.prete()
     return () => {
       retirerVue()
       retirerMessage()
+      retirerCarte()
       arreterDisparition()
     }
   }, [arreterDisparition])
@@ -123,7 +133,7 @@ export function Notification(): React.JSX.Element {
   const cycle = vue?.cycle
   const delaiDisparition = vue?.delaiDisparitionMs
   useEffect(() => {
-    if (cycle === undefined || message || sortie) {
+    if (cycle === undefined || message || sortie || vueRef.current?.resteAffichee) {
       arreterDisparition()
       return
     }
@@ -195,7 +205,7 @@ export function Notification(): React.JSX.Element {
       suspensionRef.current('focus', false)
     }
     const surTouche = (evenement: KeyboardEvent): void => {
-      if (evenement.key !== 'Escape') {
+      if (evenement.key !== 'Escape' || vueRef.current?.type === 'finPause') {
         return
       }
       evenement.preventDefault()
@@ -239,10 +249,11 @@ export function Notification(): React.JSX.Element {
               <header className="notification-entete">
                 <span className="notification-picto">{picto(vue.type)}</span>
                 <div className="notification-texte">
+                  {vue.surtitre ? <p className="notification-surtitre">{vue.surtitre}</p> : null}
                   <h1 id="notification-titre" className="notification-titre">
                     {vue.titre}
                   </h1>
-                  <p className="notification-phrase">{vue.phrase}</p>
+                  {vue.phrase ? <p className="notification-phrase">{vue.phrase}</p> : null}
                 </div>
               </header>
               {vue.idee ? (
@@ -266,29 +277,63 @@ export function Notification(): React.JSX.Element {
                   </div>
                 </div>
               ) : null}
-              <div className="notification-actions">
+              {vue.parcours ? (
+                <figure className="notification-parcours">
+                  <Parcours faits={vue.parcours.faits} total={vue.parcours.total} />
+                  {vue.legende ? <figcaption>{vue.legende}</figcaption> : null}
+                </figure>
+              ) : null}
+              {vue.boutons === 'reprise' ? (
+                <div className="notification-actions">
+                  <button
+                    type="button"
+                    className="bouton bouton-principal"
+                    onClick={() => repondre('cestReparti')}
+                  >
+                    {textes.notification.finPause.reparti}
+                  </button>
+                  <button
+                    type="button"
+                    className="bouton bouton-secondaire"
+                    onClick={() => repondre('encore5min')}
+                  >
+                    {textes.notification.finPause.encore}
+                  </button>
+                </div>
+              ) : (
+                <div className="notification-actions">
+                  <button
+                    type="button"
+                    className="bouton bouton-principal"
+                    onClick={() => repondre('jeLeFais')}
+                  >
+                    {textes.notification.boutons.jeLeFais}
+                  </button>
+                  <button
+                    type="button"
+                    className="bouton bouton-secondaire"
+                    onClick={() => repondre('dans5min')}
+                  >
+                    {textes.notification.boutons.dans5min}
+                  </button>
+                  <button
+                    type="button"
+                    className="bouton bouton-discret"
+                    onClick={() => repondre('plusTard')}
+                  >
+                    {textes.notification.boutons.plusTard}
+                  </button>
+                </div>
+              )}
+              {vue.lienArret ? (
                 <button
                   type="button"
-                  className="bouton bouton-principal"
-                  onClick={() => repondre('jeLeFais')}
+                  className="notification-arret"
+                  onClick={() => repondre('arreterSequences')}
                 >
-                  {textes.notification.boutons.jeLeFais}
+                  {textes.notification.finSequence.arreter}
                 </button>
-                <button
-                  type="button"
-                  className="bouton bouton-secondaire"
-                  onClick={() => repondre('dans5min')}
-                >
-                  {textes.notification.boutons.dans5min}
-                </button>
-                <button
-                  type="button"
-                  className="bouton bouton-discret"
-                  onClick={() => repondre('plusTard')}
-                >
-                  {textes.notification.boutons.plusTard}
-                </button>
-              </div>
+              ) : null}
             </>
           ) : null}
         </article>

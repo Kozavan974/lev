@@ -40,6 +40,12 @@ export function publierMessage(message: VueMessage): void {
   envoyer(CANAL_NOTIFICATION.message, message)
 }
 
+export function publierRetrait(): void {
+  vueCourante = null
+  messageCourant = null
+  envoyer(CANAL_NOTIFICATION.retirer)
+}
+
 export function notificationEstVisible(): boolean {
   return fenetre !== null && !fenetre.isDestroyed() && fenetre.isVisible()
 }
@@ -163,8 +169,12 @@ function poser(cible: BrowserWindow, hauteurCarte: number): void {
   cible.setBounds({ x, y, width: largeur, height: hauteur })
 }
 
-function envoyer(canal: string, charge: VueNotification | VueMessage): void {
+function envoyer(canal: string, charge?: VueNotification | VueMessage): void {
   if (!pagePrete || !fenetre || fenetre.isDestroyed()) {
+    return
+  }
+  if (charge === undefined) {
+    fenetre.webContents.send(canal)
     return
   }
   fenetre.webContents.send(canal, charge)
