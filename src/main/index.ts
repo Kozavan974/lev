@@ -7,9 +7,10 @@ import {
   demarrerBoucle,
   demarrerSequences
 } from './boucle'
+import { deciderOuverture, estDemarrageAuto } from './demarrage'
 import { installerPolitiqueContenu } from './ipc'
 import { basculerMenu, detruireMenu } from './menuFenetre'
-import { configurerPlateforme } from './platform'
+import { appliquerDemarrageAutomatique, configurerPlateforme } from './platform'
 import {
   brancherEcrans,
   mettreEnVeilleUneHeure,
@@ -28,10 +29,31 @@ configurerPlateforme()
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
-  app.on('second-instance', () => {
-    if (app.isReady()) {
+  let applicationPrete = false
+  let relanceEnAttente = false
+
+  function ouvrirSelonLancement(): void {
+    const mode = deciderOuverture({
+      premierLancementFait: lireReglages().premierLancementFait,
+      demarrageAuto: estDemarrageAuto(process.argv)
+    })
+    if (mode === 'accueil') {
+      ouvrirSiPremierLancement()
+    } else if (mode === 'rappels') {
+      ouvrirEcran('rappels')
+    }
+    if (relanceEnAttente) {
+      relanceEnAttente = false
       ouvrirDepuisRelance()
     }
+  }
+
+  app.on('second-instance', () => {
+    if (applicationPrete) {
+      ouvrirDepuisRelance()
+      return
+    }
+    relanceEnAttente = true
   })
 
   app.on('window-all-closed', () => {
@@ -69,7 +91,9 @@ if (!app.requestSingleInstanceLock()) {
       })
       brancherEcrans()
       demarrerBoucle()
-      ouvrirSiPremierLancement()
+      appliquerDemarrageAutomatique(lireReglages().options.lancerAuDemarrage)
+      applicationPrete = true
+      ouvrirSelonLancement()
     })
     .catch((erreur: unknown) => {
       console.error(erreur)

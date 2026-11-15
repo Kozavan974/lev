@@ -1,0 +1,67 @@
+appId: re.ekilib.lev
+productName: Lèv
+copyright: Tous droits réservés, Ekilib.re
+artifactName: Lev-Setup-${version}.${ext}
+npmRebuild: false
+directories:
+  output: dist
+  buildResources: build
+files:
+  - '!**/.vscode/*'
+  - '!**/.cursor/**'
+  - '!src/**'
+  - '!docs/**'
+  - '!resources/**'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!electron-builder.yml'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,README.md}'
+  - '!{.env,.env.*,.npmrc,package-lock.json}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!**/*.test.ts'
+  - '!**/*.md'
+  - '!node_modules/@koromix/koffi-android-arm64/**'
+  - '!node_modules/@koromix/koffi-android-x64/**'
+  - '!node_modules/@koromix/koffi-darwin-arm64/**'
+  - '!node_modules/@koromix/koffi-darwin-x64/**'
+  - '!node_modules/@koromix/koffi-freebsd-arm64/**'
+  - '!node_modules/@koromix/koffi-freebsd-ia32/**'
+  - '!node_modules/@koromix/koffi-freebsd-x64/**'
+  - '!node_modules/@koromix/koffi-linux-arm/**'
+  - '!node_modules/@koromix/koffi-linux-arm64/**'
+  - '!node_modules/@koromix/koffi-linux-ia32/**'
+  - '!node_modules/@koromix/koffi-linux-loong64/**'
+  - '!node_modules/@koromix/koffi-linux-ppc64/**'
+  - '!node_modules/@koromix/koffi-linux-riscv64/**'
+  - '!node_modules/@koromix/koffi-linux-x64/**'
+  - '!node_modules/@koromix/koffi-openbsd-arm64/**'
+  - '!node_modules/@koromix/koffi-openbsd-ia32/**'
+  - '!node_modules/@koromix/koffi-openbsd-x64/**'
+  - '!node_modules/@koromix/koffi-win32-arm64/**'
+  - '!node_modules/@koromix/koffi-win32-ia32/**'
+asarUnpack:
+  - '**/node_modules/koffi/**'
+  - '**/node_modules/@koromix/koffi-win32-x64/**'
+extraResources:
+  - from: resources/icons
+    to: icons
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.ico
+  requestedExecutionLevel: asInvoker
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: false
+  createStartMenuShortcut: true
+  shortcutName: Lèv
+  uninstallDisplayName: Lèv
+  deleteAppDataOnUninstall: true
+  installerLanguages:
+    - fr_FR
+  displayLanguageSelector: false
+  unicode: true

@@ -1,5 +1,6 @@
 import { app } from 'electron'
 import koffi from 'koffi'
+import { ARGUMENT_DEMARRAGE_AUTO } from '../demarrage'
 import { etatRetientNotification } from './etatsNotification'
 
 const SUCCES = 0
@@ -11,6 +12,21 @@ let indisponible = false
 
 export function configurerWindows(): void {
   app.setAppUserModelId('re.ekilib.lev')
+}
+
+/**
+ * Enregistre ou retire Lèv du démarrage de Windows.
+ * Sans effet tant que l'application n'est pas empaquetée, pour ne pas lancer
+ * le processus de développement à l'ouverture de session.
+ */
+export function appliquerDemarrageWindows(actif: boolean): void {
+  if (!app.isPackaged) {
+    return
+  }
+  app.setLoginItemSettings({
+    openAtLogin: actif,
+    args: actif ? [ARGUMENT_DEMARRAGE_AUTO] : []
+  })
 }
 
 /**

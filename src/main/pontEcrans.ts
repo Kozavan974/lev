@@ -24,6 +24,8 @@ import {
 } from './boucle'
 import { fermerMenu, fenetreMenu, recevoirHauteurMenu } from './menuFenetre'
 import { lienAutorise } from './liens'
+import { ecranApresRelance } from './demarrage'
+import { appliquerDemarrageAutomatique } from './platform'
 import type { TypeRappel } from './modeles'
 import { notificationEstVisible } from './notificationFenetre'
 import { calculerEcheances } from './scheduler/echeances'
@@ -117,6 +119,9 @@ function agir(action: ActionEcran): void {
   if (action.type === 'theme') {
     appliquerSourceTheme(resultat.reglages.theme)
   }
+  if (action.type === 'option' && action.cle === 'lancerAuDemarrage') {
+    appliquerDemarrageAutomatique(resultat.reglages.options.lancerAuDemarrage)
+  }
   if (action.type === 'sequences' && action.actif === false) {
     arreterSequences()
     return
@@ -156,7 +161,7 @@ export function ouvrirSiPremierLancement(): void {
 }
 
 export function ouvrirDepuisRelance(): void {
-  if (!lireReglages().premierLancementFait) {
+  if (ecranApresRelance(lireReglages().premierLancementFait) === 'accueil') {
     ecran = 'accueil'
     retourGuide = null
     ouvrirApplication()
