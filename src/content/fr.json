@@ -6,13 +6,18 @@
     "infobulle": "Lèv",
     "prochaine": "Lèv · prochaine pause à {heure}",
     "veille": "Lèv · en veille jusqu'à {heure}",
+    "pause": "Faire une pause maintenant",
+    "veille1h": "Mettre en veille pendant 1 heure",
+    "reprendre": "Reprendre les rappels",
     "mesRappels": "Mes rappels",
+    "aPropos": "À propos",
     "quitter": "Quitter"
   },
   "menu": {
     "devise": "Une pause, naturellement.",
     "pauses": "Tes prochaines pauses",
     "echeance": "{nom} à {heure}",
+    "leve": "Tu t'es levé à {heure} : j'ai décalé la marche.",
     "sequence": "Démarrer une séquence de travail",
     "pause": "Faire une pause maintenant",
     "veille": "Mettre les rappels en veille",

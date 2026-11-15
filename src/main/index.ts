@@ -1,10 +1,15 @@
 import { app, Menu } from 'electron'
 import { detruireApplication, ouvrirApplication } from './applicationFenetre'
-import { arreterBoucle, demarrerBoucle } from './boucle'
+import { arreterBoucle, demanderPauseMaintenant, demarrerBoucle } from './boucle'
 import { installerPolitiqueContenu } from './ipc'
 import { basculerMenu, detruireMenu } from './menuFenetre'
 import { configurerPlateforme } from './platform'
-import { brancherEcrans } from './pontEcrans'
+import {
+  brancherEcrans,
+  mettreEnVeilleUneHeure,
+  ouvrirAPropos,
+  reprendreRappels
+} from './pontEcrans'
 import { initialiserStore } from './store'
 import { creerZoneNotification, detruireZoneNotification } from './tray'
 
@@ -39,7 +44,11 @@ if (!app.requestSingleInstanceLock()) {
       installerPolitiqueContenu()
       creerZoneNotification({
         clicGauche: basculerMenu,
-        ouvrirRappels: ouvrirApplication
+        pauseMaintenant: demanderPauseMaintenant,
+        veilleUneHeure: mettreEnVeilleUneHeure,
+        reprendre: reprendreRappels,
+        ouvrirRappels: ouvrirApplication,
+        ouvrirAPropos
       })
       brancherEcrans()
       demarrerBoucle()

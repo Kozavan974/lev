@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { jourLocal } from '../../partage/format'
+import { formaterInstant, jourLocal } from '../../partage/format'
 import type { Rappel, Reglages, Repetition, TypeRappel } from '../modeles'
 import { reglagesParDefaut } from '../reglages'
 import {
+  ACCALMIE_MAX_MS,
+  ACCALMIE_SECONDES,
   AFFICHAGE_NOTIFICATION_AUTRE_MS,
   AFFICHAGE_NOTIFICATION_YEUX_MS,
   FENETRE_PRIORITE_MS,
+  LIGNE_PAUSE_SPONTANEE_MS,
   MESSAGE_REPONSE_MS,
-  PAUSE_BOUGER_MS
+  PAUSE_BOUGER_MS,
+  PAUSE_SPONTANEE_SEC
 } from './constantes'
 import { estDansHoraires, finVeilleDemain } from './horaires'
 import {
@@ -32,9 +36,10 @@ function entree(
   instant: Date,
   sessionOuverte = true,
   reveil = false,
-  pleinEcran = false
+  pleinEcran = false,
+  inactiviteSec = ACCALMIE_SECONDES
 ): EntreeMoteur {
-  return { maintenant: instant, inactiviteSec: 0, sessionOuverte, reveil, pleinEcran }
+  return { maintenant: instant, inactiviteSec, sessionOuverte, reveil, pleinEcran }
 }
 
 function parType(reglages: Reglages, type: TypeRappel): Rappel {
@@ -440,6 +445,348 @@ describe('rappels à heure fixe', () => {
     const seconde = pause ? poserPauseImmediate(pause.etat, reglage, au(16, 7, 1)) : null
     expect(seconde).toBeNull()
   })
+
+  it('remet tous les rappels récurrents à zéro après trois minutes d’inactivité', () => {
+    const reglages = reglagesParDefaut()
+    const yeux = parType(reglages, 'yeux')
+    const bouger = parType(reglages, 'bouger')
+    const posture = parType(reglages, 'posture')
+    let etat = amorcer(reglages, au(16, 8, 0))
+    etat = evaluer(etat, reglages, entree(au(16, 8, 10), true, false, false, 0)).etat
+
+    const parti = evaluer(
+      etat,
+      reglages,
+      entree(au(16, 8, 13), true, false, false, PAUSE_SPONTANEE_SEC)
+    )
+    expect(parti.afficher).toBeNull()
+    expect(parti.etat.lignePause).toBeNull()
+    expect(parti.etat.absence?.leveeMs).toBe(au(16, 8, 10).getTime())
+
+    const retour = evaluer(parti.etat, reglages, entree(au(16, 8, 14), true, false, false, 0))
+    expect(retour.afficher).toBeNull()
+    expect(retour.etat.absence).toBeNull()
+    expect(retour.etat.compteursMs[yeux.id] ?? 0).toBe(0)
+    expect(retour.etat.compteursMs[bouger.id] ?? 0).toBe(0)
+    expect(retour.etat.compteursMs[posture.id] ?? 0).toBe(0)
+    const ligne = retour.etat.lignePause
+    expect(ligne?.jusquaMs).toBe(au(16, 8, 14).getTime() + LIGNE_PAUSE_SPONTANEE_MS)
+    expect(ligne ? formaterInstant(new Date(ligne.leveeMs)) : '').toBe('8h10')
+
+    const dus = presDuSeuil([yeux], au(16, 9, 0))
+    const pendant = evaluer(
+      dus,
+      reglages,
+      entree(new Date(au(16, 9, 0).getTime() + 1000), true, false, false, PAUSE_SPONTANEE_SEC)
+    )
+    expect(pendant.afficher).toBeNull()
+    const revenu = evaluer(
+      pendant.etat,
+      reglages,
+      entree(new Date(au(16, 9, 0).getTime() + 2000), true, false, false, 0)
+    )
+    expect(revenu.afficher).toBeNull()
+    expect(revenu.etat.compteursMs[yeux.id] ?? 0).toBe(0)
+  })
+
+  it('ne remet pas les récurrents à zéro si les pauses spontanées sont coupées', () => {
+    const reglages = avecOptions(seulement(['yeux']), { pausesSpontanees: false })
+    const yeux = parType(reglages, 'yeux')
+    let etat = amorcer(reglages, au(16, 8, 0))
+    etat = evaluer(etat, reglages, entree(au(16, 8, 10), true, false, false, 0)).etat
+    const loin = evaluer(etat, reglages, entree(au(16, 8, 14), true, false, false, 400))
+    expect(loin.etat.absence).toBeNull()
+    expect(loin.etat.compteursMs[yeux.id]).toBe(14 * MINUTE)
+    const suite = evaluer(loin.etat, reglages, entree(au(16, 8, 15), true, false, false, 0))
+    expect(suite.etat.compteursMs[yeux.id]).toBe(15 * MINUTE)
+    expect(suite.etat.lignePause).toBeNull()
+  })
+
+  it('omet la ligne si le rappel bouger est inactif, et laisse l’heure fixe intacte', () => {
+    const { reglages, id } = heureFixe('15:00', 'jour')
+    const sansMarche: Reglages = {
+      ...reglages,
+      rappels: reglages.rappels.map((rappel) =>
+        rappel.type === 'bouger' ? { ...rappel, actif: false } : rappel
+      )
+    }
+    const arme = appliquerEffets(sansMarche, [
+      { rappelId: id, dernierDeclenchement: jourLocal(au(16, 8, 0)), desactiver: false }
+    ])
+    let etat = amorcer(arme, au(16, 8, 0))
+    etat = evaluer(etat, arme, entree(au(16, 8, 10), true, false, false, 0)).etat
+    const parti = evaluer(
+      etat,
+      arme,
+      entree(au(16, 8, 13), true, false, false, PAUSE_SPONTANEE_SEC)
+    )
+    const retour = evaluer(parti.etat, arme, entree(au(16, 8, 14), true, false, false, 0))
+    expect(retour.etat.compteursMs[parType(arme, 'yeux').id] ?? 0).toBe(0)
+    expect(retour.etat.lignePause).toBeNull()
+    expect(retour.effets).toEqual([])
+    expect(arme.rappels.find((rappel) => rappel.id === id)?.dernierDeclenchement).toBe(
+      jourLocal(au(16, 8, 0))
+    )
+  })
+
+  it('retire la ligne à la prochaine marche, ou au bout de 30 minutes', () => {
+    const reglages = seulement(['bouger'])
+    const bouger = parType(reglages, 'bouger')
+    const depart = au(16, 8, 0)
+    const avecLigne: EtatMoteur = {
+      ...presDuSeuil([bouger], depart),
+      lignePause: {
+        leveeMs: depart.getTime(),
+        jusquaMs: depart.getTime() + LIGNE_PAUSE_SPONTANEE_MS
+      }
+    }
+    const montre = evaluer(avecLigne, reglages, entree(new Date(depart.getTime() + 1000)))
+    expect(montre.afficher?.rappelId).toBe(bouger.id)
+    expect(montre.etat.lignePause).toBeNull()
+
+    const instant = au(16, 10, 0)
+    const posee: EtatMoteur = {
+      ...amorcer(reglages, instant),
+      compteursMs: {},
+      dernierInstantMs: instant.getTime(),
+      etaitDansHoraires: true,
+      lignePause: { leveeMs: au(16, 9, 40).getTime(), jusquaMs: au(16, 10, 10).getTime() }
+    }
+    expect(evaluer(posee, reglages, entree(instant)).etat.lignePause).not.toBeNull()
+    const fini = evaluer(posee, reglages, entree(au(16, 10, 10)))
+    expect(fini.etat.lignePause).toBeNull()
+    expect(fini.afficher).toBeNull()
+  })
+
+  describe('avec l’accalmie activée, la notification attend 4 secondes de calme', () => {
+    it('s’affiche au bout de 4 secondes, ou de 2 minutes sans calme', () => {
+      const reglages = seulement(['yeux'])
+      const yeux = parType(reglages, 'yeux')
+      const depart = au(16, 8, 0)
+      const pres = presDuSeuil([yeux], depart)
+      const echeance = new Date(depart.getTime() + 1000)
+
+      const debut = evaluer(pres, reglages, entree(echeance, true, false, false, 0))
+      expect(debut.afficher).toBeNull()
+      expect(debut.cadence).toBe('accalmie')
+      expect(debut.bientot).toBe(true)
+
+      const trois = evaluer(
+        debut.etat,
+        reglages,
+        entree(new Date(echeance.getTime() + 3000), true, false, false, 3)
+      )
+      expect(trois.afficher).toBeNull()
+      expect(trois.cadence).toBe('accalmie')
+
+      const quatre = evaluer(
+        trois.etat,
+        reglages,
+        entree(new Date(echeance.getTime() + 4000), true, false, false, ACCALMIE_SECONDES)
+      )
+      expect(quatre.afficher?.rappelId).toBe(yeux.id)
+      expect(quatre.cadence).toBe('normale')
+
+      const force = evaluer(
+        debut.etat,
+        reglages,
+        entree(new Date(echeance.getTime() + ACCALMIE_MAX_MS), true, false, false, 0)
+      )
+      expect(force.afficher?.rappelId).toBe(yeux.id)
+      expect(force.cadence).toBe('normale')
+
+      const tropTot = evaluer(
+        debut.etat,
+        reglages,
+        entree(new Date(echeance.getTime() + ACCALMIE_MAX_MS - 1), true, false, false, 0)
+      )
+      expect(tropTot.afficher).toBeNull()
+      expect(tropTot.cadence).toBe('accalmie')
+    })
+
+    it('affiche tout de suite quand l’option est coupée', () => {
+      const reglages = avecOptions(seulement(['yeux']), { attendreAccalmie: false })
+      const yeux = parType(reglages, 'yeux')
+      const depart = au(16, 8, 0)
+      const decision = evaluer(
+        presDuSeuil([yeux], depart),
+        reglages,
+        entree(new Date(depart.getTime() + 1000), true, false, false, 0)
+      )
+      expect(decision.afficher?.rappelId).toBe(yeux.id)
+      expect(decision.cadence).toBe('normale')
+    })
+
+    it('laisse passer une heure fixe déjà retenue, même après les 10 minutes', () => {
+      const { reglages, id } = heureFixe('15:00', 'jour')
+      const debut = evaluer(
+        amorcer(reglages, au(16, 14, 0)),
+        reglages,
+        entree(au(16, 15, 9), true, false, false, 0)
+      )
+      expect(debut.afficher).toBeNull()
+      expect(debut.cadence).toBe('accalmie')
+      const force = evaluer(debut.etat, reglages, entree(au(16, 15, 11), true, false, false, 0))
+      expect(force.afficher?.rappelId).toBe(id)
+      expect(force.effets.some((effet) => effet.rappelId === id && !effet.desactiver)).toBe(true)
+    })
+
+    it('ne démarre les 2 minutes qu’à la sortie du plein écran', () => {
+      const reglages = seulement(['yeux'])
+      const yeux = parType(reglages, 'yeux')
+      const depart = au(16, 8, 0)
+      const echeance = depart.getTime() + 1000
+      const tenu = evaluer(
+        presDuSeuil([yeux], depart),
+        reglages,
+        entree(new Date(echeance), true, false, true, 0)
+      )
+      expect(tenu.afficher).toBeNull()
+      expect(tenu.cadence).toBe('normale')
+      expect(tenu.bientot).toBe(true)
+      expect(tenu.sonderPleinEcran).toBe(true)
+
+      const encore = evaluer(
+        tenu.etat,
+        reglages,
+        entree(new Date(echeance + 60_000), true, false, true, 0)
+      )
+      expect(encore.etat.attente?.depuisMs).toBe(tenu.etat.attente?.depuisMs)
+      expect(encore.cadence).toBe('normale')
+
+      const sorti = evaluer(
+        encore.etat,
+        reglages,
+        entree(new Date(echeance + 60_000), true, false, false, 0)
+      )
+      expect(sorti.afficher).toBeNull()
+      expect(sorti.cadence).toBe('accalmie')
+      expect(sorti.etat.attente?.depuisMs).toBe(echeance + 60_000)
+
+      const avant = evaluer(
+        sorti.etat,
+        reglages,
+        entree(new Date(echeance + 60_000 + ACCALMIE_MAX_MS - 1), true, false, false, 0)
+      )
+      expect(avant.afficher).toBeNull()
+      const force = evaluer(
+        sorti.etat,
+        reglages,
+        entree(new Date(echeance + 60_000 + ACCALMIE_MAX_MS), true, false, false, 0)
+      )
+      expect(force.afficher?.rappelId).toBe(yeux.id)
+    })
+  })
+
+  it('au réveil après une longue veille, n’affiche aucune rafale', () => {
+    const reglages = reglagesParDefaut()
+    const yeux = parType(reglages, 'yeux')
+    const bouger = parType(reglages, 'bouger')
+    const posture = parType(reglages, 'posture')
+    const charge: EtatMoteur = {
+      ...amorcer(reglages, au(16, 8, 0)),
+      compteursMs: {
+        [yeux.id]: 5 * 60 * MINUTE,
+        [bouger.id]: 5 * 60 * MINUTE,
+        [posture.id]: 5 * 60 * MINUTE
+      }
+    }
+    const reveil = evaluer(charge, reglages, entree(au(16, 12, 0), true, true))
+    expect(reveil.afficher).toBeNull()
+    expect(reveil.etat.compteursMs[yeux.id] ?? 0).toBe(0)
+    expect(reveil.etat.compteursMs[bouger.id] ?? 0).toBe(0)
+    expect(reveil.etat.compteursMs[posture.id] ?? 0).toBe(0)
+    const suite = evaluer(reveil.etat, reglages, entree(au(16, 12, 10)))
+    expect(suite.afficher).toBeNull()
+  })
+
+  it('allume la pastille deux minutes avant, sauf sous 30 minutes', () => {
+    const reglages = seulement(['yeux', 'bouger'])
+    const yeux = parType(reglages, 'yeux')
+    const bouger = parType(reglages, 'bouger')
+    const instant = au(16, 9, 0)
+
+    const bientot = evaluer(
+      fige(reglages, instant, { [bouger.id]: 28 * MINUTE }),
+      reglages,
+      entree(instant)
+    )
+    expect(bientot.bientot).toBe(true)
+    expect(bientot.afficher).toBeNull()
+    expect(bientot.cadence).toBe('normale')
+
+    const tot = evaluer(
+      fige(reglages, instant, { [bouger.id]: 27 * MINUTE }),
+      reglages,
+      entree(instant)
+    )
+    expect(tot.bientot).toBe(false)
+
+    const yeuxTot = evaluer(
+      fige(reglages, instant, { [yeux.id]: 18 * MINUTE }),
+      reglages,
+      entree(instant)
+    )
+    expect(yeuxTot.bientot).toBe(false)
+    expect(yeuxTot.afficher).toBeNull()
+
+    const depart = au(16, 8, 0)
+    const attente = evaluer(
+      presDuSeuil([yeux], depart),
+      reglages,
+      entree(new Date(depart.getTime() + 1000), true, false, false, 0)
+    )
+    expect(attente.afficher).toBeNull()
+    expect(attente.bientot).toBe(true)
+
+    const plein = evaluer(
+      presDuSeuil([yeux], depart),
+      reglages,
+      entree(new Date(depart.getTime() + 1000), true, false, true, ACCALMIE_SECONDES)
+    )
+    expect(plein.afficher).toBeNull()
+    expect(plein.bientot).toBe(true)
+
+    const montre = evaluer(
+      presDuSeuil([bouger], depart),
+      reglages,
+      entree(new Date(depart.getTime() + 1000))
+    )
+    expect(montre.afficher?.rappelId).toBe(bouger.id)
+    expect(montre.bientot).toBe(true)
+    const visible = evaluer(montre.etat, reglages, entree(new Date(depart.getTime() + 2000)))
+    expect(visible.afficher).toBeNull()
+    expect(visible.bientot).toBe(true)
+  })
+
+  it('passe la vérification à chaque seconde pendant l’accalmie, puis revient à 15 secondes', () => {
+    const reglages = seulement(['bouger'])
+    const bouger = parType(reglages, 'bouger')
+    const depart = au(16, 8, 0)
+    const echeance = new Date(depart.getTime() + 1000)
+    const attente = evaluer(
+      presDuSeuil([bouger], depart),
+      reglages,
+      entree(echeance, true, false, false, 0)
+    )
+    expect(attente.cadence).toBe('accalmie')
+    expect(attente.afficher).toBeNull()
+
+    const calme = evaluer(
+      attente.etat,
+      reglages,
+      entree(new Date(echeance.getTime() + 1000), true, false, false, ACCALMIE_SECONDES)
+    )
+    expect(calme.afficher?.rappelId).toBe(bouger.id)
+    expect(calme.cadence).toBe('normale')
+
+    const deja = evaluer(
+      presDuSeuil([bouger], depart),
+      reglages,
+      entree(echeance, true, false, false, ACCALMIE_SECONDES)
+    )
+    expect(deja.cadence).toBe('normale')
+  })
 })
 
 describe('horaires', () => {
@@ -484,6 +831,19 @@ describe('horaires', () => {
     expect(lundiSoir.getHours()).toBe(20)
   })
 })
+
+function avecOptions(reglages: Reglages, options: Partial<Reglages['options']>): Reglages {
+  return { ...reglages, options: { ...reglages.options, ...options } }
+}
+
+function fige(reglages: Reglages, instant: Date, compteursMs: Record<string, number>): EtatMoteur {
+  return {
+    ...amorcer(reglages, instant),
+    compteursMs,
+    dernierInstantMs: instant.getTime(),
+    etaitDansHoraires: true
+  }
+}
 
 function heureFixe(heure: string, repetition: Repetition): { reglages: Reglages; id: string } {
   const reglages = reglagesParDefaut()

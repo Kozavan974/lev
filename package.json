@@ -19,7 +19,8 @@
     "start": "electron-vite preview"
   },
   "dependencies": {
-    "electron-store": "^12.0.0"
+    "electron-store": "^12.0.0",
+    "koffi": "^3.3.8"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.1",

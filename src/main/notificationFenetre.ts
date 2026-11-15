@@ -40,6 +40,10 @@ export function publierMessage(message: VueMessage): void {
   envoyer(CANAL_NOTIFICATION.message, message)
 }
 
+export function notificationEstVisible(): boolean {
+  return fenetre !== null && !fenetre.isDestroyed() && fenetre.isVisible()
+}
+
 export function masquerNotification(): void {
   if (!fenetre || fenetre.isDestroyed()) {
     return

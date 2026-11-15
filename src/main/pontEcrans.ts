@@ -13,9 +13,11 @@ import {
 } from './boucle'
 import { fermerMenu, fenetreMenu, recevoirHauteurMenu } from './menuFenetre'
 import type { TypeRappel } from './modeles'
+import { notificationEstVisible } from './notificationFenetre'
 import { calculerEcheances } from './scheduler/echeances'
+import { bientotPourIcone, type EtatMoteur } from './scheduler/moteur'
 import { enregistrerReglages, lireReglages } from './store'
-import { definirInfobulle } from './tray'
+import { definirEtatIcone, definirInfobulle, definirMenuContextuel, type EtatIcone } from './tray'
 
 let annulation: Annulation | null = null
 let branche = false
@@ -70,6 +72,19 @@ function agir(action: ActionEcran): void {
   reevaluer()
 }
 
+export function mettreEnVeilleUneHeure(): void {
+  agir({ type: 'veille', duree: '1h' })
+}
+
+export function reprendreRappels(): void {
+  agir({ type: 'reprendre' })
+}
+
+/** Le lot 5 ouvrira l'écran « À propos ». D'ici là, la fenêtre Application. */
+export function ouvrirAPropos(): void {
+  ouvrirApplication()
+}
+
 function identifiantsBase(): Record<TypeRappel, string> {
   return {
     yeux: randomUUID(),
@@ -82,17 +97,26 @@ function identifiantsBase(): Record<TypeRappel, string> {
 function etatCourant(): EtatEcran {
   const reglages = lireReglages()
   const maintenant = new Date()
+  const moteur = lireEtatMoteur()
   const finVeille = reglages.veilleJusqua ? new Date(reglages.veilleJusqua).getTime() : Number.NaN
   const veilleActive = Number.isFinite(finVeille) && finVeille > maintenant.getTime()
   return {
     reglages,
-    echeances: calculerEcheances(lireEtatMoteur(), reglages, maintenant),
+    echeances: calculerEcheances(moteur, reglages, maintenant),
     veilleLibelle:
       veilleActive && reglages.veilleJusqua
         ? formaterInstant(new Date(reglages.veilleJusqua))
         : null,
+    pauseSpontanee: libellePause(moteur),
     bandeau: bandeauCourant()
   }
+}
+
+function libellePause(moteur: EtatMoteur): { heure: string } | null {
+  if (!moteur.lignePause) {
+    return null
+  }
+  return { heure: formaterInstant(new Date(moteur.lignePause.leveeMs)) }
 }
 
 function bandeauCourant(): EtatEcran['bandeau'] {
@@ -108,8 +132,20 @@ function bandeauCourant(): EtatEcran['bandeau'] {
 function diffuser(): void {
   const etat = etatCourant()
   definirInfobulle(texteInfobulle(etat))
+  definirEtatIcone(iconeCourante(etat))
+  definirMenuContextuel(etat.veilleLibelle !== null)
   envoyer(fenetreMenu(), etat)
   envoyer(fenetreApplication(), etat)
+}
+
+function iconeCourante(etat: EtatEcran): EtatIcone {
+  if (etat.veilleLibelle) {
+    return 'veille'
+  }
+  if (notificationEstVisible() || bientotPourIcone(lireEtatMoteur(), etat.reglages, new Date())) {
+    return 'bientot'
+  }
+  return 'calme'
 }
 
 function texteInfobulle(etat: EtatEcran): string {

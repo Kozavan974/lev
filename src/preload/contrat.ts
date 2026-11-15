@@ -64,6 +64,7 @@ export interface EtatEcran {
   reglages: Reglages
   echeances: { nom: string; heure: string }[]
   veilleLibelle: string | null
+  pauseSpontanee: { heure: string } | null
   bandeau: { genre: 'retrait'; nom: string } | { genre: 'restauration' } | null
 }
 
@@ -228,7 +229,17 @@ export function estEtatEcran(valeur: unknown): valeur is EtatEcran {
   if (valeur.veilleLibelle !== null && typeof valeur.veilleLibelle !== 'string') {
     return false
   }
+  if (!estPauseSpontanee(valeur.pauseSpontanee)) {
+    return false
+  }
   return estBandeau(valeur.bandeau)
+}
+
+function estPauseSpontanee(valeur: unknown): valeur is { heure: string } | null {
+  if (valeur === null) {
+    return true
+  }
+  return estObjet(valeur) && typeof valeur.heure === 'string'
 }
 
 function estEcheances(valeur: unknown): valeur is { nom: string; heure: string }[] {

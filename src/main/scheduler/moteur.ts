@@ -1,14 +1,18 @@
 import { jourDeRepetition, jourLocal } from '../../partage/format'
 import type { Rappel, Reglages, TypeRappel } from '../modeles'
 import {
+  ACCALMIE_MAX_MS,
+  ACCALMIE_SECONDES,
   AFFICHAGE_NOTIFICATION_AUTRE_MS,
   AFFICHAGE_NOTIFICATION_YEUX_MS,
   BIENTOT_AVANT_MS,
   BIENTOT_FREQUENCE_MIN_MINUTES,
   FENETRE_PRIORITE_MS,
   HEURE_FIXE_RETARD_MAX_MS,
+  LIGNE_PAUSE_SPONTANEE_MS,
   MESSAGE_REPONSE_MS,
   PAUSE_BOUGER_MS,
+  PAUSE_SPONTANEE_SEC,
   REPORT_CINQ_MIN_MS,
   SEUIL_DEVERROUILLAGE_MS
 } from './constantes'
@@ -40,6 +44,28 @@ export interface HeureFixeDifferee {
   pasAvantMs: number | null
 }
 
+/** Inactivité d'au moins 3 minutes, en attente du retour. */
+export interface AbsenceSpontanee {
+  leveeMs: number
+}
+
+/** Ligne du menu après une pause spontanée. */
+export interface LignePauseSpontanee {
+  leveeMs: number
+  jusquaMs: number
+}
+
+export type GenreAttente = 'pleinEcran' | 'accalmie'
+
+/** Rappel dû, retenu par le plein écran ou par l'attente d'une accalmie. */
+export interface AttenteAffichage {
+  depuisMs: number
+  genre: GenreAttente
+  rappelId: string
+}
+
+export type CadenceMoteur = 'normale' | 'accalmie'
+
 export interface EtatMoteur {
   compteursMs: Readonly<Record<string, number>>
   dernierInstantMs: number | null
@@ -51,15 +77,18 @@ export interface EtatMoteur {
   pauseJusquaMs: number | null
   report: ReportEnAttente | null
   heureFixeDifferee: HeureFixeDifferee | null
+  absence: AbsenceSpontanee | null
+  lignePause: LignePauseSpontanee | null
+  attente: AttenteAffichage | null
 }
 
-/** L'inactivité est injectée pour le lot 3. Le lot 1 ne s'en sert pas. */
 export interface EntreeMoteur {
   maintenant: Date
+  /** Secondes depuis la dernière frappe ou le dernier mouvement de souris. */
   inactiviteSec: number
   sessionOuverte: boolean
   reveil: boolean
-  /** Plein écran ou présentation. Le lot 3 alimentera ce drapeau. */
+  /** Plein écran ou mode présentation, mesuré par la plateforme. */
   pleinEcran?: boolean
 }
 
@@ -81,6 +110,9 @@ export interface DecisionMoteur {
   afficher: AffichageDemande | null
   bientot: boolean
   effets: readonly EffetHeureFixe[]
+  cadence: CadenceMoteur
+  /** Vrai quand un rappel est à échéance et que l'option plein écran est active. */
+  sonderPleinEcran: boolean
 }
 
 export type ReponseRappel = 'jeLeFais' | 'dans5min' | 'plusTard' | 'aucune'
@@ -115,7 +147,10 @@ export function creerEtat(): EtatMoteur {
     bloqueJusquaMs: null,
     pauseJusquaMs: null,
     report: null,
-    heureFixeDifferee: null
+    heureFixeDifferee: null,
+    absence: null,
+    lignePause: null,
+    attente: null
   }
 }
 
@@ -181,39 +216,41 @@ export function evaluer(
     etaitDansHoraires: dansHoraires,
     veilleActive: enVeille
   }
+  courant = traiterPauseSpontanee(courant, reglages, entree, maintenantMs)
 
   const resolution = resoudreHeureFixe(courant, reglages, entree, enVeille)
-  courant = resolution.etat
 
   if (resolution.afficher) {
-    return {
-      etat: ecarterDejaDus(courant, reglages),
-      afficher: resolution.afficher,
-      bientot: true,
-      effets: resolution.effets
-    }
+    return conclure(
+      ecarterDejaDus(resolution.etat, reglages),
+      resolution.etatSansAffichage,
+      resolution.afficher,
+      resolution.effets,
+      resolution.effetsSansAffichage,
+      reglages,
+      entree
+    )
   }
 
-  if (courant.notification) {
-    courant = ecarterDejaDus(courant, reglages)
+  let suivant = resolution.etat
+  if (suivant.notification) {
+    suivant = ecarterDejaDus(suivant, reglages)
   }
 
-  if (resolution.bloqueRecurrents) {
-    return {
-      etat: courant,
-      afficher: null,
-      bientot: calculerBientot(courant, reglages) || resolution.bientot,
-      effets: resolution.effets
-    }
+  if (resolution.bloqueRecurrents || suivant.absence) {
+    return conclure(suivant, suivant, null, resolution.effets, resolution.effets, reglages, entree)
   }
 
-  const choix = choisir(courant, reglages, maintenantMs)
-  return {
-    etat: choix.etat,
-    afficher: choix.afficher,
-    bientot: calculerBientot(choix.etat, reglages) || resolution.bientot,
-    effets: resolution.effets
-  }
+  const choix = choisir(suivant, reglages, maintenantMs)
+  return conclure(
+    choix.etat,
+    choix.etatSansAffichage,
+    choix.afficher,
+    resolution.effets,
+    resolution.effets,
+    reglages,
+    entree
+  )
 }
 
 /** Affiche tout de suite le rappel « bouger », même décoché ou hors horaires. */
@@ -242,7 +279,7 @@ export function poserPauseImmediate(
   }
   const report = etat.report?.rappelId === bouger.id ? null : etat.report
   return {
-    etat: { ...etat, notification, report },
+    etat: { ...etat, notification, report, attente: null, lignePause: null },
     afficher: { rappelId: bouger.id, delaiMs: notification.delaiMs, charge }
   }
 }
@@ -333,29 +370,237 @@ export function repondre(
   }
 }
 
+function conclure(
+  etatAffiche: EtatMoteur,
+  etatRetenu: EtatMoteur,
+  afficher: AffichageDemande | null,
+  effetsAffiche: readonly EffetHeureFixe[],
+  effetsRetenu: readonly EffetHeureFixe[],
+  reglages: Reglages,
+  entree: EntreeMoteur
+): DecisionMoteur {
+  const maintenantMs = entree.maintenant.getTime()
+  if (!afficher) {
+    return finir(
+      { ...etatRetenu, attente: null },
+      null,
+      effetsRetenu,
+      'normale',
+      false,
+      reglages,
+      entree.maintenant
+    )
+  }
+
+  if (reglages.options.nePasDeranger && entree.pleinEcran === true) {
+    return finir(
+      {
+        ...etatRetenu,
+        attente: poursuivreAttente(etatRetenu, maintenantMs, 'pleinEcran', afficher.rappelId)
+      },
+      null,
+      effetsRetenu,
+      'normale',
+      true,
+      reglages,
+      entree.maintenant
+    )
+  }
+
+  if (reglages.options.attendreAccalmie && entree.inactiviteSec < ACCALMIE_SECONDES) {
+    const attente = poursuivreAttente(etatRetenu, maintenantMs, 'accalmie', afficher.rappelId)
+    if (maintenantMs - attente.depuisMs < ACCALMIE_MAX_MS) {
+      return finir(
+        { ...etatRetenu, attente },
+        null,
+        effetsRetenu,
+        'accalmie',
+        reglages.options.nePasDeranger,
+        reglages,
+        entree.maintenant
+      )
+    }
+  }
+
+  const rappel = reglages.rappels.find((candidat) => candidat.id === afficher.rappelId)
+  return finir(
+    {
+      ...etatAffiche,
+      attente: null,
+      lignePause: rappel?.type === 'bouger' ? null : etatAffiche.lignePause
+    },
+    afficher,
+    effetsAffiche,
+    'normale',
+    reglages.options.nePasDeranger,
+    reglages,
+    entree.maintenant
+  )
+}
+
+function finir(
+  etat: EtatMoteur,
+  afficher: AffichageDemande | null,
+  effets: readonly EffetHeureFixe[],
+  cadence: CadenceMoteur,
+  sonderPleinEcran: boolean,
+  reglages: Reglages,
+  maintenant: Date
+): DecisionMoteur {
+  return {
+    etat,
+    afficher,
+    bientot: bientotPourIcone(etat, reglages, maintenant),
+    effets,
+    cadence,
+    sonderPleinEcran
+  }
+}
+
+/** Pastille « bientôt » : veille exclue, la fenêtre visible se juge ailleurs. */
+export function bientotPourIcone(etat: EtatMoteur, reglages: Reglages, maintenant: Date): boolean {
+  if (etat.notification || etat.attente) {
+    return true
+  }
+  return calculerBientot(etat, reglages) || heureFixeProche(reglages, maintenant)
+}
+
+function poursuivreAttente(
+  etat: EtatMoteur,
+  maintenantMs: number,
+  genre: GenreAttente,
+  rappelId: string
+): AttenteAffichage {
+  const precedente = etat.attente
+  if (precedente?.genre === genre) {
+    return { depuisMs: precedente.depuisMs, genre, rappelId }
+  }
+  return { depuisMs: maintenantMs, genre, rappelId }
+}
+
+function traiterPauseSpontanee(
+  etat: EtatMoteur,
+  reglages: Reglages,
+  entree: EntreeMoteur,
+  maintenantMs: number
+): EtatMoteur {
+  let courant = etat
+  if (!reglages.options.pausesSpontanees) {
+    if (courant.absence) {
+      courant = { ...courant, absence: null }
+    }
+    return expirerLigne(courant, reglages, maintenantMs)
+  }
+  if (!entree.sessionOuverte) {
+    if (courant.absence) {
+      courant = remettreRecurrentsAZero(courant, reglages)
+      courant = { ...courant, absence: null }
+    }
+    return expirerLigne(courant, reglages, maintenantMs)
+  }
+  if (entree.inactiviteSec >= PAUSE_SPONTANEE_SEC) {
+    if (!courant.absence) {
+      courant = {
+        ...courant,
+        absence: { leveeMs: maintenantMs - entree.inactiviteSec * 1000 }
+      }
+    }
+    return expirerLigne(courant, reglages, maintenantMs)
+  }
+  if (courant.absence) {
+    const leveeMs = courant.absence.leveeMs
+    courant = remettreRecurrentsAZero(courant, reglages)
+    courant = {
+      ...courant,
+      absence: null,
+      lignePause: ligneSiBougerActif(reglages, leveeMs, maintenantMs)
+    }
+  }
+  return expirerLigne(courant, reglages, maintenantMs)
+}
+
+/** Les récurrents seulement. L'heure de fin d'une séquence, au lot 4, ne vit pas ici. */
+function remettreRecurrentsAZero(etat: EtatMoteur, reglages: Reglages): EtatMoteur {
+  const compteurs: Record<string, number> = { ...etat.compteursMs }
+  for (const rappel of reglages.rappels) {
+    if (rappel.mode === 'recurrent') {
+      delete compteurs[rappel.id]
+    }
+  }
+  return { ...etat, compteursMs: compteurs }
+}
+
+function ligneSiBougerActif(
+  reglages: Reglages,
+  leveeMs: number,
+  maintenantMs: number
+): LignePauseSpontanee | null {
+  const bougerActif = reglages.rappels.some((rappel) => rappel.type === 'bouger' && rappel.actif)
+  if (!bougerActif) {
+    return null
+  }
+  return { leveeMs, jusquaMs: maintenantMs + LIGNE_PAUSE_SPONTANEE_MS }
+}
+
+function expirerLigne(etat: EtatMoteur, reglages: Reglages, maintenantMs: number): EtatMoteur {
+  const ligne = etat.lignePause
+  if (!ligne) {
+    return etat
+  }
+  const bougerActif = reglages.rappels.some((rappel) => rappel.type === 'bouger' && rappel.actif)
+  if (!bougerActif || maintenantMs >= ligne.jusquaMs) {
+    return { ...etat, lignePause: null }
+  }
+  return etat
+}
+
+function heureFixeProche(reglages: Reglages, maintenant: Date): boolean {
+  const maintenantMs = maintenant.getTime()
+  for (const rappel of reglages.rappels) {
+    if (!rappel.actif || rappel.mode !== 'heure' || !rappel.heure || !rappel.repetition) {
+      continue
+    }
+    for (const delta of [-1, 0]) {
+      const occurrence = lireOccurrence(rappel, maintenant, delta)
+      if (!occurrence) {
+        continue
+      }
+      const ecart = occurrence.prevuMs - maintenantMs
+      if (ecart > 0 && ecart <= FENETRE_PRIORITE_MS) {
+        return true
+      }
+      if (ecart <= 0 && maintenantMs < occurrence.prevuMs + HEURE_FIXE_RETARD_MAX_MS) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
 function choisir(
   etat: EtatMoteur,
   reglages: Reglages,
   maintenantMs: number
-): { etat: EtatMoteur; afficher: AffichageDemande | null } {
+): { etat: EtatMoteur; etatSansAffichage: EtatMoteur; afficher: AffichageDemande | null } {
   if (etat.notification) {
-    return { etat: ecarterDejaDus(etat, reglages), afficher: null }
+    const suivant = ecarterDejaDus(etat, reglages)
+    return { etat: suivant, etatSansAffichage: suivant, afficher: null }
   }
-  if (etat.bloqueJusquaMs !== null && maintenantMs < etat.bloqueJusquaMs) {
-    return { etat, afficher: null }
+  if (etat.absence || (etat.bloqueJusquaMs !== null && maintenantMs < etat.bloqueJusquaMs)) {
+    return { etat, etatSansAffichage: etat, afficher: null }
   }
 
   const candidats = listerCandidats(etat, reglages, maintenantMs)
   const dus = candidats.filter((candidat) => candidat.dejaDu)
   const meilleurDu = plusPrioritaire(dus)
   if (!meilleurDu) {
-    return { etat, afficher: null }
+    return { etat, etatSansAffichage: etat, afficher: null }
   }
 
   const futurs = candidats.filter((candidat) => !candidat.dejaDu)
   const meilleurFutur = plusPrioritaire(futurs)
   if (meilleurFutur && compareRappel(meilleurFutur.rappel, meilleurDu.rappel) < 0) {
-    return { etat, afficher: null }
+    return { etat, etatSansAffichage: etat, afficher: null }
   }
 
   const compteurs: Record<string, number> = { ...etat.compteursMs }
@@ -384,6 +629,7 @@ function choisir(
 
   return {
     etat: { ...etat, compteursMs: compteurs, report, notification },
+    etatSansAffichage: etat,
     afficher: { rappelId: notification.rappelId, delaiMs, charge: notification.charge }
   }
 }
@@ -555,7 +801,10 @@ function cloner(etat: EtatMoteur): EtatMoteur {
       ? { ...etat.notification, charge: { ...etat.notification.charge } }
       : null,
     report: etat.report ? { ...etat.report, charge: { ...etat.report.charge } } : null,
-    heureFixeDifferee: etat.heureFixeDifferee ? { ...etat.heureFixeDifferee } : null
+    heureFixeDifferee: etat.heureFixeDifferee ? { ...etat.heureFixeDifferee } : null,
+    absence: etat.absence ? { ...etat.absence } : null,
+    lignePause: etat.lignePause ? { ...etat.lignePause } : null,
+    attente: etat.attente ? { ...etat.attente } : null
   }
 }
 
@@ -567,10 +816,11 @@ interface OccurrenceHeure {
 
 interface ResolutionHeure {
   etat: EtatMoteur
+  etatSansAffichage: EtatMoteur
   effets: EffetHeureFixe[]
+  effetsSansAffichage: EffetHeureFixe[]
   afficher: AffichageDemande | null
   bloqueRecurrents: boolean
-  bientot: boolean
 }
 
 function resoudreHeureFixe(
@@ -580,7 +830,7 @@ function resoudreHeureFixe(
   enVeille: boolean
 ): ResolutionHeure {
   const maintenantMs = entree.maintenant.getTime()
-  const retenu = !entree.sessionOuverte || enVeille || entree.pleinEcran === true
+  const retenu = !entree.sessionOuverte || enVeille
   const dedans: OccurrenceHeure[] = []
   const avant: OccurrenceHeure[] = []
   const effets: EffetHeureFixe[] = []
@@ -595,11 +845,13 @@ function resoudreHeureFixe(
         continue
       }
       const fin = occurrence.prevuMs + HEURE_FIXE_RETARD_MAX_MS
+      const accalmieEngagee =
+        delta === 0 && etat.attente?.genre === 'accalmie' && etat.attente.rappelId === rappel.id
       if (maintenantMs < occurrence.prevuMs) {
         if (delta === 0) {
           avant.push(occurrence)
         }
-      } else if (maintenantMs < fin) {
+      } else if (maintenantMs < fin || accalmieEngagee) {
         dedans.push(occurrence)
       } else if (delta === 0) {
         effets.push(effetDe(rappel, occurrence.cle))
@@ -614,35 +866,38 @@ function resoudreHeureFixe(
     dedans.length > 0
 
   if (!principal) {
-    return {
+    return resolutionFermee({
       etat: { ...etat, heureFixeDifferee: null },
       effets,
       afficher: null,
-      bloqueRecurrents: !retenu && proche,
-      bientot: proche
-    }
+      bloqueRecurrents: !retenu && proche
+    })
   }
 
   if (retenu) {
-    return { etat, effets, afficher: null, bloqueRecurrents: false, bientot: true }
+    return resolutionFermee({
+      etat,
+      effets,
+      afficher: null,
+      bloqueRecurrents: false
+    })
   }
 
   if (!peutAfficher(etat, maintenantMs)) {
-    return {
+    return resolutionFermee({
       etat: {
         ...etat,
         heureFixeDifferee: { rappelId: principal.rappel.id, pasAvantMs: null }
       },
       effets,
       afficher: null,
-      bloqueRecurrents: true,
-      bientot: true
-    }
+      bloqueRecurrents: true
+    })
   }
 
   const differee = etat.heureFixeDifferee
   if (differee?.rappelId === principal.rappel.id && differee.pasAvantMs === null) {
-    return {
+    return resolutionFermee({
       etat: {
         ...etat,
         heureFixeDifferee: {
@@ -652,16 +907,20 @@ function resoudreHeureFixe(
       },
       effets,
       afficher: null,
-      bloqueRecurrents: true,
-      bientot: true
-    }
+      bloqueRecurrents: true
+    })
   }
   if (
     differee?.rappelId === principal.rappel.id &&
     differee.pasAvantMs !== null &&
     maintenantMs < differee.pasAvantMs
   ) {
-    return { etat, effets, afficher: null, bloqueRecurrents: true, bientot: true }
+    return resolutionFermee({
+      etat,
+      effets,
+      afficher: null,
+      bloqueRecurrents: true
+    })
   }
 
   const charge = chargeInitiale(principal.rappel, reglages)
@@ -680,10 +939,21 @@ function resoudreHeureFixe(
       notification,
       heureFixeDifferee: suivant ? { rappelId: suivant.rappel.id, pasAvantMs: null } : null
     },
+    etatSansAffichage: etat,
     effets: [...effets, effetDe(principal.rappel, principal.cle)],
+    effetsSansAffichage: effets,
     afficher: { rappelId: principal.rappel.id, delaiMs: notification.delaiMs, charge },
-    bloqueRecurrents: false,
-    bientot: true
+    bloqueRecurrents: false
+  }
+}
+
+function resolutionFermee(
+  resolution: Omit<ResolutionHeure, 'etatSansAffichage' | 'effetsSansAffichage'>
+): ResolutionHeure {
+  return {
+    ...resolution,
+    etatSansAffichage: resolution.etat,
+    effetsSansAffichage: resolution.effets
   }
 }
 

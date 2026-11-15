@@ -57,6 +57,11 @@ export function Menu(): React.JSX.Element {
               {remplir(textes.menu.echeance, echeance)}
             </p>
           ))}
+          {etat.pauseSpontanee ? (
+            <p className="menu-echeance">
+              {remplir(textes.menu.leve, { heure: etat.pauseSpontanee.heure })}
+            </p>
+          ) : null}
         </section>
         <div className="menu-actions">
           {sequences ? (

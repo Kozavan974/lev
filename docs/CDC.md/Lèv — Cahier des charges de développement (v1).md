@@ -333,7 +333,7 @@ Lèv vit dans la zone de notification de Windows, près de l'horloge, et reste s
 
 - **En veille** : l'icône passe en gris (#7b7f8c), L et bulle en blanc.
 - **Infobulle** au survol : « Lèv · prochaine pause à 10h40 », ou « Lèv · en veille jusqu'à 11h00 ».
-- **Clic gauche** : ouvre le menu (section 7.2). **Clic droit** : menu système minimal avec « Mes rappels » et « Quitter ».
+- **Clic gauche** : ouvre le menu (section 7.2). **Clic droit** : menu système natif, texte seul, sans icône. Dans l'ordre : « Faire une pause maintenant » (la notification « bouger », tout de suite) ; « Mettre en veille pendant 1 heure », remplacé par « Reprendre les rappels » lorsque Lèv est déjà en veille ; un séparateur ; « Mes rappels » (fenêtre Application) ; « À propos » (fenêtre Application, en attendant l'écran du lot 5) ; un séparateur ; « Quitter ».
 - Les icônes sont des fichiers `.ico` contenant les tailles 16, 20, 24, 32 et 48 px. Les quatre fichiers sont déjà fournis : tray-calme.ico, tray-bientot.ico, tray-veille.ico, et lev.ico pour l'application (jusqu'à 256 px). À 16 et 24 px, on utilise le dessin simplifié du logo (section 9).
 - Aucun clignotement, aucune animation de l'icône dans la barre des tâches.
 
