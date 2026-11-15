@@ -89,9 +89,18 @@ function appliquer(
     case 'activer':
       return remplacer(reglages, action.id, (rappel) => ({ ...rappel, actif: action.actif }))
     case 'frequence':
-      return remplacer(reglages, action.id, (rappel) =>
-        rappel.mode === 'recurrent' ? { ...rappel, frequenceMin: action.frequenceMin } : null
-      )
+      return remplacer(reglages, action.id, (rappel) => {
+        if (rappel.mode !== 'recurrent') {
+          return null
+        }
+        const suivant: Rappel = {
+          ...rappel,
+          frequenceMin: action.frequenceMin,
+          reportsDeSuite: 0
+        }
+        delete suivant.neRienProposerAvant
+        return suivant
+      })
     case 'heure':
       return remplacer(reglages, action.id, (rappel) =>
         rappel.mode === 'heure'

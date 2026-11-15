@@ -1,5 +1,6 @@
 export {
   FREQUENCES,
+  frequenceSuperieure,
   type DureeRespiration,
   type Frequence,
   type Jours,

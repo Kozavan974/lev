@@ -1,5 +1,11 @@
 import { jourDeRepetition, jourLocal } from '../../partage/format'
-import type { Rappel, Reglages, TypeRappel } from '../modeles'
+import {
+  frequenceSuperieure,
+  type Frequence,
+  type Rappel,
+  type Reglages,
+  type TypeRappel
+} from '../modeles'
 import {
   ACCALMIE_MAX_MS,
   ACCALMIE_SECONDES,
@@ -16,7 +22,9 @@ import {
   PAUSE_BOUGER_MS,
   PAUSE_SPONTANEE_SEC,
   REPORT_CINQ_MIN_MS,
-  SEUIL_DEVERROUILLAGE_MS
+  REPORTS_AVANT_QUESTION_RYTHME,
+  SEUIL_DEVERROUILLAGE_MS,
+  SILENCE_QUESTION_RYTHME_MS
 } from './constantes'
 import { estDansHoraires } from './horaires'
 import {
@@ -49,7 +57,7 @@ export interface DetailSequence {
 }
 
 export interface NotificationEnCours {
-  genre: 'rappel' | 'debutSequence' | 'finSequence' | 'finPause'
+  genre: 'rappel' | 'rythme' | 'debutSequence' | 'finSequence' | 'finPause'
   rappelId: string
   depuisMs: number
   delaiMs: number
@@ -152,13 +160,25 @@ export type ReponseRappel =
   | 'dans5min'
   | 'plusTard'
   | 'aucune'
+  | 'ouiRythme'
+  | 'garderRythme'
   | 'cestReparti'
   | 'encore5min'
   | 'arreterSequences'
 
+/** Écriture du compteur de reports, de la fréquence, ou de la date de silence. */
+export interface EffetAdaptation {
+  rappelId: string
+  reportsDeSuite: number
+  frequenceMin?: Frequence
+  /** null retire la date. Une chaîne la pose. Absent : la date reste. */
+  neRienProposerAvant?: string | null
+}
+
 export interface ResultatReponse {
   etat: EtatMoteur
   message: 'jeLeFais' | 'dans5min' | 'plusTard' | null
+  effet?: EffetAdaptation
 }
 
 const ORDRE_TYPE: Record<TypeRappel, number> = {
@@ -350,6 +370,27 @@ export function poserPauseImmediate(
   }
 }
 
+export function appliquerAdaptation(reglages: Reglages, effet: EffetAdaptation): Reglages {
+  return {
+    ...reglages,
+    rappels: reglages.rappels.map((rappel) => {
+      if (rappel.id !== effet.rappelId) {
+        return rappel
+      }
+      const suivant: Rappel = { ...rappel, reportsDeSuite: effet.reportsDeSuite }
+      if (effet.frequenceMin !== undefined) {
+        suivant.frequenceMin = effet.frequenceMin
+      }
+      if (effet.neRienProposerAvant === null) {
+        delete suivant.neRienProposerAvant
+      } else if (effet.neRienProposerAvant !== undefined) {
+        suivant.neRienProposerAvant = effet.neRienProposerAvant
+      }
+      return suivant
+    })
+  }
+}
+
 export function appliquerEffets(reglages: Reglages, effets: readonly EffetHeureFixe[]): Reglages {
   if (effets.length === 0) {
     return reglages
@@ -392,6 +433,12 @@ export function repondre(
   if (notification.genre === 'finPause') {
     return repondreFinPause(etat, reponse, maintenantMs)
   }
+  if (notification.genre === 'rythme') {
+    return repondreRythme(etat, reglages, reponse, maintenantMs)
+  }
+  if (reponse === 'ouiRythme' || reponse === 'garderRythme') {
+    return { etat, message: null }
+  }
   const rappel = reglages.rappels.find((candidat) => candidat.id === notification.rappelId)
   const chargeEffective = charge ?? notification.charge
   const compteurs: Record<string, number> = { ...etat.compteursMs }
@@ -432,6 +479,7 @@ export function repondre(
     }
   }
 
+  const effet = effetReport(rappel, reglages, reponse)
   return {
     etat: {
       ...etat,
@@ -441,7 +489,8 @@ export function repondre(
       bloqueJusquaMs: bloque,
       notification: null
     },
-    message
+    message,
+    ...(effet ? { effet } : {})
   }
 }
 
@@ -697,15 +746,17 @@ function choisir(
     report = null
   }
 
+  const rythme = !meilleurDu.snooze && questionDue(meilleurDu.rappel, reglages, maintenantMs)
   const delaiMs =
-    meilleurDu.rappel.type === 'yeux'
-      ? AFFICHAGE_NOTIFICATION_YEUX_MS
-      : AFFICHAGE_NOTIFICATION_AUTRE_MS
+    rythme || meilleurDu.rappel.type !== 'yeux'
+      ? AFFICHAGE_NOTIFICATION_AUTRE_MS
+      : AFFICHAGE_NOTIFICATION_YEUX_MS
   const notification = notificationRappel(
     meilleurDu.rappel.id,
     maintenantMs,
     delaiMs,
-    meilleurDu.charge
+    meilleurDu.charge,
+    rythme ? 'rythme' : 'rappel'
   )
   let serie = etat.serie
   if (serie && meilleurDu.rappel.type === 'bouger' && bougerDuMilieu(serie, maintenantMs)) {
@@ -1199,10 +1250,11 @@ function notificationRappel(
   rappelId: string,
   depuisMs: number,
   delaiMs: number,
-  charge: ChargeNotification
+  charge: ChargeNotification,
+  genre: 'rappel' | 'rythme' = 'rappel'
 ): NotificationEnCours {
   return {
-    genre: 'rappel',
+    genre,
     rappelId,
     depuisMs,
     delaiMs,
@@ -1210,6 +1262,103 @@ function notificationRappel(
     resteAffichee: false,
     sequence: null
   }
+}
+
+function questionDue(rappel: Rappel, reglages: Reglages, maintenantMs: number): boolean {
+  if (!reglages.options.proposerEspacer || rappel.mode !== 'recurrent') {
+    return false
+  }
+  const frequence = rappel.frequenceMin
+  if (frequence === undefined || frequenceSuperieure(frequence) === null) {
+    return false
+  }
+  if (rappel.reportsDeSuite < REPORTS_AVANT_QUESTION_RYTHME) {
+    return false
+  }
+  return !silenceEnCours(rappel, maintenantMs)
+}
+
+function silenceEnCours(rappel: Rappel, maintenantMs: number): boolean {
+  if (!rappel.neRienProposerAvant) {
+    return false
+  }
+  const fin = new Date(rappel.neRienProposerAvant).getTime()
+  return Number.isFinite(fin) && fin > maintenantMs
+}
+
+function effetReport(
+  rappel: Rappel | undefined,
+  reglages: Reglages,
+  reponse: ReponseRappel
+): EffetAdaptation | undefined {
+  if (!rappel || rappel.mode !== 'recurrent') {
+    return undefined
+  }
+  if (reponse === 'jeLeFais') {
+    return rappel.reportsDeSuite === 0 ? undefined : { rappelId: rappel.id, reportsDeSuite: 0 }
+  }
+  if (!reglages.options.proposerEspacer) {
+    return undefined
+  }
+  if (reponse === 'plusTard') {
+    return { rappelId: rappel.id, reportsDeSuite: rappel.reportsDeSuite + 1 }
+  }
+  if (reponse === 'aucune' && rappel.type !== 'yeux') {
+    return { rappelId: rappel.id, reportsDeSuite: rappel.reportsDeSuite + 1 }
+  }
+  return undefined
+}
+
+function repondreRythme(
+  etat: EtatMoteur,
+  reglages: Reglages,
+  reponse: ReponseRappel,
+  maintenantMs: number
+): ResultatReponse {
+  const notification = etat.notification
+  if (!notification) {
+    return { etat, message: null }
+  }
+  const rappel = reglages.rappels.find((candidat) => candidat.id === notification.rappelId)
+  const ferme: EtatMoteur = { ...etat, notification: null }
+  if (!rappel || rappel.frequenceMin === undefined) {
+    return { etat: ferme, message: null }
+  }
+  if (reponse === 'ouiRythme') {
+    const suivante = frequenceSuperieure(rappel.frequenceMin)
+    if (!suivante) {
+      return { etat: ferme, message: null }
+    }
+    return {
+      etat: { ...ferme, compteursMs: { ...etat.compteursMs, [rappel.id]: 0 } },
+      message: null,
+      effet: {
+        rappelId: rappel.id,
+        reportsDeSuite: 0,
+        frequenceMin: suivante,
+        neRienProposerAvant: null
+      }
+    }
+  }
+  if (reponse === 'garderRythme') {
+    return {
+      etat: { ...ferme, compteursMs: { ...etat.compteursMs, [rappel.id]: 0 } },
+      message: null,
+      effet: {
+        rappelId: rappel.id,
+        reportsDeSuite: rappel.reportsDeSuite,
+        neRienProposerAvant: new Date(maintenantMs + SILENCE_QUESTION_RYTHME_MS).toISOString()
+      }
+    }
+  }
+  if (reponse === 'aucune') {
+    return {
+      etat: ferme,
+      message: null,
+      effet: { rappelId: rappel.id, reportsDeSuite: 0 }
+    }
+  }
+  return { etat, message: null }
 }
 
 function notificationDeSequence(serie: SerieEnCours, maintenantMs: number): NotificationEnCours {

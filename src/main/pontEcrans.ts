@@ -13,6 +13,7 @@ import {
 } from '../preload/contrat'
 import { executerAction, type Annulation } from './actionsReglages'
 import { fermerApplication, fenetreApplication, ouvrirApplication } from './applicationFenetre'
+import { appliquerSourceTheme } from './theme'
 import {
   arreterSequences,
   demanderPauseMaintenant,
@@ -113,6 +114,9 @@ function agir(action: ActionEcran): void {
   }
   annulation = resultat.annulation
   enregistrerReglages(resultat.reglages)
+  if (action.type === 'theme') {
+    appliquerSourceTheme(resultat.reglages.theme)
+  }
   if (action.type === 'sequences' && action.actif === false) {
     arreterSequences()
     return

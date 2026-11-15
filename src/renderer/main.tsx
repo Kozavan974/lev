@@ -7,6 +7,16 @@ import './shared/base.css'
 
 type Route = 'notification' | 'menu' | 'app'
 
+function poserTheme(sombre: boolean): void {
+  if (sombre) {
+    document.documentElement.dataset.theme = 'sombre'
+  } else {
+    delete document.documentElement.dataset.theme
+  }
+}
+
+poserTheme(window.matchMedia('(prefers-color-scheme: dark)').matches)
+
 function routeDepuisHash(hash: string): Route {
   if (hash === '#/notification') {
     return 'notification'
@@ -27,6 +37,18 @@ function Racine(): React.JSX.Element {
     window.addEventListener('hashchange', appliquer)
     return () => {
       window.removeEventListener('hashchange', appliquer)
+    }
+  }, [])
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const appliquer = (): void => {
+      poserTheme(media.matches)
+    }
+    appliquer()
+    media.addEventListener('change', appliquer)
+    return () => {
+      media.removeEventListener('change', appliquer)
     }
   }, [])
 

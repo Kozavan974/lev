@@ -125,6 +125,7 @@
       "nePasDeranger": "Ne pas me déranger en plein écran ou pendant une présentation",
       "proposerEspacer": "Me proposer d'espacer un rappel quand son rythme ne me convient pas",
       "mouvementsAssis": "Préférer des mouvements discrets, à faire assis",
+      "son": "Jouer un son doux avec chaque rappel",
       "lancerAuDemarrage": "Lancer Lèv au démarrage de l'ordinateur"
     }
   },
@@ -153,6 +154,36 @@
       "jeLeFais": "Je le fais",
       "dans5min": "Dans 5 min",
       "plusTard": "Plus tard"
+    },
+    "rythme": {
+      "titre": "Ce rythme te convient ?",
+      "phrase": "Je peux te proposer « {nom} » {proposee}, plutôt que {actuelle}.",
+      "oui": "Oui, {courte}",
+      "garder": "Garder ce rythme",
+      "proposee": {
+        "20": "toutes les 20 minutes",
+        "30": "toutes les 30 minutes",
+        "45": "toutes les 45 minutes",
+        "60": "toutes les heures",
+        "120": "toutes les 2 heures",
+        "240": "toutes les 4 heures"
+      },
+      "actuelle": {
+        "10": "toutes les 10",
+        "20": "toutes les 20",
+        "30": "toutes les 30",
+        "45": "toutes les 45",
+        "60": "toutes les heures",
+        "120": "toutes les 2 heures"
+      },
+      "courte": {
+        "20": "toutes les 20 min",
+        "30": "toutes les 30 min",
+        "45": "toutes les 45 min",
+        "60": "toutes les heures",
+        "120": "toutes les 2 heures",
+        "240": "toutes les 4 heures"
+      }
     },
     "messages": {
       "jeLeFais": "Chaque petite pause compte.",

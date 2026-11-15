@@ -36,6 +36,12 @@ html[data-route='menu'] body {
   margin: 0;
 }
 
+.menu-annonces {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-4);
+}
+
 .menu-pauses h2,
 .menu-veille-titre {
   font-size: var(--legende);

@@ -75,17 +75,19 @@ export function Menu(): React.JSX.Element {
         <Marque titre={textes.application.nom} detail={textes.menu.devise} niveau="menu" />
         <section className="menu-pauses">
           <h2>{textes.menu.pauses}</h2>
-          {ligneSequence(etat.sequence)}
-          {etat.echeances.map((echeance) => (
-            <p key={`${echeance.nom}-${echeance.heure}`} className="menu-echeance">
-              {remplir(textes.menu.echeance, echeance)}
-            </p>
-          ))}
-          {etat.pauseSpontanee ? (
-            <p className="menu-echeance">
-              {remplir(textes.menu.leve, { heure: etat.pauseSpontanee.heure })}
-            </p>
-          ) : null}
+          <div className="menu-annonces" aria-live="polite">
+            {ligneSequence(etat.sequence)}
+            {etat.echeances.map((echeance) => (
+              <p key={`${echeance.nom}-${echeance.heure}`} className="menu-echeance">
+                {remplir(textes.menu.echeance, echeance)}
+              </p>
+            ))}
+            {etat.pauseSpontanee ? (
+              <p className="menu-echeance">
+                {remplir(textes.menu.leve, { heure: etat.pauseSpontanee.heure })}
+              </p>
+            ) : null}
+          </div>
         </section>
         <div className="menu-actions">
           {sequences ? (

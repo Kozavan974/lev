@@ -1,5 +1,5 @@
 import { app, Menu } from 'electron'
-import { detruireApplication } from './applicationFenetre'
+import { appliquerFondApplication, detruireApplication } from './applicationFenetre'
 import {
   arreterBoucle,
   arreterSequences,
@@ -18,7 +18,8 @@ import {
   ouvrirSiPremierLancement,
   reprendreRappels
 } from './pontEcrans'
-import { initialiserStore } from './store'
+import { initialiserStore, lireReglages } from './store'
+import { appliquerSourceTheme, ecouterTheme } from './theme'
 import { creerZoneNotification, detruireZoneNotification } from './tray'
 
 app.setName('Lèv')
@@ -37,7 +38,11 @@ if (!app.requestSingleInstanceLock()) {
     // Fermer une fenêtre laisse Lèv dans la zone de notification.
   })
 
+  let retirerTheme: (() => void) | null = null
+
   app.on('before-quit', () => {
+    retirerTheme?.()
+    retirerTheme = null
     arreterBoucle()
     detruireMenu()
     detruireApplication()
@@ -49,6 +54,8 @@ if (!app.requestSingleInstanceLock()) {
     .then(() => {
       Menu.setApplicationMenu(null)
       initialiserStore()
+      appliquerSourceTheme(lireReglages().theme)
+      retirerTheme = ecouterTheme(appliquerFondApplication)
       installerPolitiqueContenu()
       creerZoneNotification({
         clicGauche: basculerMenu,

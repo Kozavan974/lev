@@ -50,6 +50,37 @@ html[data-route='notification'] #racine {
   color: var(--action);
 }
 
+.notification-logo.logo-anime .logo-bulle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bulle-logo 3.2s ease 1;
+}
+
+@keyframes bulle-logo {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  40% {
+    transform: translateY(calc(var(--espace-4) * -1));
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(calc(var(--espace-4) * -1));
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-logo.logo-anime .logo-bulle {
+    animation: none !important;
+  }
+}
+
 .notification-entete {
   display: flex;
   align-items: flex-start;

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import textes from '../../content/fr.json'
 import type { ReponseBouton, VueMessage, VueNotification } from '../../preload/contrat'
 import { Logo } from '../shared/Logo'
+import { jouerPourCycle } from '../shared/son'
 import { PictoBouger, PictoLibre, PictoPosture, PictoYeux } from '../shared/Pictogrammes'
 import { Parcours } from './Parcours'
 import './notification.css'
@@ -22,6 +23,7 @@ export function Notification(): React.JSX.Element {
   const ignoreExpiration = useRef(false)
   const generation = useRef(0)
   const repondreRef = useRef<(reponse: ReponseBouton) => void>(() => undefined)
+  const expirerRef = useRef<() => void>(() => undefined)
   const suspensionRef = useRef<(origine: 'survol' | 'focus', actif: boolean) => void>(
     () => undefined
   )
@@ -94,13 +96,23 @@ export function Notification(): React.JSX.Element {
     },
     [arreterDisparition]
   )
+  const expirer = useCallback((): void => {
+    if (!vueRef.current || messageRef.current || ignoreExpiration.current) {
+      return
+    }
+    ignoreExpiration.current = true
+    arreterDisparition()
+    window.lev.expirer()
+    setSortie(true)
+  }, [arreterDisparition])
   useEffect(() => {
     vueRef.current = vue
     messageRef.current = message
     sortieRef.current = sortie
     repondreRef.current = repondre
+    expirerRef.current = expirer
     suspensionRef.current = poserSuspension
-  }, [vue, message, sortie, repondre, poserSuspension])
+  }, [vue, message, sortie, repondre, expirer, poserSuspension])
 
   useEffect(() => {
     const retirerVue = window.lev.surAffichage((recue) => {
@@ -110,6 +122,7 @@ export function Notification(): React.JSX.Element {
       setSortie(false)
       setMessage(null)
       setVue(recue)
+      jouerPourCycle(recue.cycle, recue.son)
     })
     const retirerMessage = window.lev.surMessage((recu) => {
       ignoreExpiration.current = true
@@ -209,6 +222,10 @@ export function Notification(): React.JSX.Element {
         return
       }
       evenement.preventDefault()
+      if (vueRef.current?.boutons === 'rythme') {
+        expirerRef.current()
+        return
+      }
       repondreRef.current('plusTard')
     }
     window.addEventListener('focus', gagner)
@@ -252,7 +269,7 @@ export function Notification(): React.JSX.Element {
               : undefined
           }
         >
-          <Logo />
+          <Logo key={vue?.cycle ?? 0} variante="simplifie" animer />
           {message ? (
             <p className="notification-message" role="status">
               {message.texte}
@@ -261,7 +278,7 @@ export function Notification(): React.JSX.Element {
             <>
               <header className="notification-entete">
                 <span className="notification-picto">{picto(vue.type)}</span>
-                <div className="notification-texte">
+                <div className="notification-texte" aria-live="polite">
                   {vue.surtitre ? <p className="notification-surtitre">{vue.surtitre}</p> : null}
                   <h1 id="notification-titre" className="notification-titre">
                     {vue.titre}
@@ -315,6 +332,24 @@ export function Notification(): React.JSX.Element {
                     onClick={() => repondre('encore5min')}
                   >
                     {textes.notification.finPause.encore}
+                  </button>
+                </div>
+              ) : null}
+              {vue.boutons === 'rythme' ? (
+                <div className="notification-actions">
+                  <button
+                    type="button"
+                    className="bouton bouton-principal"
+                    onClick={() => repondre('ouiRythme')}
+                  >
+                    {vue.boutonOui}
+                  </button>
+                  <button
+                    type="button"
+                    className="bouton bouton-secondaire"
+                    onClick={() => repondre('garderRythme')}
+                  >
+                    {vue.boutonGarder}
                   </button>
                 </div>
               ) : null}

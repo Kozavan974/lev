@@ -23,12 +23,19 @@ export const CANAL_NOTIFICATION = {
 } as const
 
 export type ReponseBouton =
-  'jeLeFais' | 'dans5min' | 'plusTard' | 'cestReparti' | 'encore5min' | 'arreterSequences'
+  | 'jeLeFais'
+  | 'dans5min'
+  | 'plusTard'
+  | 'ouiRythme'
+  | 'garderRythme'
+  | 'cestReparti'
+  | 'encore5min'
+  | 'arreterSequences'
 
 export type TypeVueNotification =
   'yeux' | 'bouger' | 'posture' | 'libre' | 'debutSequence' | 'finSequence' | 'finPause'
 
-export type BoutonsNotification = 'trois' | 'reprise' | 'aucun'
+export type BoutonsNotification = 'trois' | 'reprise' | 'aucun' | 'rythme'
 
 export interface ParcoursSequence {
   faits: number
@@ -48,6 +55,10 @@ export interface VueNotification {
   parcours: ParcoursSequence | null
   legende: string | null
   boutons: BoutonsNotification
+  boutonOui: string | null
+  boutonGarder: string | null
+  /** Vrai quand l'option son est cochée : la carte joue le son à son apparition. */
+  son: boolean
   lienArret: boolean
   lienPoste: boolean
   resteAffichee: boolean
@@ -180,6 +191,8 @@ export function estReponseBouton(valeur: unknown): valeur is ReponseBouton {
     valeur === 'jeLeFais' ||
     valeur === 'dans5min' ||
     valeur === 'plusTard' ||
+    valeur === 'ouiRythme' ||
+    valeur === 'garderRythme' ||
     valeur === 'cestReparti' ||
     valeur === 'encore5min' ||
     valeur === 'arreterSequences'
@@ -202,7 +215,8 @@ export function estVueNotification(valeur: unknown): valeur is VueNotification {
     (valeur.surtitre === null || typeof valeur.surtitre === 'string') &&
     estParcours(valeur.parcours) &&
     (valeur.legende === null || typeof valeur.legende === 'string') &&
-    (valeur.boutons === 'trois' || valeur.boutons === 'reprise' || valeur.boutons === 'aucun') &&
+    boutonsCoherents(valeur) &&
+    typeof valeur.son === 'boolean' &&
     typeof valeur.lienArret === 'boolean' &&
     typeof valeur.lienPoste === 'boolean' &&
     typeof valeur.resteAffichee === 'boolean'
@@ -327,6 +341,16 @@ export function estEtatEcran(valeur: unknown): valeur is EtatEcran {
     return false
   }
   return estBandeau(valeur.bandeau) && estSequence(valeur.sequence)
+}
+
+function boutonsCoherents(valeur: Record<string, unknown>): boolean {
+  if (valeur.boutons === 'rythme') {
+    return typeof valeur.boutonOui === 'string' && typeof valeur.boutonGarder === 'string'
+  }
+  if (valeur.boutons === 'trois' || valeur.boutons === 'reprise' || valeur.boutons === 'aucun') {
+    return valeur.boutonOui === null && valeur.boutonGarder === null
+  }
+  return false
 }
 
 function estParcours(valeur: unknown): valeur is { faits: number; total: number } | null {

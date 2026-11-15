@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { formaterInstant, jourLocal } from '../../partage/format'
-import type { Rappel, Reglages, Repetition, TypeRappel } from '../modeles'
+import type { Frequence, Rappel, Reglages, Repetition, TypeRappel } from '../modeles'
 import { composerVue } from '../composerNotification'
 import { reglagesParDefaut } from '../reglages'
 import {
@@ -14,10 +14,12 @@ import {
   LIGNE_PAUSE_SPONTANEE_MS,
   MESSAGE_REPONSE_MS,
   PAUSE_BOUGER_MS,
-  PAUSE_SPONTANEE_SEC
+  PAUSE_SPONTANEE_SEC,
+  SILENCE_QUESTION_RYTHME_MS
 } from './constantes'
 import { estDansHoraires, finVeilleDemain } from './horaires'
 import {
+  appliquerAdaptation,
   appliquerEffets,
   arreterSerie,
   creerEtat,
@@ -1148,6 +1150,242 @@ describe('séquences de travail', () => {
     expect(expiree.etat.compteursMs[yeux.id]).toBe(5 * MINUTE)
   })
 })
+
+describe('le rappel qui s’adapte', () => {
+  it('trois « Plus tard » de suite déclenchent la question ; « Garder ce rythme » la suspend 7 jours', () => {
+    let reglages = seulement(['bouger'])
+    const bouger = parType(reglages, 'bouger')
+    let instant = au(16, 8, 0)
+    let etat = amorcer(reglages, instant)
+
+    for (let fois = 1; fois <= 3; fois += 1) {
+      instant = new Date(instant.getTime() + 30 * MINUTE)
+      const du = evaluer(etat, reglages, entree(instant))
+      expect(du.etat.notification?.genre).toBe('rappel')
+      const reponse = repondre(du.etat, reglages, 'plusTard', instant)
+      expect(reponse.effet?.reportsDeSuite).toBe(fois)
+      if (!reponse.effet) {
+        throw new Error('Effet de report manquant.')
+      }
+      reglages = appliquerAdaptation(reglages, reponse.effet)
+      etat = reponse.etat
+    }
+
+    instant = new Date(instant.getTime() + 30 * MINUTE)
+    const question = evaluer(etat, reglages, entree(instant))
+    expect(question.etat.notification?.genre).toBe('rythme')
+    expect(question.afficher?.delaiMs).toBe(AFFICHAGE_NOTIFICATION_AUTRE_MS)
+    const vue = question.etat.notification
+      ? composerVue(reglages, question.etat.notification, 1)
+      : null
+    expect(vue?.titre).toBe('Ce rythme te convient ?')
+    expect(vue?.phrase).toBe(
+      'Je peux te proposer « Marcher 5 minutes » toutes les 45 minutes, plutôt que toutes les 30.'
+    )
+    expect(vue?.boutonOui).toBe('Oui, toutes les 45 min')
+    expect(vue?.boutonGarder).toBe('Garder ce rythme')
+    expect(vue?.boutons).toBe('rythme')
+
+    const garde = repondre(question.etat, reglages, 'garderRythme', instant)
+    expect(garde.message).toBeNull()
+    expect(garde.etat.compteursMs[bouger.id]).toBe(0)
+    expect(garde.effet?.frequenceMin).toBeUndefined()
+    expect(garde.effet?.reportsDeSuite).toBe(3)
+    expect(garde.effet?.neRienProposerAvant).toBe(
+      new Date(instant.getTime() + SILENCE_QUESTION_RYTHME_MS).toISOString()
+    )
+    if (!garde.effet) {
+      throw new Error('Effet de silence manquant.')
+    }
+    reglages = appliquerAdaptation(reglages, garde.effet)
+    expect(parType(reglages, 'bouger').frequenceMin).toBe(30)
+
+    const pendant = new Date(instant.getTime() + 30 * MINUTE)
+    const normal = evaluer(garde.etat, reglages, entree(pendant))
+    expect(normal.etat.notification?.genre).toBe('rappel')
+    const ferme = repondre(normal.etat, reglages, 'plusTard', pendant)
+    if (!ferme.effet) {
+      throw new Error('Effet de report manquant.')
+    }
+    reglages = appliquerAdaptation(reglages, ferme.effet)
+    const apres = new Date(instant.getTime() + SILENCE_QUESTION_RYTHME_MS + 1000)
+    const retour = evaluer(ferme.etat, reglages, entree(apres))
+    expect(retour.etat.notification?.genre).toBe('rythme')
+  })
+
+  it('« Oui » applique la fréquence supérieure et remet les reports à zéro', () => {
+    let reglages = avecReports(seulement(['bouger']), 'bouger', 3)
+    const bouger = parType(reglages, 'bouger')
+    const instant = au(16, 10, 0)
+    const question = evaluer(echeance(reglages, instant), reglages, entree(instant))
+    expect(question.etat.notification?.genre).toBe('rythme')
+    const oui = repondre(question.etat, reglages, 'ouiRythme', instant)
+    expect(oui.etat.compteursMs[bouger.id]).toBe(0)
+    expect(oui.effet).toMatchObject({
+      reportsDeSuite: 0,
+      frequenceMin: 45,
+      neRienProposerAvant: null
+    })
+    if (!oui.effet) {
+      throw new Error('Effet manquant.')
+    }
+    reglages = appliquerAdaptation(reglages, oui.effet)
+    expect(parType(reglages, 'bouger')).toMatchObject({ frequenceMin: 45, reportsDeSuite: 0 })
+    expect(parType(reglages, 'bouger').neRienProposerAvant).toBeUndefined()
+  })
+
+  it('sans réponse, la question ne consomme pas l’échéance et les reports repartent à zéro', () => {
+    let reglages = avecReports(seulement(['bouger']), 'bouger', 3)
+    const bouger = parType(reglages, 'bouger')
+    const instant = au(16, 10, 0)
+    const question = evaluer(echeance(reglages, instant), reglages, entree(instant))
+    const compteur = question.etat.compteursMs[bouger.id]
+    const sans = repondre(question.etat, reglages, 'aucune', instant)
+    expect(sans.message).toBeNull()
+    expect(sans.etat.notification).toBeNull()
+    expect(sans.etat.compteursMs[bouger.id]).toBe(compteur)
+    expect(sans.effet?.reportsDeSuite).toBe(0)
+    if (!sans.effet) {
+      throw new Error('Effet manquant.')
+    }
+    reglages = appliquerAdaptation(reglages, sans.effet)
+    const suite = evaluer(sans.etat, reglages, entree(new Date(instant.getTime() + PAS)))
+    expect(suite.etat.notification?.genre).toBe('rappel')
+    expect(parType(reglages, 'bouger').frequenceMin).toBe(30)
+  })
+
+  it('l’absence de réponse des yeux ne compte pas, un « Plus tard » compte', () => {
+    let reglages = seulement(['yeux'])
+    const yeux = parType(reglages, 'yeux')
+    let instant = au(16, 8, 0)
+    let etat = amorcer(reglages, instant)
+    instant = new Date(instant.getTime() + 20 * MINUTE)
+    const du = evaluer(etat, reglages, entree(instant))
+    const ignoree = repondre(du.etat, reglages, 'aucune', instant)
+    expect(ignoree.effet).toBeUndefined()
+    etat = ignoree.etat
+
+    for (let fois = 1; fois <= 3; fois += 1) {
+      instant = new Date(instant.getTime() + 20 * MINUTE)
+      const suivant = evaluer(etat, reglages, entree(instant))
+      expect(suivant.etat.notification?.genre).toBe('rappel')
+      expect(suivant.afficher?.delaiMs).toBe(AFFICHAGE_NOTIFICATION_YEUX_MS)
+      const reponse = repondre(suivant.etat, reglages, 'plusTard', instant)
+      if (!reponse.effet) {
+        throw new Error('Effet de report manquant.')
+      }
+      reglages = appliquerAdaptation(reglages, reponse.effet)
+      etat = reponse.etat
+    }
+    instant = new Date(instant.getTime() + 20 * MINUTE)
+    const question = evaluer(etat, reglages, entree(instant))
+    expect(question.etat.notification?.genre).toBe('rythme')
+    expect(question.afficher?.delaiMs).toBe(AFFICHAGE_NOTIFICATION_AUTRE_MS)
+    expect(parType(reglages, 'yeux').id).toBe(yeux.id)
+  })
+
+  it('« Dans 5 min » ne compte pas et ne remet pas la série à zéro', () => {
+    let reglages = avecReports(seulement(['bouger']), 'bouger', 2)
+    const bouger = parType(reglages, 'bouger')
+    const instant = au(16, 10, 0)
+    const du = evaluer(echeance(reglages, instant), reglages, entree(instant))
+    const reporte = repondre(du.etat, reglages, 'dans5min', instant)
+    expect(reporte.effet).toBeUndefined()
+    expect(parType(reglages, 'bouger').reportsDeSuite).toBe(2)
+    const retour = evaluer(reporte.etat, reglages, entree(new Date(instant.getTime() + 5 * MINUTE)))
+    expect(retour.etat.notification?.genre).toBe('rappel')
+    const plusTard = repondre(
+      retour.etat,
+      reglages,
+      'plusTard',
+      new Date(instant.getTime() + 5 * MINUTE)
+    )
+    expect(plusTard.effet?.reportsDeSuite).toBe(3)
+    if (!plusTard.effet) {
+      throw new Error('Effet de report manquant.')
+    }
+    reglages = appliquerAdaptation(reglages, plusTard.effet)
+    const question = evaluer(
+      plusTard.etat,
+      reglages,
+      entree(new Date(instant.getTime() + 35 * MINUTE))
+    )
+    expect(question.etat.notification?.genre).toBe('rythme')
+    expect(question.etat.notification?.rappelId).toBe(bouger.id)
+  })
+
+  it('un rappel déjà à 4 heures, ou l’option coupée, ne reçoit pas la question', () => {
+    const instant = au(16, 10, 0)
+    const quatreHeures = avecReports(seulement(['bouger']), 'bouger', 3, 240)
+    const plein = evaluer(echeance(quatreHeures, instant), quatreHeures, entree(instant))
+    expect(plein.etat.notification?.genre).toBe('rappel')
+
+    const coupees = {
+      ...avecReports(seulement(['bouger']), 'bouger', 3),
+      options: { ...reglagesParDefaut().options, proposerEspacer: false }
+    }
+    const muet = evaluer(echeance(coupees, instant), coupees, entree(instant))
+    expect(muet.etat.notification?.genre).toBe('rappel')
+    expect(repondre(muet.etat, coupees, 'plusTard', instant).effet).toBeUndefined()
+  })
+
+  it('« Je le fais » remet les reports à zéro et laisse la date de silence', () => {
+    const silence = '2026-11-20T06:00:00.000Z'
+    let reglages = avecReports(seulement(['bouger']), 'bouger', 2, undefined, silence)
+    const bouger = parType(reglages, 'bouger')
+    const instant = au(16, 10, 0)
+    const du = evaluer(echeance(reglages, instant), reglages, entree(instant))
+    const fait = repondre(du.etat, reglages, 'jeLeFais', instant)
+    expect(fait.effet).toEqual({ rappelId: bouger.id, reportsDeSuite: 0 })
+    if (!fait.effet) {
+      throw new Error('Effet manquant.')
+    }
+    reglages = appliquerAdaptation(reglages, fait.effet)
+    expect(parType(reglages, 'bouger').reportsDeSuite).toBe(0)
+    expect(parType(reglages, 'bouger').neRienProposerAvant).toBe(silence)
+  })
+})
+
+function avecReports(
+  reglages: Reglages,
+  type: TypeRappel,
+  reports: number,
+  frequence?: Frequence,
+  silence?: string
+): Reglages {
+  return {
+    ...reglages,
+    rappels: reglages.rappels.map((rappel) => {
+      if (rappel.type !== type) {
+        return rappel
+      }
+      const suivant: Rappel = { ...rappel, reportsDeSuite: reports }
+      if (frequence !== undefined) {
+        suivant.frequenceMin = frequence
+      }
+      if (silence !== undefined) {
+        suivant.neRienProposerAvant = silence
+      }
+      return suivant
+    })
+  }
+}
+
+function echeance(reglages: Reglages, instant: Date): EtatMoteur {
+  const compteursMs: Record<string, number> = {}
+  for (const rappel of reglages.rappels) {
+    if (!rappel.actif || rappel.frequenceMin === undefined) {
+      continue
+    }
+    compteursMs[rappel.id] = rappel.frequenceMin * MINUTE
+  }
+  return {
+    ...creerEtat(),
+    compteursMs,
+    dernierInstantMs: instant.getTime(),
+    etaitDansHoraires: true
+  }
+}
 
 function bougerCourt(reglages: Reglages): Reglages {
   return {

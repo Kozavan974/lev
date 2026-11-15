@@ -231,4 +231,25 @@ describe('premier lancement, guide et respiration', () => {
     ).toBeNull()
     expect(executerAction(depart, null, { type: 'respiration', pleine: 11 }, contexte())).toBeNull()
   })
+
+  it('un changement de fréquence remet les reports à zéro et efface le silence', () => {
+    const depart = reglagesParDefaut()
+    const bouger = depart.rappels.find((rappel) => rappel.type === 'bouger')
+    if (!bouger) {
+      throw new Error('Rappel manquant.')
+    }
+    const regles: Reglages = {
+      ...depart,
+      rappels: depart.rappels.map((rappel) =>
+        rappel.id === bouger.id
+          ? { ...rappel, reportsDeSuite: 3, neRienProposerAvant: '2026-11-20T06:00:00.000Z' }
+          : rappel
+      )
+    }
+    const resultat = executer(regles, { type: 'frequence', id: bouger.id, frequenceMin: 45 })
+    const suivant = resultat.reglages.rappels.find((rappel) => rappel.id === bouger.id)
+    expect(suivant?.frequenceMin).toBe(45)
+    expect(suivant?.reportsDeSuite).toBe(0)
+    expect(suivant?.neRienProposerAvant).toBeUndefined()
+  })
 })

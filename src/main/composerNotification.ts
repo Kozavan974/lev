@@ -1,11 +1,23 @@
 import textes from '../content/fr.json'
 import { formaterInstant, remplir } from '../partage/format'
 import type { VueNotification } from '../preload/contrat'
-import type { Reglages } from './modeles'
+import { frequenceSuperieure, type Frequence, type Rappel, type Reglages } from './modeles'
 import type { DetailSequence, NotificationEnCours } from './scheduler/moteur'
 import { texteIdee } from './selectionIdees'
 
 export function composerVue(
+  reglages: Reglages,
+  notification: NotificationEnCours,
+  cycle: number
+): VueNotification | null {
+  const vue = composerContenu(reglages, notification, cycle)
+  if (!vue) {
+    return null
+  }
+  return { ...vue, son: reglages.options.son }
+}
+
+function composerContenu(
   reglages: Reglages,
   notification: NotificationEnCours,
   cycle: number
@@ -22,6 +34,9 @@ export function composerVue(
   const rappel = reglages.rappels.find((candidat) => candidat.id === notification.rappelId)
   if (!rappel) {
     return null
+  }
+  if (notification.genre === 'rythme') {
+    return vueRythme(notification, rappel, cycle)
   }
   const assis = notification.charge.assis
   if (rappel.type === 'yeux') {
@@ -163,11 +178,55 @@ function estClef<T extends object>(cle: string, objet: T): cle is keyof T & stri
   return Object.prototype.hasOwnProperty.call(objet, cle)
 }
 
+function vueRythme(
+  notification: NotificationEnCours,
+  rappel: Rappel,
+  cycle: number
+): VueNotification | null {
+  const frequence = rappel.frequenceMin
+  const suivante = frequence === undefined ? null : frequenceSuperieure(frequence)
+  if (frequence === undefined || suivante === null) {
+    return null
+  }
+  const textesRythme = textes.notification.rythme
+  const proposee = lireTable(textesRythme.proposee, suivante)
+  const actuelle = lireTable(textesRythme.actuelle, frequence)
+  const courte = lireTable(textesRythme.courte, suivante)
+  if (!proposee || !actuelle || !courte) {
+    return null
+  }
+  return vue(
+    notification,
+    cycle,
+    rappel.type,
+    textesRythme.titre,
+    remplir(textesRythme.phrase, { nom: rappel.nom, proposee, actuelle }),
+    null,
+    false,
+    {
+      boutons: 'rythme',
+      boutonOui: remplir(textesRythme.oui, { courte }),
+      boutonGarder: textesRythme.garder
+    }
+  )
+}
+
+function lireTable<T extends object>(table: T, frequence: Frequence): string | null {
+  const cle = String(frequence)
+  if (!Object.prototype.hasOwnProperty.call(table, cle)) {
+    return null
+  }
+  const valeur: unknown = table[cle as keyof T]
+  return typeof valeur === 'string' ? valeur : null
+}
+
 interface ComplementVue {
   surtitre?: string | null
   parcours?: VueNotification['parcours']
   legende?: string | null
   boutons?: VueNotification['boutons']
+  boutonOui?: string | null
+  boutonGarder?: string | null
   lienArret?: boolean
   lienPoste?: boolean
   resteAffichee?: boolean
@@ -196,6 +255,9 @@ function vue(
     parcours: complement.parcours ?? null,
     legende: complement.legende ?? null,
     boutons: complement.boutons ?? 'trois',
+    boutonOui: complement.boutonOui ?? null,
+    boutonGarder: complement.boutonGarder ?? null,
+    son: false,
     lienArret: complement.lienArret ?? false,
     lienPoste: complement.lienPoste ?? false,
     resteAffichee: complement.resteAffichee ?? false

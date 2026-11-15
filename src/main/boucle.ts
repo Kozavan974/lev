@@ -27,6 +27,7 @@ import {
 } from './scheduler/constantes'
 import { sondageEchu } from './scheduler/sondage'
 import {
+  appliquerAdaptation,
   appliquerEffets,
   arreterSerie,
   creerEtat,
@@ -35,7 +36,8 @@ import {
   noterCharge,
   poserPauseImmediate,
   repondre,
-  type EtatMoteur
+  type EtatMoteur,
+  type ResultatReponse
 } from './scheduler/moteur'
 import { enregistrerReglages, lireReglages } from './store'
 
@@ -227,14 +229,17 @@ function recevoirReponse(reponse: ReponseBouton): void {
   }
   const genre = etat.notification.genre
   const resultat = repondre(etat, lireReglages(), reponse, new Date())
-  etat = resultat.etat
+  retenirReponse(resultat)
   if (resultat.message) {
     publierMessage({
       texte: textes.notification.messages[resultat.message],
       dureeMs: MESSAGE_REPONSE_MS
     })
   } else if (
-    (genre === 'debutSequence' || genre === 'finSequence' || genre === 'finPause') &&
+    (genre === 'debutSequence' ||
+      genre === 'finSequence' ||
+      genre === 'finPause' ||
+      genre === 'rythme') &&
     !etat.notification
   ) {
     publierRetrait()
@@ -246,8 +251,15 @@ function recevoirExpiration(): void {
   if (!etat.notification) {
     return
   }
-  etat = repondre(etat, lireReglages(), 'aucune', new Date()).etat
+  retenirReponse(repondre(etat, lireReglages(), 'aucune', new Date()))
   apresEvaluation?.()
+}
+
+function retenirReponse(resultat: ResultatReponse): void {
+  etat = resultat.etat
+  if (resultat.effet) {
+    enregistrerReglages(appliquerAdaptation(lireReglages(), resultat.effet))
+  }
 }
 
 function changerIdee(): void {
@@ -275,6 +287,11 @@ function changerVariante(assis: boolean): void {
 }
 
 function fermerParLeSysteme(): void {
+  if (etat.notification?.genre === 'rythme') {
+    recevoirExpiration()
+    publierRetrait()
+    return
+  }
   if (etat.notification) {
     recevoirReponse('plusTard')
     return

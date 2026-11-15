@@ -1,5 +1,6 @@
 import { BrowserWindow } from 'electron'
 import textes from '../content/fr.json'
+import { fondFenetre } from './theme'
 import { chargerPage, creerFenetre } from './windows'
 
 const LARGEUR_PX = 520
@@ -27,7 +28,7 @@ export function ouvrirApplication(): void {
     useContentSize: true,
     center: true,
     title: textes.application.nom,
-    backgroundColor: '#fdf1e7'
+    backgroundColor: fondFenetre()
   })
   creee.once('ready-to-show', () => {
     if (!creee.isDestroyed()) {
@@ -41,6 +42,13 @@ export function ouvrirApplication(): void {
   })
   fenetre = creee
   chargerPage(creee, 'app')
+}
+
+export function appliquerFondApplication(): void {
+  if (!fenetre || fenetre.isDestroyed()) {
+    return
+  }
+  fenetre.setBackgroundColor(fondFenetre())
 }
 
 export function fermerApplication(): void {

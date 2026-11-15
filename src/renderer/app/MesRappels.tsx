@@ -5,6 +5,7 @@ import type { Frequence, Jours, Rappel, Repetition, RythmeSequence } from '../..
 import { FREQUENCES } from '../../partage/modeles'
 import type { ActionEcran, ClefOption } from '../../preload/contrat'
 import { Marque } from '../shared/Marque'
+import { jouerSonDoux } from '../shared/son'
 import { useEtatEcran } from '../shared/useEtatEcran'
 import { useFocusTitre } from '../shared/focusTitre'
 
@@ -19,6 +20,7 @@ const OPTIONS = [
   'nePasDeranger',
   'proposerEspacer',
   'mouvementsAssis',
+  'son',
   'lancerAuDemarrage'
 ] as const satisfies readonly ClefOption[]
 
@@ -253,6 +255,7 @@ export function MesRappels(): React.JSX.Element {
                       ? 'bouton bouton-principal pastille'
                       : 'bouton bouton-secondaire pastille'
                   }
+                  aria-pressed={mode === 'recurrent'}
                   onClick={() => {
                     setMode('recurrent')
                   }}
@@ -266,6 +269,7 @@ export function MesRappels(): React.JSX.Element {
                       ? 'bouton bouton-principal pastille'
                       : 'bouton bouton-secondaire pastille'
                   }
+                  aria-pressed={mode === 'heure'}
                   onClick={() => {
                     setMode('heure')
                   }}
@@ -284,6 +288,7 @@ export function MesRappels(): React.JSX.Element {
                           ? 'bouton bouton-principal pastille'
                           : 'bouton bouton-secondaire pastille'
                       }
+                      aria-pressed={frequence === valeur}
                       onClick={() => {
                         setFrequence(valeur)
                       }}
@@ -315,6 +320,7 @@ export function MesRappels(): React.JSX.Element {
                             ? 'bouton bouton-principal pastille'
                             : 'bouton bouton-secondaire pastille'
                         }
+                        aria-pressed={repetition === valeur}
                         onClick={() => {
                           setRepetition(valeur)
                         }}
@@ -367,7 +373,11 @@ export function MesRappels(): React.JSX.Element {
                   type="checkbox"
                   checked={reglages.options[cle]}
                   onChange={(evenement) => {
-                    window.lev.agir({ type: 'option', cle, valeur: evenement.target.checked })
+                    const coche = evenement.target.checked
+                    window.lev.agir({ type: 'option', cle, valeur: coche })
+                    if (cle === 'son' && coche) {
+                      jouerSonDoux()
+                    }
                   }}
                 />
                 <span>{textes.rappels.options[cle]}</span>

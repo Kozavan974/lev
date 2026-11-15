@@ -762,7 +762,7 @@ Les contenus définitifs des enseignants en APA (section 10.1) peuvent arriver e
 
 ## 16. Points ouverts
 
-Seize points restent à trancher : les treize du tableau et les trois qui le suivent. Chacun a une règle provisoire, pour que le développement ne soit pas bloqué.
+Le son est tranché au lot 6. Quinze points restent ouverts : douze lignes du tableau et les trois qui le suivent. Chacun des points ouverts a une règle provisoire, pour que le développement ne soit pas bloqué.
 
 | Point                    | À décider                                                                                        | Règle provisoire                                             | Avant le lot |
 | ------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ------------ |
@@ -773,7 +773,7 @@ Seize points restent à trancher : les treize du tableau et les trois qui le sui
 | Logo Ekilib.re           | Fichier du logo de l'association pour l'écran « À propos »                                       | Nom en toutes lettres, sans logo                             | 5            |
 | Idées de mouvement       | Relecture et rédaction par les enseignants en APA                                                | Les six exemples, marqués provisoires                        | 7            |
 | Guide du poste           | Relecture des cinq consignes et de la mention de source                                          | Textes de la section 10.2                                    | 7            |
-| Son                      | Quel son, créé ou libre de droits                                                                | Option masquée tant qu'aucun son n'est choisi                | 6            |
+| Son                      | Quel son, créé ou libre de droits                                                                | Tranché : deux notes douces en sinus, Web Audio, environ 300 ms, sans fichier. Option visible, décochée. Un aperçu joue au cochage. | 6            |
 | Écrans sombres           | Seuls le menu et le rappel « bouger » ont une maquette sombre                                    | Appliquer les jetons sombres de la section 9                 | 6            |
 | Licence                  | Logiciel libre ou non, et quelle licence                                                         | Mention « Tous droits réservés, Ekilib.re »                  | 7            |
 | Nom                      | Vérifier que « Lèv » est disponible comme marque et comme nom de domaine                         | Aucune : à vérifier avant toute communication publique       | 7            |

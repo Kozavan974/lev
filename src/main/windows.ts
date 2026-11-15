@@ -14,7 +14,8 @@ export function creerFenetre(options: BrowserWindowConstructorOptions = {}): Bro
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true
+      sandbox: true,
+      autoplayPolicy: 'no-user-gesture-required'
     }
   })
   attacherSecurite(fenetre.webContents)

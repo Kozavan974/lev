@@ -55,6 +55,9 @@ export const REPORTS_AVANT_QUESTION_RYTHME = 3
 /** Jours de silence de la question après « Garder ce rythme ». */
 export const SILENCE_QUESTION_RYTHME_JOURS = 7
 
+/** Durée exacte de ce silence, à partir de l'instant injecté. */
+export const SILENCE_QUESTION_RYTHME_MS = SILENCE_QUESTION_RYTHME_JOURS * 24 * 60 * 60 * 1000
+
 /** Sans réponse à la fin d'une pause, les séquences s'arrêtent après ce délai. */
 export const FIN_PAUSE_SANS_REPONSE_MS = 15 * 60 * 1000
 
