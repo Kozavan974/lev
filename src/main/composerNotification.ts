@@ -52,7 +52,8 @@ export function composerVue(
       textes.notification.posture.titre,
       textes.notification.posture.phrase,
       null,
-      false
+      false,
+      { lienPoste: true }
     )
   }
   return vue(
@@ -143,6 +144,7 @@ interface ComplementVue {
   legende?: string | null
   boutons?: VueNotification['boutons']
   lienArret?: boolean
+  lienPoste?: boolean
   resteAffichee?: boolean
 }
 
@@ -170,6 +172,7 @@ function vue(
     legende: complement.legende ?? null,
     boutons: complement.boutons ?? 'trois',
     lienArret: complement.lienArret ?? false,
+    lienPoste: complement.lienPoste ?? false,
     resteAffichee: complement.resteAffichee ?? false
   }
 }

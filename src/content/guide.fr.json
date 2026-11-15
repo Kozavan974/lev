@@ -1,0 +1,33 @@
+{
+  "etapes": [
+    {
+      "titre": "L'écran",
+      "texte": "Place-le bien en face de toi, le haut de l'écran à la hauteur de tes yeux. Tourne-le de côté par rapport à la fenêtre pour éviter les reflets."
+    },
+    {
+      "titre": "Le siège",
+      "texte": "Assieds-toi au fond du siège, le dos en contact avec le dossier. Tes pieds reposent à plat sur le sol, ou sur un repose-pieds."
+    },
+    {
+      "titre": "Le clavier et la souris",
+      "texte": "Laisse 10 à 15 cm entre le bord du bureau et le clavier pour poser tes avant-bras. Garde la souris tout près du clavier, sans appuyer les poignets en continu."
+    },
+    {
+      "titre": "La lumière",
+      "texte": "Évite une fenêtre ou une lampe juste devant ou derrière l'écran. Règle les stores et l'éclairage selon le moment de la journée."
+    },
+    {
+      "titre": "Avec un ordinateur portable",
+      "texte": "Si tu y travailles longtemps, surélève-le et branche un clavier et une souris séparés."
+    }
+  ],
+  "encadre": {
+    "titre": "Et surtout, change souvent de position",
+    "texte": "Même bien installé, la meilleure posture reste celle dont on bouge régulièrement."
+  },
+  "source": "D'après les recommandations de l'INRS sur le travail sur écran.",
+  "lien": {
+    "libelle": "Lire le dossier de l'INRS",
+    "url": "https://www.inrs.fr/risques/travail-ecran/prevention-risques.html"
+  }
+}

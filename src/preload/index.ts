@@ -93,6 +93,13 @@ const api: ApiLev = {
       ipcRenderer.send(CANAL_ECRAN.action, action)
     }
   },
+  ouvrirLien: async (url: string) => {
+    if (typeof url !== 'string') {
+      return false
+    }
+    const valeur: unknown = await ipcRenderer.invoke(CANAL_ECRAN.lien, url)
+    return valeur === true
+  },
   fermerMenu: () => {
     ipcRenderer.send(CANAL_ECRAN.fermerMenu)
   },

@@ -191,3 +191,44 @@ describe('ajout et modification d’un rappel', () => {
     expect(executerAction(depart, null, { type: 'retirer', id: eau.id }, contexte())).toBeNull()
   })
 })
+
+describe('premier lancement, guide et respiration', () => {
+  it('marque le premier lancement sans toucher aux rappels', () => {
+    const depart = reglagesParDefaut()
+    const resultat = executer(depart, { type: 'premierLancement' })
+    expect(resultat.reglages.premierLancementFait).toBe(true)
+    expect(resultat.reglages.rappels).toEqual(depart.rappels)
+  })
+
+  it('mémorise une case du guide et refuse un index hors liste', () => {
+    const depart = reglagesParDefaut()
+    const coche = executer(depart, { type: 'guide', index: 2, coche: true })
+    expect(coche.reglages.guidePoste).toEqual([false, false, true, false, false])
+    expect(
+      executerAction(depart, null, { type: 'guide', index: 5, coche: true }, contexte())
+    ).toBeNull()
+  })
+
+  it('retient un rythme de respiration dans les bornes', () => {
+    const depart = reglagesParDefaut()
+    const resultat = executer(depart, {
+      type: 'respiration',
+      inspiration: 4,
+      pleine: 0,
+      expiration: 6,
+      vide: 0,
+      minutes: 3
+    })
+    expect(resultat.reglages.respiration).toEqual({
+      inspiration: 4,
+      pleine: 0,
+      expiration: 6,
+      vide: 0,
+      minutes: 3
+    })
+    expect(
+      executerAction(depart, null, { type: 'respiration', inspiration: 1 }, contexte())
+    ).toBeNull()
+    expect(executerAction(depart, null, { type: 'respiration', pleine: 11 }, contexte())).toBeNull()
+  })
+})

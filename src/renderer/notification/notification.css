@@ -85,7 +85,7 @@ html[data-route='notification'] #racine {
 
 .notification-titre {
   margin: 0;
-  font-size: var(--titre-carte);
+  font-size: var(--titre-notification);
   font-weight: var(--graisse-forte);
   line-height: 1.25;
 }
@@ -154,8 +154,24 @@ html[data-route='notification'] #racine {
   cursor: pointer;
 }
 
-.notification-arret:hover {
-  color: var(--texte);
+.notification-lien {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: var(--cible-min);
+  margin-top: var(--espace-6);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--action);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.notification-lien:hover {
+  color: var(--action-survol);
 }
 
 .notification-message {
@@ -163,5 +179,5 @@ html[data-route='notification'] #racine {
   align-items: center;
   min-height: var(--cible-min);
   padding-right: calc(var(--logo-notification) + var(--espace-10));
-  font-size: var(--texte-important);
+  font-size: var(--texte-courant);
 }

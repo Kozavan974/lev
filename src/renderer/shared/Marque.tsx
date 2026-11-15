@@ -7,7 +7,7 @@ export function Marque({
   niveau
 }: {
   titre: string
-  detail: string
+  detail?: string
   niveau: 'page' | 'menu'
 }): React.JSX.Element {
   return (
@@ -17,11 +17,13 @@ export function Marque({
       </span>
       <div className="marque-textes">
         {niveau === 'page' ? (
-          <h1 className="marque-titre marque-titre-page">{titre}</h1>
+          <h1 className="marque-titre marque-titre-page" tabIndex={-1}>
+            {titre}
+          </h1>
         ) : (
           <p className="marque-titre">{titre}</p>
         )}
-        <p className="marque-detail">{detail}</p>
+        {detail ? <p className="marque-detail">{detail}</p> : null}
       </div>
     </div>
   )

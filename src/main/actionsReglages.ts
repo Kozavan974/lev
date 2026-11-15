@@ -9,6 +9,9 @@ export type ActionReglage = Exclude<
   ActionEcran,
   | { type: 'pause' }
   | { type: 'ouvrirRappels' }
+  | { type: 'ouvrirEcran' }
+  | { type: 'terminerAccueil' }
+  | { type: 'fermerGuide' }
   | { type: 'quitter' }
   | { type: 'demarrerSequence' }
   | { type: 'arreterSequences' }
@@ -125,6 +128,12 @@ function appliquer(
       return reprendre(reglages)
     case 'retablir':
       return retablir(reglages, contexte.identifiantsBase)
+    case 'premierLancement':
+      return { ...reglages, premierLancementFait: true }
+    case 'guide':
+      return cocherGuide(reglages, action.index, action.coche)
+    case 'respiration':
+      return respiration(reglages, action)
     default:
       return null
   }
@@ -231,6 +240,50 @@ function sequences(
     suivant = { ...suivant, rythme: 'autre', pauseMin: action.pauseMin }
   }
   return { ...reglages, sequences: suivant }
+}
+
+function cocherGuide(reglages: Reglages, index: number, coche: boolean): Reglages | null {
+  if (!Number.isInteger(index) || index < 0 || index >= reglages.guidePoste.length) {
+    return null
+  }
+  const guidePoste = reglages.guidePoste.slice()
+  guidePoste[index] = coche
+  return { ...reglages, guidePoste }
+}
+
+function respiration(
+  reglages: Reglages,
+  action: Extract<ActionReglage, { type: 'respiration' }>
+): Reglages | null {
+  const suivant = { ...reglages.respiration }
+  if (action.inspiration !== undefined) {
+    if (!estEntier(action.inspiration, 2, 10)) {
+      return null
+    }
+    suivant.inspiration = action.inspiration
+  }
+  if (action.pleine !== undefined) {
+    if (!estEntier(action.pleine, 0, 10)) {
+      return null
+    }
+    suivant.pleine = action.pleine
+  }
+  if (action.expiration !== undefined) {
+    if (!estEntier(action.expiration, 2, 10)) {
+      return null
+    }
+    suivant.expiration = action.expiration
+  }
+  if (action.vide !== undefined) {
+    if (!estEntier(action.vide, 0, 10)) {
+      return null
+    }
+    suivant.vide = action.vide
+  }
+  if (action.minutes !== undefined) {
+    suivant.minutes = action.minutes
+  }
+  return { ...reglages, respiration: suivant }
 }
 
 function finVeille(reglages: Reglages, duree: '30min' | '1h' | 'demain', maintenant: Date): string {

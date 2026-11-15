@@ -49,6 +49,7 @@ export interface VueNotification {
   legende: string | null
   boutons: BoutonsNotification
   lienArret: boolean
+  lienPoste: boolean
   resteAffichee: boolean
 }
 
@@ -62,7 +63,8 @@ export const CANAL_ECRAN = {
   etat: 'ecran:etat',
   action: 'ecran:action',
   fermerMenu: 'ecran:fermer-menu',
-  hauteurMenu: 'ecran:hauteur-menu'
+  hauteurMenu: 'ecran:hauteur-menu',
+  lien: 'ecran:lien'
 } as const
 
 export type ClefOption =
@@ -76,6 +78,10 @@ export type ClefOption =
 
 export type DureeVeille = '30min' | '1h' | 'demain'
 
+export const ECRANS_NAVIGATION = ['rappels', 'apropos', 'poste', 'respiration'] as const
+export type EcranNavigation = (typeof ECRANS_NAVIGATION)[number]
+export type EcranApplication = EcranNavigation | 'accueil'
+
 export interface EtatEcran {
   reglages: Reglages
   echeances: { nom: string; heure: string }[]
@@ -83,6 +89,8 @@ export interface EtatEcran {
   pauseSpontanee: { heure: string } | null
   bandeau: { genre: 'retrait'; nom: string } | { genre: 'restauration' } | null
   sequence: EtatSequence
+  ecran: EcranApplication
+  version: string
 }
 
 export type EtatSequence =
@@ -122,6 +130,19 @@ export type ActionEcran =
   | { type: 'demarrerSequence' }
   | { type: 'arreterSequences' }
   | { type: 'ouvrirRappels' }
+  | { type: 'ouvrirEcran'; ecran: EcranNavigation }
+  | { type: 'terminerAccueil'; suite: 'fermer' | 'rappels' }
+  | { type: 'fermerGuide' }
+  | { type: 'premierLancement' }
+  | { type: 'guide'; index: number; coche: boolean }
+  | {
+      type: 'respiration'
+      inspiration?: number
+      pleine?: number
+      expiration?: number
+      vide?: number
+      minutes?: 1 | 3 | 5
+    }
   | { type: 'quitter' }
   | { type: 'retablir' }
 
@@ -139,6 +160,7 @@ export interface ApiLev {
   lireEtat(): Promise<EtatEcran>
   surEtat(recevoir: (etat: EtatEcran) => void): () => void
   agir(action: ActionEcran): void
+  ouvrirLien(url: string): Promise<boolean>
   fermerMenu(): void
   definirHauteurMenu(hauteurPx: number): void
 }
@@ -174,6 +196,7 @@ export function estVueNotification(valeur: unknown): valeur is VueNotification {
     (valeur.legende === null || typeof valeur.legende === 'string') &&
     (valeur.boutons === 'trois' || valeur.boutons === 'reprise') &&
     typeof valeur.lienArret === 'boolean' &&
+    typeof valeur.lienPoste === 'boolean' &&
     typeof valeur.resteAffichee === 'boolean'
   )
 }
@@ -211,7 +234,9 @@ const ACTIONS_SANS_CHARGE = [
   'quitter',
   'retablir',
   'demarrerSequence',
-  'arreterSequences'
+  'arreterSequences',
+  'premierLancement',
+  'fermerGuide'
 ] as const
 
 export function estActionEcran(valeur: unknown): valeur is ActionEcran {
@@ -255,6 +280,23 @@ export function estActionEcran(valeur: unknown): valeur is ActionEcran {
       return estParmi(valeur.theme, THEMES)
     case 'veille':
       return estParmi(valeur.duree, DUREES_VEILLE)
+    case 'ouvrirEcran':
+      return estParmi(valeur.ecran, ECRANS_NAVIGATION)
+    case 'terminerAccueil':
+      return valeur.suite === 'fermer' || valeur.suite === 'rappels'
+    case 'guide':
+      return typeof valeur.index === 'number' && typeof valeur.coche === 'boolean'
+    case 'respiration':
+      return (
+        (valeur.inspiration === undefined || typeof valeur.inspiration === 'number') &&
+        (valeur.pleine === undefined || typeof valeur.pleine === 'number') &&
+        (valeur.expiration === undefined || typeof valeur.expiration === 'number') &&
+        (valeur.vide === undefined || typeof valeur.vide === 'number') &&
+        (valeur.minutes === undefined ||
+          valeur.minutes === 1 ||
+          valeur.minutes === 3 ||
+          valeur.minutes === 5)
+      )
     default:
       return false
   }
@@ -273,6 +315,9 @@ export function estEtatEcran(valeur: unknown): valeur is EtatEcran {
   if (!estPauseSpontanee(valeur.pauseSpontanee)) {
     return false
   }
+  if (!estEcran(valeur.ecran) || typeof valeur.version !== 'string') {
+    return false
+  }
   return estBandeau(valeur.bandeau) && estSequence(valeur.sequence)
 }
 
@@ -281,6 +326,10 @@ function estParcours(valeur: unknown): valeur is { faits: number; total: number 
     return true
   }
   return estObjet(valeur) && typeof valeur.faits === 'number' && typeof valeur.total === 'number'
+}
+
+function estEcran(valeur: unknown): valeur is EcranApplication {
+  return valeur === 'accueil' || estParmi(valeur, ECRANS_NAVIGATION)
 }
 
 function estSequence(valeur: unknown): valeur is EtatSequence {

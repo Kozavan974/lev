@@ -1,4 +1,12 @@
-import { app, Menu, nativeImage, Tray, type NativeImage, type Rectangle } from 'electron'
+import {
+  app,
+  Menu,
+  nativeImage,
+  Tray,
+  type MenuItemConstructorOptions,
+  type NativeImage,
+  type Rectangle
+} from 'electron'
 import textes from '../content/fr.json'
 import { cheminRessource } from './ressources'
 
@@ -11,6 +19,14 @@ export interface ActionsZone {
   reprendre: () => void
   ouvrirRappels: () => void
   ouvrirAPropos: () => void
+  demarrerSequence: () => void
+  arreterSequences: () => void
+}
+
+export interface EtatMenuContextuel {
+  enVeille: boolean
+  sequencesActives: boolean
+  sequenceEnCours: boolean
 }
 
 const FICHIERS: Record<EtatIcone, string> = {
@@ -22,8 +38,14 @@ const FICHIERS: Record<EtatIcone, string> = {
 let zone: Tray | null = null
 let actionsZone: ActionsZone | null = null
 let iconeCourante: EtatIcone | null = null
-let veilleDuMenu: boolean | null = null
+let menuCourant: EtatMenuContextuel | null = null
 const images = new Map<EtatIcone, NativeImage>()
+
+const MENU_DEPART: EtatMenuContextuel = {
+  enVeille: false,
+  sequencesActives: false,
+  sequenceEnCours: false
+}
 
 export function creerZoneNotification(actions: ActionsZone): void {
   actionsZone = actions
@@ -41,8 +63,8 @@ export function creerZoneNotification(actions: ActionsZone): void {
     }
     actions.clicGauche()
   })
-  veilleDuMenu = false
-  barre.setContextMenu(menuContextuel(false))
+  menuCourant = MENU_DEPART
+  barre.setContextMenu(menuContextuel(MENU_DEPART))
   zone = barre
 }
 
@@ -68,35 +90,57 @@ export function definirEtatIcone(etat: EtatIcone): void {
   zone.setImage(imageDe(etat))
 }
 
-export function definirMenuContextuel(enVeille: boolean): void {
-  if (!zone || zone.isDestroyed() || veilleDuMenu === enVeille) {
+export function definirMenuContextuel(etat: EtatMenuContextuel): void {
+  if (!zone || zone.isDestroyed() || (menuCourant !== null && memeMenu(menuCourant, etat))) {
     return
   }
-  veilleDuMenu = enVeille
-  zone.setContextMenu(menuContextuel(enVeille))
+  menuCourant = etat
+  zone.setContextMenu(menuContextuel(etat))
 }
 
 export function detruireZoneNotification(): void {
   zone?.destroy()
   zone = null
   iconeCourante = null
-  veilleDuMenu = null
+  menuCourant = null
 }
 
-function menuContextuel(enVeille: boolean): Menu {
+function menuContextuel(etat: EtatMenuContextuel): Menu {
   const actions = actionsZone
-  return Menu.buildFromTemplate([
+  const lignes: MenuItemConstructorOptions[] = []
+  if (etat.sequencesActives) {
+    lignes.push({
+      label: etat.sequenceEnCours ? textes.tray.arreterSequences : textes.tray.sequence,
+      click: () => {
+        if (etat.sequenceEnCours) {
+          actions?.arreterSequences()
+        } else {
+          actions?.demarrerSequence()
+        }
+      }
+    })
+  }
+  lignes.push(
     { label: textes.tray.pause, click: () => actions?.pauseMaintenant() },
     {
-      label: enVeille ? textes.tray.reprendre : textes.tray.veille1h,
-      click: () => (enVeille ? actions?.reprendre() : actions?.veilleUneHeure())
+      label: etat.enVeille ? textes.tray.reprendre : textes.tray.veille1h,
+      click: () => (etat.enVeille ? actions?.reprendre() : actions?.veilleUneHeure())
     },
     { type: 'separator' },
     { label: textes.tray.mesRappels, click: () => actions?.ouvrirRappels() },
     { label: textes.tray.aPropos, click: () => actions?.ouvrirAPropos() },
     { type: 'separator' },
     { label: textes.tray.quitter, click: () => app.quit() }
-  ])
+  )
+  return Menu.buildFromTemplate(lignes)
+}
+
+function memeMenu(gauche: EtatMenuContextuel, droite: EtatMenuContextuel): boolean {
+  return (
+    gauche.enVeille === droite.enVeille &&
+    gauche.sequencesActives === droite.sequencesActives &&
+    gauche.sequenceEnCours === droite.sequenceEnCours
+  )
 }
 
 function imageDe(etat: EtatIcone): NativeImage {

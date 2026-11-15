@@ -42,6 +42,13 @@ export function ouvrirApplication(): void {
   chargerPage(creee, 'app')
 }
 
+export function fermerApplication(): void {
+  if (!fenetre || fenetre.isDestroyed()) {
+    return
+  }
+  fenetre.close()
+}
+
 export function fenetreApplication(): BrowserWindow | null {
   if (!fenetre || fenetre.isDestroyed()) {
     return null

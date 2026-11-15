@@ -28,18 +28,24 @@
   --soleil: #f1be5a;
   --trace: #f0d9cc;
 
-  --titre-accueil: 38px;
-  --titre-ecran: 26px;
-  --titre-carte: 25px;
-  --titre-section: 20px;
-  --texte-accueil: 21px;
-  --texte-important: 19px;
-  --texte-courant: 16px;
-  --legende: 14px;
+  --titre-accueil: 22px;
+  --titre-ecran: 22px;
+  --titre-notification: 17px;
+  --titre-section: 15.5px;
+  --texte-accueil: 14px;
+  --texte-consigne: 16px;
+  --texte-courant: 14px;
+  --legende: 12.5px;
+  --texte-compact: 13px;
+  --texte-rythme: 13px;
+  --chasse-titre: -0.01em;
 
   --graisse-texte: 400;
+  --graisse-titre: 600;
+  --graisse-consigne: 600;
   --graisse-forte: 700;
 
+  --espace-4: 4px;
   --espace-6: 6px;
   --espace-10: 10px;
   --espace-12: 12px;
@@ -47,14 +53,33 @@
   --espace-16: 16px;
   --espace-20: 20px;
   --espace-24: 24px;
+  --espace-32: 32px;
 
-  --rayon-carte: 16px;
+  --rayon-carte: 12px;
+  --rayon-accueil: 12px;
+  --rayon-seance: 12px;
   --rayon-pilule: 999px;
   --cible-min: 38px;
   --cible-pastille: 34px;
   --cible-menu: 32px;
+  --cible-pas: 30px;
+  --cible-commencer: 42px;
   --largeur-reglages: 680px;
+  --largeur-accueil: 460px;
+  --largeur-commencer: 200px;
+  --largeur-seance: 180px;
+  --logo-accueil: 52px;
+  --logo-accueil-dessin: 32px;
+  --bulle-respiration: 180px;
+  --colonne-min: 300px;
+  --pad-carte-y: 14px;
+  --pad-carte-x: 18px;
+  --pad-accueil-y: 14px;
+  --pad-accueil-x: 18px;
+  --pad-seance-y: 14px;
+  --pad-seance-x: 18px;
   --ombre-flottante: 0 6px 24px rgba(46, 42, 63, 0.1);
+  --halo-bulle: 0 0 28px rgba(233, 196, 106, 0.35);
   --contour-focus: 3px solid var(--action);
 
   --police: 'Atkinson Hyperlegible', sans-serif;

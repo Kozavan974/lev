@@ -6,6 +6,7 @@ import { FREQUENCES } from '../../partage/modeles'
 import type { ActionEcran, ClefOption } from '../../preload/contrat'
 import { Marque } from '../shared/Marque'
 import { useEtatEcran } from '../shared/useEtatEcran'
+import { useFocusTitre } from '../shared/focusTitre'
 
 const PASTILLES = [20, 30, 60, 120, 240] as const
 const REPETITIONS = ['jour', 'semaine', 'une'] as const
@@ -25,6 +26,7 @@ const HEURE = /^([01]\d|2[0-3]):[0-5]\d$/
 
 export function MesRappels(): React.JSX.Element {
   const etat = useEtatEcran()
+  useFocusTitre(etat !== null)
   const [nom, setNom] = useState('')
   const [mode, setMode] = useState<'recurrent' | 'heure'>('recurrent')
   const [frequence, setFrequence] = useState<Frequence>(60)
@@ -56,43 +58,46 @@ export function MesRappels(): React.JSX.Element {
 
   return (
     <main className="application">
-      <Marque titre={textes.rappels.titre} detail={textes.rappels.soustitre} niveau="page" />
+      <Marque titre={textes.rappels.titre} niveau="page" />
       <section className="carte">
         {reglages.rappels.map((rappel) => (
           <LigneRappel key={rappel.id} rappel={rappel} />
         ))}
-        <div className="ligne">
-          <label className="ligne-nom">
-            <input
-              className="case"
-              type="checkbox"
-              checked={reglages.sequences.actif}
-              onChange={(evenement) => {
-                window.lev.agir({ type: 'sequences', actif: evenement.target.checked })
-              }}
-            />
-            <span>{textes.rappels.sequences}</span>
-          </label>
-          <div className="ligne-reglages">
-            <select
-              className="select"
-              aria-label={textes.rappels.sequences}
-              value={reglages.sequences.rythme}
-              onChange={(evenement) => {
-                const rythme = evenement.target.value
-                if (estRythme(rythme)) {
-                  window.lev.agir({ type: 'sequences', rythme })
-                }
-              }}
-            >
-              {RYTHMES.map((rythme) => (
-                <option key={rythme} value={rythme}>
-                  {textes.rappels.rythmes[rythme]}
-                </option>
-              ))}
-            </select>
+        <div className="ligne ligne-sequences">
+          <div className="sequences-entete">
+            <label className="ligne-nom">
+              <input
+                className="case"
+                type="checkbox"
+                checked={reglages.sequences.actif}
+                onChange={(evenement) => {
+                  window.lev.agir({ type: 'sequences', actif: evenement.target.checked })
+                }}
+              />
+              <span>{textes.rappels.sequences}</span>
+            </label>
+            <div className="ligne-reglages">
+              <select
+                className="select"
+                aria-label={textes.rappels.sequences}
+                value={reglages.sequences.rythme}
+                onChange={(evenement) => {
+                  const rythme = evenement.target.value
+                  if (estRythme(rythme)) {
+                    window.lev.agir({ type: 'sequences', rythme })
+                  }
+                }}
+              >
+                {RYTHMES.map((rythme) => (
+                  <option key={rythme} value={rythme}>
+                    {textes.rappels.rythmes[rythme]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <span className="ligne-corbeille" />
           </div>
-          <span className="ligne-corbeille" />
+          <p className="sequences-precision">{textes.rappels.sequencesPrecision}</p>
         </div>
         {reglages.sequences.rythme === 'autre' ? (
           <div className="champs-rythme">
@@ -366,7 +371,13 @@ export function MesRappels(): React.JSX.Element {
       </details>
 
       <p className="lien-bas">
-        <button type="button" className="bouton-texte">
+        <button
+          type="button"
+          className="bouton-texte"
+          onClick={() => {
+            window.lev.agir({ type: 'ouvrirEcran', ecran: 'apropos' })
+          }}
+        >
           {textes.rappels.apropos}
         </button>
       </p>

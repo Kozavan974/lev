@@ -1,13 +1,21 @@
 import { app, Menu } from 'electron'
-import { detruireApplication, ouvrirApplication } from './applicationFenetre'
-import { arreterBoucle, demanderPauseMaintenant, demarrerBoucle } from './boucle'
+import { detruireApplication } from './applicationFenetre'
+import {
+  arreterBoucle,
+  arreterSequences,
+  demanderPauseMaintenant,
+  demarrerBoucle,
+  demarrerSequences
+} from './boucle'
 import { installerPolitiqueContenu } from './ipc'
 import { basculerMenu, detruireMenu } from './menuFenetre'
 import { configurerPlateforme } from './platform'
 import {
   brancherEcrans,
   mettreEnVeilleUneHeure,
-  ouvrirAPropos,
+  ouvrirDepuisRelance,
+  ouvrirEcran,
+  ouvrirSiPremierLancement,
   reprendreRappels
 } from './pontEcrans'
 import { initialiserStore } from './store'
@@ -21,7 +29,7 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on('second-instance', () => {
     if (app.isReady()) {
-      ouvrirApplication()
+      ouvrirDepuisRelance()
     }
   })
 
@@ -47,11 +55,14 @@ if (!app.requestSingleInstanceLock()) {
         pauseMaintenant: demanderPauseMaintenant,
         veilleUneHeure: mettreEnVeilleUneHeure,
         reprendre: reprendreRappels,
-        ouvrirRappels: ouvrirApplication,
-        ouvrirAPropos
+        ouvrirRappels: () => ouvrirEcran('rappels'),
+        ouvrirAPropos: () => ouvrirEcran('apropos'),
+        demarrerSequence: demarrerSequences,
+        arreterSequences
       })
       brancherEcrans()
       demarrerBoucle()
+      ouvrirSiPremierLancement()
     })
     .catch((erreur: unknown) => {
       console.error(erreur)

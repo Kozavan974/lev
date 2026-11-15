@@ -45,7 +45,7 @@ html[data-route='menu'] body {
 
 .menu-echeance,
 .menu-veille-etat {
-  font-size: var(--texte-important);
+  font-size: var(--texte-courant);
   font-weight: var(--graisse-forte);
 }
 
@@ -88,4 +88,10 @@ html[data-route='menu'] body {
 
 .menu-lien-discret {
   color: var(--texte-second);
+}
+
+.menu-legende {
+  margin: 0;
+  color: var(--texte-second);
+  font-size: var(--legende);
 }

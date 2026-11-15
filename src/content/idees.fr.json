@@ -1,12 +1,37 @@
 {
+  "provisoire": true,
   "debout": [
     "Va remplir ta gourde en passant par le chemin le plus long, ou monte un étage à pied.",
     "Marche jusqu'à une fenêtre, regarde au loin, puis roule doucement les épaules vers l'arrière, cinq fois.",
-    "Fais le tour de l'étage à ton rythme, en laissant les bras se balancer."
+    "Fais le tour de l'étage à ton rythme, en laissant les bras se balancer.",
+    "Tu peux aller chercher de l'eau en prenant le chemin le plus long.",
+    "Tu peux monter un étage à pied, puis redescendre à ton rythme.",
+    "Tu peux marcher jusqu'à une fenêtre et regarder au loin un moment.",
+    "Tu peux faire quelques pas dans le couloir, en laissant les bras se balancer.",
+    "Tu peux te lever et rouler doucement les épaules vers l'arrière.",
+    "Tu peux aller voir quelqu'un plutôt que d'envoyer un message.",
+    "Tu peux ouvrir la fenêtre un instant, si tu le peux, et prendre l'air.",
+    "Tu peux te lever, poser les mains sur le dossier et souffler trois fois.",
+    "Tu peux faire le tour de la pièce une fois, sans te presser.",
+    "Tu peux te lever et étirer les bras vers le haut, puis les laisser retomber.",
+    "Tu peux marcher jusqu'au bout du couloir, puis revenir.",
+    "Tu peux rester debout un moment, les pieds à plat, et relâcher les épaules."
   ],
   "assis": [
     "Sans te lever : décolle les talons, puis les pointes de pieds, dix fois. Laisse ensuite rouler les épaules vers l'arrière.",
     "Sans te lever : redresse-toi, puis tourne lentement la tête à droite et à gauche, cinq fois, sans forcer.",
-    "Sans te lever : tends une jambe devant toi, tiens trois respirations, puis change de côté."
+    "Sans te lever : tends une jambe devant toi, tiens trois respirations, puis change de côté.",
+    "Sans te lever : tu peux décoller les talons, puis les pointes, une dizaine de fois.",
+    "Sans te lever : tu peux redresser le dos et laisser les épaules descendre.",
+    "Sans te lever : tu peux tourner la tête lentement, à droite puis à gauche.",
+    "Sans te lever : tu peux tendre une jambe, souffler trois fois, puis changer de côté.",
+    "Sans te lever : tu peux poser les mains sur les genoux et rouler les épaules.",
+    "Sans te lever : tu peux joindre les mains et les lever doucement au-dessus de la tête.",
+    "Sans te lever : tu peux rapprocher les omoplates une fois, puis relâcher.",
+    "Sans te lever : tu peux poser un pied bien à plat, puis l'autre, le dos au dossier.",
+    "Sans te lever : tu peux regarder au loin, le temps de quelques souffles.",
+    "Sans te lever : tu peux desserrer la mâchoire et laisser les mains s'ouvrir.",
+    "Sans te lever : tu peux croiser les doigts et pousser les paumes vers l'avant.",
+    "Sans te lever : tu peux poser les avant-bras sur le bureau et relâcher la nuque."
   ]
 }

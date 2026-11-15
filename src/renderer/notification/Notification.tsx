@@ -325,6 +325,17 @@ export function Notification(): React.JSX.Element {
                   </button>
                 </div>
               )}
+              {vue.lienPoste ? (
+                <button
+                  type="button"
+                  className="notification-lien"
+                  onClick={() => {
+                    window.lev.agir({ type: 'ouvrirEcran', ecran: 'poste' })
+                  }}
+                >
+                  {textes.notification.posture.lien}
+                </button>
+              ) : null}
               {vue.lienArret ? (
                 <button
                   type="button"

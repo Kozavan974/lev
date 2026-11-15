@@ -1,16 +1,18 @@
 import { randomUUID } from 'node:crypto'
-import { app, ipcMain, type BrowserWindow } from 'electron'
+import { app, ipcMain, shell, type BrowserWindow } from 'electron'
 import textes from '../content/fr.json'
 import { formaterInstant, remplir } from '../partage/format'
 import {
   CANAL_ECRAN,
   estActionEcran,
   type ActionEcran,
+  type EcranApplication,
+  type EcranNavigation,
   type EtatEcran,
   type EtatSequence
 } from '../preload/contrat'
 import { executerAction, type Annulation } from './actionsReglages'
-import { fenetreApplication, ouvrirApplication } from './applicationFenetre'
+import { fermerApplication, fenetreApplication, ouvrirApplication } from './applicationFenetre'
 import {
   arreterSequences,
   demanderPauseMaintenant,
@@ -20,6 +22,7 @@ import {
   reevaluer
 } from './boucle'
 import { fermerMenu, fenetreMenu, recevoirHauteurMenu } from './menuFenetre'
+import { lienAutorise } from './liens'
 import type { TypeRappel } from './modeles'
 import { notificationEstVisible } from './notificationFenetre'
 import { calculerEcheances } from './scheduler/echeances'
@@ -29,6 +32,8 @@ import { definirEtatIcone, definirInfobulle, definirMenuContextuel, type EtatIco
 
 let annulation: Annulation | null = null
 let branche = false
+let ecran: EcranApplication = 'rappels'
+let retourGuide: EcranApplication | null = null
 
 export function brancherEcrans(): void {
   if (branche) {
@@ -37,6 +42,17 @@ export function brancherEcrans(): void {
   branche = true
   definirApresEvaluation(diffuser)
   ipcMain.handle(CANAL_ECRAN.lire, () => etatCourant())
+  ipcMain.handle(CANAL_ECRAN.lien, async (_evenement, valeur: unknown) => {
+    if (typeof valeur !== 'string' || !lienAutorise(valeur)) {
+      return false
+    }
+    try {
+      await shell.openExternal(valeur)
+      return true
+    } catch {
+      return false
+    }
+  })
   ipcMain.on(CANAL_ECRAN.action, (_evenement, valeur: unknown) => {
     if (estActionEcran(valeur)) {
       agir(valeur)
@@ -58,8 +74,19 @@ function agir(action: ActionEcran): void {
     return
   }
   if (action.type === 'ouvrirRappels') {
-    fermerMenu()
-    ouvrirApplication()
+    ouvrirEcran('rappels')
+    return
+  }
+  if (action.type === 'ouvrirEcran') {
+    ouvrirEcran(action.ecran)
+    return
+  }
+  if (action.type === 'terminerAccueil') {
+    terminerAccueil(action.suite)
+    return
+  }
+  if (action.type === 'fermerGuide') {
+    fermerGuide()
     return
   }
   if (action.type === 'pause') {
@@ -101,9 +128,83 @@ export function reprendreRappels(): void {
   agir({ type: 'reprendre' })
 }
 
-/** Le lot 5 ouvrira l'écran « À propos ». D'ici là, la fenêtre Application. */
-export function ouvrirAPropos(): void {
+export function ouvrirEcran(cible: EcranNavigation): void {
+  fermerMenu()
+  if (cible === 'poste' && ecran !== 'poste') {
+    retourGuide = fenetreApplication() ? ecran : null
+  }
+  if (cible !== 'poste') {
+    retourGuide = null
+  }
+  ecran = cible
   ouvrirApplication()
+  diffuser()
+}
+
+export function ouvrirSiPremierLancement(): void {
+  if (lireReglages().premierLancementFait) {
+    return
+  }
+  ecran = 'accueil'
+  retourGuide = null
+  ouvrirApplication()
+  diffuser()
+}
+
+export function ouvrirDepuisRelance(): void {
+  if (!lireReglages().premierLancementFait) {
+    ecran = 'accueil'
+    retourGuide = null
+    ouvrirApplication()
+    diffuser()
+    return
+  }
+  ouvrirEcran('rappels')
+}
+
+function terminerAccueil(suite: 'fermer' | 'rappels'): void {
+  const resultat = executerAction(
+    lireReglages(),
+    annulation,
+    { type: 'premierLancement' },
+    contexteAction()
+  )
+  if (!resultat) {
+    return
+  }
+  annulation = resultat.annulation
+  enregistrerReglages(resultat.reglages)
+  ecran = 'rappels'
+  retourGuide = null
+  if (suite === 'fermer') {
+    fermerApplication()
+    return
+  }
+  diffuser()
+}
+
+function fermerGuide(): void {
+  if (retourGuide && fenetreApplication()) {
+    ecran = retourGuide
+    retourGuide = null
+    diffuser()
+    return
+  }
+  retourGuide = null
+  ecran = 'rappels'
+  fermerApplication()
+}
+
+function contexteAction(): {
+  maintenant: Date
+  nouvelId: string
+  identifiantsBase: Record<TypeRappel, string>
+} {
+  return {
+    maintenant: new Date(),
+    nouvelId: randomUUID(),
+    identifiantsBase: identifiantsBase()
+  }
 }
 
 function identifiantsBase(): Record<TypeRappel, string> {
@@ -130,7 +231,9 @@ function etatCourant(): EtatEcran {
         : null,
     pauseSpontanee: libellePause(moteur),
     bandeau: bandeauCourant(),
-    sequence: etatSequence(moteur, maintenant.getTime())
+    sequence: etatSequence(moteur, maintenant.getTime()),
+    ecran,
+    version: app.getVersion()
   }
 }
 
@@ -181,7 +284,11 @@ function diffuser(): void {
   const etat = etatCourant()
   definirInfobulle(texteInfobulle(etat))
   definirEtatIcone(iconeCourante(etat))
-  definirMenuContextuel(etat.veilleLibelle !== null)
+  definirMenuContextuel({
+    enVeille: etat.veilleLibelle !== null,
+    sequencesActives: etat.reglages.sequences.actif,
+    sequenceEnCours: etat.sequence !== null
+  })
   envoyer(fenetreMenu(), etat)
   envoyer(fenetreApplication(), etat)
 }

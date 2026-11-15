@@ -1,11 +1,14 @@
 {
   "application": {
-    "nom": "Lèv"
+    "nom": "Lèv",
+    "retourRappels": "← Mes rappels"
   },
   "tray": {
     "infobulle": "Lèv",
     "prochaine": "Lèv · prochaine pause à {heure}",
     "veille": "Lèv · en veille jusqu'à {heure}",
+    "sequence": "Démarrer une séquence de travail",
+    "arreterSequences": "Arrêter les séquences",
     "pause": "Faire une pause maintenant",
     "veille1h": "Mettre en veille pendant 1 heure",
     "reprendre": "Reprendre les rappels",
@@ -25,13 +28,14 @@
     "grandePauseSequence": "Grande pause, jusqu'à {heure}",
     "repriseSequence": "On reprend quand tu veux.",
     "pause": "Faire une pause maintenant",
+    "rythmeSequence": "{travail} min concentré, puis {pause} min de pause",
     "veille": "Mettre les rappels en veille",
     "veille30": "Pendant 30 minutes",
     "veille1h": "Pendant 1 heure",
     "veilleDemain": "Jusqu'à demain",
     "enVeille": "En veille jusqu'à {heure}",
     "reprendre": "Reprendre",
-    "respirer": "Respirer un moment",
+    "respirer": "Une pause par le souffle",
     "poste": "Bien installer mon poste",
     "rappels": "Mes rappels",
     "apropos": "À propos",
@@ -39,11 +43,11 @@
   },
   "rappels": {
     "titre": "Mes rappels",
-    "soustitre": "Tout est déjà réglé. Coche, ajuste ou ajoute un rappel : c'est pris en compte tout de suite.",
     "annuler": "Annuler",
     "retirer": "Retirer « {nom} »",
     "retire": "« {nom} » est retiré.",
     "sequences": "Séquences de travail",
+    "sequencesPrecision": "Pour travailler concentré par étapes : Lèv attend la fin de la séquence pour t'inviter à marcher, et propose une grande pause de 15 minutes toutes les 4 séquences.",
     "horaires": "Mes horaires",
     "de": "De",
     "a": "à",
@@ -139,7 +143,8 @@
     },
     "posture": {
       "titre": "Un petit point posture ?",
-      "phrase": "Relâche les épaules, pose les pieds à plat et laisse ton dos retrouver le dossier."
+      "phrase": "Relâche les épaules, pose les pieds à plat et laisse ton dos retrouver le dossier.",
+      "lien": "Bien installer mon poste"
     },
     "libre": {
       "phrase": "C'est le moment."
@@ -198,5 +203,177 @@
       "reparti": "C'est reparti",
       "encore": "Encore 5 min"
     }
+  },
+  "accueil": {
+    "titre": "Bienvenue dans Lèv.",
+    "suite": "Je te rappellerai doucement de bouger et de reposer tes yeux.",
+    "choix": "Tu choisis le rythme — et tu peux changer d'avis à tout moment.",
+    "commencer": "Commencer",
+    "rythme": "Choisir mon rythme",
+    "mentions": ["Aucun compte", "Aucune inscription", "Aucune donnée personnelle"]
+  },
+  "apropos": {
+    "titre": "À propos",
+    "signature": "Lèv — une pause, naturellement.",
+    "phrase": "Un compagnon discret pour bouger un peu plus souvent pendant le travail sur écran, et laisser ses yeux se reposer.",
+    "philosophie": {
+      "titre": "Philosophie de l'application",
+      "principes": [
+        {
+          "titre": "Rester assis longtemps compte, même quand on fait du sport",
+          "texte": "Une séance de sport le soir ne suffit pas à effacer une journée entière passée sur une chaise. Ce qui aide, c'est d'interrompre souvent la position assise."
+        },
+        {
+          "titre": "De petits gestes, souvent",
+          "texte": "Quelques pas, un étage à pied, un regard par la fenêtre. Rien à réussir, rien à mesurer : chaque petite pause compte."
+        },
+        {
+          "titre": "Une invitation, jamais un reproche",
+          "texte": "Tu peux reporter une pause ou la passer. L'application ne tient aucun compte de ce que tu n'as pas fait."
+        },
+        {
+          "titre": "Le travail reste au centre",
+          "texte": "Les rappels se font discrets et se taisent quand tu présentes ou travailles en plein écran. Les séquences de travail t'aident à te concentrer, puis à vraiment t'arrêter."
+        },
+        {
+          "titre": "Le bon moment",
+          "texte": "Lèv attend que tu aies fini de taper, tient compte des pauses que tu prends de toi-même et respecte tes horaires."
+        },
+        {
+          "titre": "Des idées écrites par des professionnels",
+          "texte": "Chaque invitation à bouger propose un mouvement simple à faire au bureau, avec toujours une variante à faire assis."
+        },
+        {
+          "titre": "Chez toi, pour toi",
+          "texte": "Aucun compte, aucune inscription, aucune donnée personnelle demandée. Tes réglages restent sur ton ordinateur. L'application est gratuite et ne remplace pas l'avis d'un professionnel de santé."
+        }
+      ]
+    },
+    "reperes": {
+      "titre": "Les repères que suit l'application",
+      "items": [
+        {
+          "titre": "Se lever toutes les 30 minutes",
+          "texte": "L'Anses et l'INRS conseillent d'interrompre la position assise toutes les 30 minutes dans l'idéal. C'est le rythme proposé par défaut."
+        },
+        {
+          "titre": "Marcher 5 minutes",
+          "texte": "Pour un adulte, l'Anses conseille 5 minutes de marche, à allure tranquille ou modérée. C'est la durée de la pause active."
+        },
+        {
+          "titre": "Quitter l'écran des yeux",
+          "texte": "Le Code du travail prévoit que le travail sur écran soit régulièrement interrompu par des pauses ou des changements d'activité. Le rappel toutes les 20 minutes est un choix de l'application, que tu peux modifier."
+        }
+      ],
+      "lienPoste": "Bien installer mon poste, en cinq réglages"
+    },
+    "references": {
+      "titre": "Textes de référence",
+      "liens": [
+        {
+          "organisme": "Anses, octobre 2025",
+          "titre": "Marcher régulièrement 5 minutes pour préserver sa santé",
+          "url": "https://www.anses.fr/fr/actualite/marcher-regulierement-5-minutes-preserver-sa-sante"
+        },
+        {
+          "organisme": "INRS",
+          "titre": "Prévention des risques liés aux postures sédentaires au travail",
+          "url": "https://www.inrs.fr/risques/postures-sedentaires/prevention-risques.html"
+        },
+        {
+          "organisme": "OMS, novembre 2020",
+          "titre": "Lignes directrices sur l'activité physique et la sédentarité",
+          "url": "https://www.who.int/fr/publications-detail/9789240014886"
+        },
+        {
+          "organisme": "Santé publique France, décembre 2025",
+          "titre": "Sédentarité : prévalence et connaissance des recommandations, Baromètre 2024",
+          "url": "https://www.santepubliquefrance.fr/nutrition-et-activite-physique/rapportsynthese/sedentarite-prevalence-et-connaissance-des-recommandations-barometre-de-sante-publique-france"
+        },
+        {
+          "organisme": "Santé publique France",
+          "titre": "Réduire le temps passé assis (mangerbouger.fr)",
+          "url": "https://www.mangerbouger.fr/l-essentiel/les-recommandations-sur-l-alimentation-l-activite-physique-et-la-sedentarite/reduire/reduire-le-temps-passe-assis"
+        },
+        {
+          "organisme": "Code du travail",
+          "titre": "Article R. 4542-4, interruptions du travail sur écran",
+          "url": "https://code.travail.gouv.fr/code-du-travail/r4542-4"
+        },
+        {
+          "organisme": "INRS",
+          "titre": "Travail sur écran, réglementation et normes",
+          "url": "https://www.inrs.fr/risques/travail-ecran/reglementation-normes.html"
+        }
+      ]
+    },
+    "ekilib": {
+      "titre": "Ekilib.re",
+      "avant": "L'application est proposée gratuitement par l'association ",
+      "lien": "Ekilib.re",
+      "url": "https://ekilib.re",
+      "apres": ", Maison Sport-Santé au Tampon, à La Réunion. Nous accompagnons chacun, quel que soit son âge, pour pratiquer ou reprendre une activité physique adaptée.",
+      "suiteTitre": "Chaque pas compte.",
+      "maisonsAvant": "Les ",
+      "maisonsLien": "Maisons Sport-Santé",
+      "maisonsUrl": "https://www.sports.gouv.fr/maisons-sport-sante",
+      "maisonsApres": " sont des lieux d'accueil, d'information et d'orientation vers une activité physique adaptée à tes besoins, tes envies et ta santé. Elles proposent un accompagnement personnalisé, quel que soit ton âge ou ton niveau de départ.",
+      "proche": "Trouve la Maison Sport-Santé la plus proche de chez toi.",
+      "procheUrl": "https://livemap.getwemap.com/embed?emmid=13462&iframeEmbed=true&iframeid=9d84e72b-50f8-49e9-9ed6-c2b6b756e94e&parentOrigin=https%3A%2F%2Flivemap.getwemap.com&replaceContainer=false&token=NRAY1Q8M32GFJ8ZOVMBSO3HUZ",
+      "version": "Version {version} · Tous droits réservés, Ekilib.re",
+      "miseAJour": "Lèv vérifie une fois par jour si une mise à jour existe. C'est son seul échange avec Internet."
+    },
+    "signatureFin": "Lèv — levez-vous, respirez."
+  },
+  "poste": {
+    "titre": "Bien installer mon poste",
+    "etape": "Étape {numero} sur {total}",
+    "toutBon": "C'est tout bon",
+    "plusTard": "Je finirai plus tard"
+  },
+  "respiration": {
+    "titre": "Un moment pour souffler",
+    "rythme": "Mon rythme",
+    "pret": "Prêt quand tu veux",
+    "fin": "Chaque petite pause compte.",
+    "commencer": "Commencer",
+    "termine": "J'ai terminé",
+    "consignes": {
+      "inspiration": "Inspire par le nez",
+      "pleine": "Garde l'air, sans forcer",
+      "expiration": "Souffle doucement",
+      "vide": "Reste tranquille"
+    },
+    "etiquettes": {
+      "inspiration": "Inspire",
+      "pleine": "Garde",
+      "expiration": "Souffle",
+      "vide": "Pause"
+    },
+    "preregles": {
+      "carree": "Carrée",
+      "apaisante": "Apaisante",
+      "reguliere": "Régulière"
+    },
+    "champs": {
+      "inspiration": "Inspiration",
+      "expiration": "Expiration",
+      "pleine": "Pause, poumons pleins",
+      "vide": "Pause, poumons vides"
+    },
+    "secondes": "{duree} s",
+    "aucune": "Aucune",
+    "moins": "Réduire {nom}",
+    "plus": "Augmenter {nom}",
+    "duree": "Durée",
+    "durees": {
+      "1": "1 min",
+      "3": "3 min",
+      "5": "5 min"
+    },
+    "mention": "Lèv retient ton rythme pour la prochaine fois. Si tu te sens gêné, reprends simplement ta respiration habituelle."
+  },
+  "lien": {
+    "echec": "Ce lien n'a pas pu s'ouvrir. Tu peux réessayer."
   }
 }

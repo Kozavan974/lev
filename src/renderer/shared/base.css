@@ -20,6 +20,7 @@ body {
   font-family: var(--police);
   font-size: var(--texte-courant);
   font-weight: var(--graisse-texte);
+  line-height: 1.5;
 }
 
 html[data-fond='transparent'],
@@ -51,8 +52,23 @@ a {
 }
 
 :focus-visible {
+  outline: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
   outline: var(--contour-focus);
   outline-offset: 2px;
+}
+
+h1,
+h2,
+[tabindex='-1'] {
+  outline: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

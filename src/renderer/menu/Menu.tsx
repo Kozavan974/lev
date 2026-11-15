@@ -104,6 +104,14 @@ export function Menu(): React.JSX.Element {
               {etat.sequence ? textes.menu.arreterSequences : textes.menu.sequence}
             </button>
           ) : null}
+          {sequences && !etat.sequence ? (
+            <p className="menu-legende">
+              {remplir(textes.menu.rythmeSequence, {
+                travail: String(etat.reglages.sequences.travailMin),
+                pause: String(etat.reglages.sequences.pauseMin)
+              })}
+            </p>
+          ) : null}
           <button
             type="button"
             className={pausePrincipale ? 'bouton bouton-principal' : 'bouton bouton-secondaire'}
@@ -165,10 +173,24 @@ export function Menu(): React.JSX.Element {
         )}
         <div className="menu-separateur" />
         <nav className="menu-groupe">
-          <button type="button" className="menu-lien">
+          <button
+            type="button"
+            className="menu-lien"
+            onClick={() => {
+              window.lev.fermerMenu()
+              window.lev.agir({ type: 'ouvrirEcran', ecran: 'respiration' })
+            }}
+          >
             {textes.menu.respirer}
           </button>
-          <button type="button" className="menu-lien">
+          <button
+            type="button"
+            className="menu-lien"
+            onClick={() => {
+              window.lev.fermerMenu()
+              window.lev.agir({ type: 'ouvrirEcran', ecran: 'poste' })
+            }}
+          >
             {textes.menu.poste}
           </button>
           <button
@@ -176,12 +198,19 @@ export function Menu(): React.JSX.Element {
             className="menu-lien"
             onClick={() => {
               window.lev.fermerMenu()
-              window.lev.agir({ type: 'ouvrirRappels' })
+              window.lev.agir({ type: 'ouvrirEcran', ecran: 'rappels' })
             }}
           >
             {textes.menu.rappels}
           </button>
-          <button type="button" className="menu-lien">
+          <button
+            type="button"
+            className="menu-lien"
+            onClick={() => {
+              window.lev.fermerMenu()
+              window.lev.agir({ type: 'ouvrirEcran', ecran: 'apropos' })
+            }}
+          >
             {textes.menu.apropos}
           </button>
           <button

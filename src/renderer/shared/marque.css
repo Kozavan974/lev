@@ -29,16 +29,18 @@
 
 .marque-titre {
   margin: 0;
-  font-size: var(--texte-important);
+  font-size: var(--titre-section);
   font-weight: var(--graisse-forte);
   line-height: 1.2;
 }
 
 .marque-titre-page {
   font-size: var(--titre-ecran);
+  letter-spacing: var(--chasse-titre);
 }
 
 .marque-detail {
   margin: 0;
   color: var(--texte-second);
+  font-size: var(--legende);
 }
