@@ -26,6 +26,7 @@ export interface ReglagesSequence {
 
 export const ID_FIN_SEQUENCE = 'sequence:fin'
 export const ID_FIN_PAUSE = 'sequence:reprise'
+export const ID_DEBUT_SEQUENCE = 'sequence:debut'
 
 const MS_PAR_MINUTE = 60 * 1000
 

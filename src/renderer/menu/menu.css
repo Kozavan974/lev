@@ -23,8 +23,8 @@ html[data-route='menu'] body {
 .menu-pauses {
   display: flex;
   flex-direction: column;
-  gap: var(--espace-6);
-  padding: var(--espace-12);
+  gap: var(--espace-4);
+  padding: var(--espace-10) var(--espace-12);
   border: 1px solid var(--lisere);
   border-radius: var(--rayon-carte);
   background: var(--carte);
@@ -56,11 +56,17 @@ html[data-route='menu'] body {
 }
 
 .menu-actions {
-  gap: var(--espace-6);
+  gap: 0;
 }
 
 .menu-actions .bouton {
   width: 100%;
+  min-height: var(--cible-menu-bouton);
+  font-size: var(--texte-menu);
+}
+
+.menu-actions .bouton + .bouton {
+  margin-top: var(--espace-6);
 }
 
 .menu-separateur {
@@ -78,6 +84,7 @@ html[data-route='menu'] body {
   background: transparent;
   color: var(--texte);
   font: inherit;
+  font-size: var(--texte-menu);
   text-align: left;
   cursor: pointer;
 }
@@ -90,8 +97,33 @@ html[data-route='menu'] body {
   color: var(--texte-second);
 }
 
+.menu-veilles {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--espace-6);
+}
+
+.menu-veille {
+  flex: 1 1 auto;
+  min-height: var(--cible-pas);
+  padding: 0 var(--espace-4);
+  border: 1px solid var(--lisere);
+  border-radius: var(--rayon-pilule);
+  background: var(--carte);
+  color: var(--texte);
+  font-size: var(--texte-menu);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.menu-veille:hover {
+  border-color: var(--action);
+  color: var(--action);
+}
+
 .menu-legende {
-  margin: 0;
+  margin: var(--espace-2) 0 var(--espace-6);
   color: var(--texte-second);
-  font-size: var(--legende);
+  font-size: var(--texte-menu-legende);
+  text-align: center;
 }

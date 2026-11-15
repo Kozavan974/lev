@@ -142,33 +142,35 @@ export function Menu(): React.JSX.Element {
         ) : (
           <div className="menu-groupe">
             <p className="menu-veille-titre">{textes.menu.veille}</p>
-            <button
-              type="button"
-              className="menu-lien"
-              onClick={() => {
-                window.lev.agir({ type: 'veille', duree: '30min' })
-              }}
-            >
-              {textes.menu.veille30}
-            </button>
-            <button
-              type="button"
-              className="menu-lien"
-              onClick={() => {
-                window.lev.agir({ type: 'veille', duree: '1h' })
-              }}
-            >
-              {textes.menu.veille1h}
-            </button>
-            <button
-              type="button"
-              className="menu-lien"
-              onClick={() => {
-                window.lev.agir({ type: 'veille', duree: 'demain' })
-              }}
-            >
-              {textes.menu.veilleDemain}
-            </button>
+            <div className="menu-veilles">
+              <button
+                type="button"
+                className="menu-veille"
+                onClick={() => {
+                  window.lev.agir({ type: 'veille', duree: '30min' })
+                }}
+              >
+                {textes.menu.veille30}
+              </button>
+              <button
+                type="button"
+                className="menu-veille"
+                onClick={() => {
+                  window.lev.agir({ type: 'veille', duree: '1h' })
+                }}
+              >
+                {textes.menu.veille1h}
+              </button>
+              <button
+                type="button"
+                className="menu-veille"
+                onClick={() => {
+                  window.lev.agir({ type: 'veille', duree: 'demain' })
+                }}
+              >
+                {textes.menu.veilleDemain}
+              </button>
+            </div>
           </div>
         )}
         <div className="menu-separateur" />

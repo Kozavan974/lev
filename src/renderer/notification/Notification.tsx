@@ -236,8 +236,21 @@ export function Notification(): React.JSX.Element {
       {visible ? (
         <article
           ref={carteRef}
-          className={sortie ? 'notification-carte sortie' : 'notification-carte'}
+          className={
+            sortie
+              ? 'notification-carte sortie'
+              : vue?.type === 'debutSequence'
+                ? 'notification-carte notification-accompagnement'
+                : 'notification-carte'
+          }
           aria-labelledby={message ? undefined : 'notification-titre'}
+          onClick={
+            vue?.type === 'debutSequence'
+              ? () => {
+                  repondre('plusTard')
+                }
+              : undefined
+          }
         >
           <Logo />
           {message ? (
@@ -253,7 +266,11 @@ export function Notification(): React.JSX.Element {
                   <h1 id="notification-titre" className="notification-titre">
                     {vue.titre}
                   </h1>
-                  {vue.phrase ? <p className="notification-phrase">{vue.phrase}</p> : null}
+                  {vue.type === 'debutSequence' ? (
+                    <PhraseDebut phrase={vue.phrase} />
+                  ) : vue.phrase ? (
+                    <p className="notification-phrase">{vue.phrase}</p>
+                  ) : null}
                 </div>
               </header>
               {vue.idee ? (
@@ -300,7 +317,8 @@ export function Notification(): React.JSX.Element {
                     {textes.notification.finPause.encore}
                   </button>
                 </div>
-              ) : (
+              ) : null}
+              {vue.boutons === 'trois' ? (
                 <div className="notification-actions">
                   <button
                     type="button"
@@ -324,7 +342,7 @@ export function Notification(): React.JSX.Element {
                     {textes.notification.boutons.plusTard}
                   </button>
                 </div>
-              )}
+              ) : null}
               {vue.lienPoste ? (
                 <button
                   type="button"
@@ -353,11 +371,22 @@ export function Notification(): React.JSX.Element {
   )
 }
 
+function PhraseDebut({ phrase }: { phrase: string }): React.JSX.Element {
+  const [premiere = '', deuxieme = '', suite = ''] = phrase.split('\n')
+  return (
+    <div className="notification-lignes">
+      <p>{premiere}</p>
+      <p>{deuxieme}</p>
+      <p className="notification-ligne-suite">{suite}</p>
+    </div>
+  )
+}
+
 function picto(type: VueNotification['type']): React.JSX.Element {
   if (type === 'yeux') {
     return <PictoYeux />
   }
-  if (type === 'bouger') {
+  if (type === 'bouger' || type === 'debutSequence') {
     return <PictoBouger />
   }
   if (type === 'posture') {

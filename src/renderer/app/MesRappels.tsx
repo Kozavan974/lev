@@ -134,241 +134,258 @@ export function MesRappels(): React.JSX.Element {
         ) : null}
       </section>
 
-      <section className="carte">
-        <h2 className="titre-carte">{textes.rappels.horaires}</h2>
-        <div className="horaires-ligne">
-          <label className="choix">
-            {textes.rappels.de}
-            <input
-              className="champ"
-              type="time"
-              value={reglages.horaires.debut}
-              onChange={(evenement) => {
-                if (HEURE.test(evenement.target.value)) {
-                  window.lev.agir({
-                    type: 'horaires',
-                    debut: evenement.target.value,
-                    fin: reglages.horaires.fin,
-                    jours: reglages.horaires.jours
-                  })
-                }
-              }}
-            />
-          </label>
-          <label className="choix">
-            {textes.rappels.a}
-            <input
-              className="champ"
-              type="time"
-              value={reglages.horaires.fin}
-              onChange={(evenement) => {
-                if (HEURE.test(evenement.target.value)) {
-                  window.lev.agir({
-                    type: 'horaires',
-                    debut: reglages.horaires.debut,
-                    fin: evenement.target.value,
-                    jours: reglages.horaires.jours
-                  })
-                }
-              }}
-            />
-          </label>
-          <select
-            className="select"
-            aria-label={textes.rappels.horaires}
-            value={reglages.horaires.jours}
-            onChange={(evenement) => {
-              const jours = evenement.target.value
-              if (estJours(jours)) {
-                window.lev.agir({
-                  type: 'horaires',
-                  debut: reglages.horaires.debut,
-                  fin: reglages.horaires.fin,
-                  jours
-                })
-              }
-            }}
-          >
-            {JOURS.map((jours) => (
-              <option key={jours} value={jours}>
-                {textes.rappels.jours[jours]}
-              </option>
-            ))}
-          </select>
-        </div>
-        <p className="precision">{textes.rappels.horsHoraires}</p>
-      </section>
-
-      <form className="carte" onSubmit={soumettre}>
-        <h2 className="titre-carte">{textes.rappels.ajout}</h2>
-        <label className="question">
-          {textes.rappels.quoi}
-          <input
-            className="champ champ-nom"
-            type="text"
-            maxLength={40}
-            value={nom}
-            placeholder={textes.rappels.exemple}
-            onChange={(evenement) => {
-              setNom(evenement.target.value)
-            }}
-          />
-        </label>
-        <div className="groupe-pastilles">
-          {textes.rappels.suggestions.map((suggestion) => (
-            <button
-              key={suggestion}
-              type="button"
-              className="bouton bouton-secondaire pastille"
-              onClick={() => {
-                setNom(suggestion)
-              }}
-            >
-              {suggestion}
-            </button>
-          ))}
-        </div>
-        <fieldset className="question">
-          <legend>{textes.rappels.quand}</legend>
-          <div className="segment">
-            <button
-              type="button"
-              className={
-                mode === 'recurrent'
-                  ? 'bouton bouton-principal pastille'
-                  : 'bouton bouton-secondaire pastille'
-              }
-              onClick={() => {
-                setMode('recurrent')
-              }}
-            >
-              {textes.rappels.regulier}
-            </button>
-            <button
-              type="button"
-              className={
-                mode === 'heure'
-                  ? 'bouton bouton-principal pastille'
-                  : 'bouton bouton-secondaire pastille'
-              }
-              onClick={() => {
-                setMode('heure')
-              }}
-            >
-              {textes.rappels.heurePrecise}
-            </button>
+      <div className="tiroirs">
+        <details className="carte repli">
+          <summary>
+            <span>
+              {textes.rappels.horaires}
+              <span className="repli-resume">
+                {` · ${reglages.horaires.debut} – ${reglages.horaires.fin}`}
+              </span>
+            </span>
+            <Chevron />
+          </summary>
+          <div className="corps-repli">
+            <div className="horaires-ligne">
+              <label className="choix">
+                {textes.rappels.de}
+                <input
+                  className="champ"
+                  type="time"
+                  value={reglages.horaires.debut}
+                  onChange={(evenement) => {
+                    if (HEURE.test(evenement.target.value)) {
+                      window.lev.agir({
+                        type: 'horaires',
+                        debut: evenement.target.value,
+                        fin: reglages.horaires.fin,
+                        jours: reglages.horaires.jours
+                      })
+                    }
+                  }}
+                />
+              </label>
+              <label className="choix">
+                {textes.rappels.a}
+                <input
+                  className="champ"
+                  type="time"
+                  value={reglages.horaires.fin}
+                  onChange={(evenement) => {
+                    if (HEURE.test(evenement.target.value)) {
+                      window.lev.agir({
+                        type: 'horaires',
+                        debut: reglages.horaires.debut,
+                        fin: evenement.target.value,
+                        jours: reglages.horaires.jours
+                      })
+                    }
+                  }}
+                />
+              </label>
+              <select
+                className="select"
+                aria-label={textes.rappels.horaires}
+                value={reglages.horaires.jours}
+                onChange={(evenement) => {
+                  const jours = evenement.target.value
+                  if (estJours(jours)) {
+                    window.lev.agir({
+                      type: 'horaires',
+                      debut: reglages.horaires.debut,
+                      fin: reglages.horaires.fin,
+                      jours
+                    })
+                  }
+                }}
+              >
+                {JOURS.map((jours) => (
+                  <option key={jours} value={jours}>
+                    {textes.rappels.jours[jours]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className="precision">{textes.rappels.horsHoraires}</p>
           </div>
-          {mode === 'recurrent' ? (
+        </details>
+
+        <details className="carte repli">
+          <summary>
+            <span>{textes.rappels.ajout}</span>
+            <Chevron />
+          </summary>
+          <form className="corps-repli" onSubmit={soumettre}>
+            <label className="question">
+              {textes.rappels.quoi}
+              <input
+                className="champ champ-nom"
+                type="text"
+                maxLength={40}
+                value={nom}
+                placeholder={textes.rappels.exemple}
+                onChange={(evenement) => {
+                  setNom(evenement.target.value)
+                }}
+              />
+            </label>
             <div className="groupe-pastilles">
-              {PASTILLES.map((valeur) => (
+              {textes.rappels.suggestions.map((suggestion) => (
                 <button
-                  key={valeur}
+                  key={suggestion}
+                  type="button"
+                  className="bouton bouton-secondaire pastille"
+                  onClick={() => {
+                    setNom(suggestion)
+                  }}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+            <fieldset className="question">
+              <legend>{textes.rappels.quand}</legend>
+              <div className="segment">
+                <button
                   type="button"
                   className={
-                    frequence === valeur
+                    mode === 'recurrent'
                       ? 'bouton bouton-principal pastille'
                       : 'bouton bouton-secondaire pastille'
                   }
                   onClick={() => {
-                    setFrequence(valeur)
+                    setMode('recurrent')
                   }}
                 >
-                  {textes.rappels.frequencePastille[valeur]}
+                  {textes.rappels.regulier}
                 </button>
-              ))}
-            </div>
-          ) : (
-            <div className="horaires-ligne">
-              <input
-                className="champ"
-                type="time"
-                aria-label={textes.rappels.heurePrecise}
-                value={heure}
-                onChange={(evenement) => {
-                  if (HEURE.test(evenement.target.value)) {
-                    setHeure(evenement.target.value)
+                <button
+                  type="button"
+                  className={
+                    mode === 'heure'
+                      ? 'bouton bouton-principal pastille'
+                      : 'bouton bouton-secondaire pastille'
                   }
-                }}
-              />
-              <div className="groupe-pastilles">
-                {REPETITIONS.map((valeur) => (
-                  <button
-                    key={valeur}
-                    type="button"
-                    className={
-                      repetition === valeur
-                        ? 'bouton bouton-principal pastille'
-                        : 'bouton bouton-secondaire pastille'
-                    }
-                    onClick={() => {
-                      setRepetition(valeur)
-                    }}
-                  >
-                    {textes.rappels.repetitionListe[valeur]}
-                  </button>
-                ))}
+                  onClick={() => {
+                    setMode('heure')
+                  }}
+                >
+                  {textes.rappels.heurePrecise}
+                </button>
               </div>
+              {mode === 'recurrent' ? (
+                <div className="groupe-pastilles">
+                  {PASTILLES.map((valeur) => (
+                    <button
+                      key={valeur}
+                      type="button"
+                      className={
+                        frequence === valeur
+                          ? 'bouton bouton-principal pastille'
+                          : 'bouton bouton-secondaire pastille'
+                      }
+                      onClick={() => {
+                        setFrequence(valeur)
+                      }}
+                    >
+                      {textes.rappels.frequencePastille[valeur]}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="horaires-ligne">
+                  <input
+                    className="champ"
+                    type="time"
+                    aria-label={textes.rappels.heurePrecise}
+                    value={heure}
+                    onChange={(evenement) => {
+                      if (HEURE.test(evenement.target.value)) {
+                        setHeure(evenement.target.value)
+                      }
+                    }}
+                  />
+                  <div className="groupe-pastilles">
+                    {REPETITIONS.map((valeur) => (
+                      <button
+                        key={valeur}
+                        type="button"
+                        className={
+                          repetition === valeur
+                            ? 'bouton bouton-principal pastille'
+                            : 'bouton bouton-secondaire pastille'
+                        }
+                        onClick={() => {
+                          setRepetition(valeur)
+                        }}
+                      >
+                        {textes.rappels.repetitionListe[valeur]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </fieldset>
+            <div className="ajout-bas">
+              <p className="phrase" aria-live="polite">
+                {phraseAjout(nomPropre, mode, frequence, heure, repetition)}
+              </p>
+              <button type="submit" className="bouton bouton-secondaire" disabled={!nomPropre}>
+                {textes.rappels.ajouter}
+              </button>
             </div>
-          )}
-        </fieldset>
-        <div className="ajout-bas">
-          <p className="phrase" aria-live="polite">
-            {phraseAjout(nomPropre, mode, frequence, heure, repetition)}
-          </p>
-          <button type="submit" className="bouton bouton-secondaire" disabled={!nomPropre}>
-            {textes.rappels.ajouter}
-          </button>
-        </div>
-      </form>
+          </form>
+        </details>
 
-      <details className="carte repli">
-        <summary>
-          <span>{textes.rappels.autres}</span>
-          <Chevron />
-        </summary>
-        <div className="corps-repli">
-          <fieldset className="question">
-            <legend>{textes.rappels.theme}</legend>
-            {THEMES.map((theme) => (
-              <label key={theme} className="choix">
+        <details className="carte repli">
+          <summary>
+            <span>{textes.rappels.autres}</span>
+            <Chevron />
+          </summary>
+          <div className="corps-repli">
+            <fieldset className="question">
+              <legend>{textes.rappels.theme}</legend>
+              {THEMES.map((theme) => (
+                <label key={theme} className="choix">
+                  <input
+                    className="case"
+                    type="radio"
+                    name="theme"
+                    checked={reglages.theme === theme}
+                    onChange={() => {
+                      window.lev.agir({ type: 'theme', theme })
+                    }}
+                  />
+                  <span>{textes.rappels.themes[theme]}</span>
+                </label>
+              ))}
+            </fieldset>
+            {OPTIONS.map((cle) => (
+              <label key={cle} className="choix">
                 <input
                   className="case"
-                  type="radio"
-                  name="theme"
-                  checked={reglages.theme === theme}
-                  onChange={() => {
-                    window.lev.agir({ type: 'theme', theme })
+                  type="checkbox"
+                  checked={reglages.options[cle]}
+                  onChange={(evenement) => {
+                    window.lev.agir({ type: 'option', cle, valeur: evenement.target.checked })
                   }}
                 />
-                <span>{textes.rappels.themes[theme]}</span>
+                <span>{textes.rappels.options[cle]}</span>
               </label>
             ))}
-          </fieldset>
-          {OPTIONS.map((cle) => (
-            <label key={cle} className="choix">
-              <input
-                className="case"
-                type="checkbox"
-                checked={reglages.options[cle]}
-                onChange={(evenement) => {
-                  window.lev.agir({ type: 'option', cle, valeur: evenement.target.checked })
-                }}
-              />
-              <span>{textes.rappels.options[cle]}</span>
-            </label>
-          ))}
-          <button
-            type="button"
-            className="bouton bouton-discret"
-            onClick={() => {
-              window.lev.agir({ type: 'retablir' })
-            }}
-          >
-            {textes.rappels.retablir}
-          </button>
-          {bandeau?.genre === 'restauration' ? <Bandeau texte={textes.rappels.retabli} /> : null}
-        </div>
-      </details>
+            <button
+              type="button"
+              className="bouton bouton-discret"
+              onClick={() => {
+                window.lev.agir({ type: 'retablir' })
+              }}
+            >
+              {textes.rappels.retablir}
+            </button>
+            {bandeau?.genre === 'restauration' ? <Bandeau texte={textes.rappels.retabli} /> : null}
+          </div>
+        </details>
+      </div>
 
       <p className="lien-bas">
         <button

@@ -34,6 +34,9 @@ export const SEUIL_DEVERROUILLAGE_MS = 3 * 60 * 1000
 /** Effacement automatique d'une notification « yeux ». */
 export const AFFICHAGE_NOTIFICATION_YEUX_MS = 20_000
 
+/** Effacement de l'annonce de début de séquence. */
+export const AFFICHAGE_DEBUT_SEQUENCE_MS = 8_000
+
 /** Effacement automatique des autres notifications. */
 export const AFFICHAGE_NOTIFICATION_AUTRE_MS = 60_000
 

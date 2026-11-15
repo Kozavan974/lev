@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { formaterInstant, jourLocal } from '../../partage/format'
 import type { Rappel, Reglages, Repetition, TypeRappel } from '../modeles'
+import { composerVue } from '../composerNotification'
 import { reglagesParDefaut } from '../reglages'
 import {
   ACCALMIE_MAX_MS,
   ACCALMIE_SECONDES,
+  AFFICHAGE_DEBUT_SEQUENCE_MS,
   AFFICHAGE_NOTIFICATION_AUTRE_MS,
   AFFICHAGE_NOTIFICATION_YEUX_MS,
   FENETRE_PRIORITE_MS,
@@ -1095,7 +1097,9 @@ describe('séquences de travail', () => {
     const autre = avecRythme(seulement([]), 12, 2, 'autre')
     const serie = demarrerSerie(creerEtat(), autre, au(16, 8, 0))
     expect(serie?.serie?.milieuMs).toBeNull()
-    expect(arreterSerie(serie ?? creerEtat()).serie).toBeNull()
+    const arretee = arreterSerie(serie ?? creerEtat())
+    expect(arretee.serie).toBeNull()
+    expect(arretee.notification).toBeNull()
     expect(
       demarrerSerie(
         creerEtat(),
@@ -1103,6 +1107,45 @@ describe('séquences de travail', () => {
         au(16, 8, 0)
       )
     ).toBeNull()
+  })
+
+  it('annonce le début pendant 8 secondes, sans remettre les compteurs à zéro', () => {
+    const reglages = avecRythme(seulement([]), 50, 10, '50-10')
+    const yeux = parType(reglages, 'yeux')
+    const depart = { ...creerEtat(), compteursMs: { [yeux.id]: 5 * MINUTE } }
+    const demarree = demarrerSerie(depart, reglages, au(16, 8, 0))
+    if (!demarree?.notification) {
+      throw new Error('Annonce absente')
+    }
+    expect(demarree.notification).toMatchObject({
+      genre: 'debutSequence',
+      delaiMs: AFFICHAGE_DEBUT_SEQUENCE_MS,
+      resteAffichee: false
+    })
+    expect(demarree.serie?.travailMin).toBe(50)
+    expect(demarrerSerie(demarree, reglages, au(16, 8, 1))).toBeNull()
+
+    const vue = composerVue(reglages, demarree.notification, 1)
+    expect(vue?.titre).toBe('Séquence de travail')
+    expect(vue?.type).toBe('debutSequence')
+    expect(vue?.boutons).toBe('aucun')
+    expect(vue?.delaiDisparitionMs).toBe(AFFICHAGE_DEBUT_SEQUENCE_MS)
+    expect(vue?.phrase).toBe(
+      'Ta session de focus commence.\nUne seule tâche, un petit pas à la fois.\nLèv te rappellera de faire une pause dans 50 minutes.'
+    )
+
+    const fermee = repondre(demarree, reglages, 'plusTard', au(16, 8, 1))
+    expect(fermee.message).toBeNull()
+    expect(fermee.etat.notification).toBeNull()
+    expect(fermee.etat.bloqueJusquaMs).toBeNull()
+    expect(fermee.etat.serie?.phase).toBe('travail')
+    expect(fermee.etat.compteursMs[yeux.id]).toBe(5 * MINUTE)
+
+    const expiree = repondre(demarree, reglages, 'aucune', au(16, 8, 8))
+    expect(expiree.message).toBeNull()
+    expect(expiree.etat.notification).toBeNull()
+    expect(expiree.etat.serie?.travailMin).toBe(50)
+    expect(expiree.etat.compteursMs[yeux.id]).toBe(5 * MINUTE)
   })
 })
 
@@ -1120,7 +1163,7 @@ function lancer(reglages: Reglages, instant: Date): EtatMoteur {
   if (!demarree?.serie) {
     throw new Error('Série non démarrée')
   }
-  return demarree
+  return repondre(demarree, reglages, 'aucune', instant).etat
 }
 
 function reprendre(etat: EtatMoteur, reglages: Reglages, instant: Date): EtatMoteur {

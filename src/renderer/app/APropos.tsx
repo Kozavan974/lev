@@ -29,70 +29,72 @@ export function APropos(): React.JSX.Element {
         <p className="corps">{page.phrase}</p>
       </header>
 
-      <Tiroir titre={page.philosophie.titre}>
-        <div className="liste-textes">
-          {page.philosophie.principes.map((principe) => (
-            <div key={principe.titre} className="bloc-texte">
-              <h3 className="sous-titre">{principe.titre}</h3>
-              <p className="corps">{principe.texte}</p>
-            </div>
-          ))}
-        </div>
-      </Tiroir>
+      <div className="tiroirs">
+        <Tiroir titre={page.philosophie.titre}>
+          <div className="liste-textes">
+            {page.philosophie.principes.map((principe) => (
+              <div key={principe.titre} className="bloc-texte">
+                <h3 className="sous-titre">{principe.titre}</h3>
+                <p className="corps">{principe.texte}</p>
+              </div>
+            ))}
+          </div>
+        </Tiroir>
 
-      <Tiroir titre={page.reperes.titre}>
-        <div className="liste-textes">
-          {page.reperes.items.map((item) => (
-            <div key={item.titre} className="bloc-texte">
-              <h3 className="sous-titre">{item.titre}</h3>
-              <p className="corps">{item.texte}</p>
-            </div>
-          ))}
-        </div>
-        <p className="corps">
-          <button
-            type="button"
-            className="bouton-texte"
-            onClick={() => {
-              window.lev.agir({ type: 'ouvrirEcran', ecran: 'poste' })
-            }}
-          >
-            {page.reperes.lienPoste}
-          </button>
-        </p>
-      </Tiroir>
+        <Tiroir titre={page.reperes.titre}>
+          <div className="liste-textes">
+            {page.reperes.items.map((item) => (
+              <div key={item.titre} className="bloc-texte">
+                <h3 className="sous-titre">{item.titre}</h3>
+                <p className="corps">{item.texte}</p>
+              </div>
+            ))}
+          </div>
+          <p className="corps">
+            <button
+              type="button"
+              className="bouton-texte"
+              onClick={() => {
+                window.lev.agir({ type: 'ouvrirEcran', ecran: 'poste' })
+              }}
+            >
+              {page.reperes.lienPoste}
+            </button>
+          </p>
+        </Tiroir>
 
-      <Tiroir titre={page.references.titre}>
-        <ul className="references">
-          {page.references.liens.map((lien) => (
-            <li key={lien.url}>
-              <p className="legende">{lien.organisme}</p>
-              <LienExterne href={lien.url}>{lien.titre}</LienExterne>
-            </li>
-          ))}
-        </ul>
-      </Tiroir>
+        <Tiroir titre={page.references.titre}>
+          <ul className="references">
+            {page.references.liens.map((lien) => (
+              <li key={lien.url}>
+                <p className="legende">{lien.organisme}</p>
+                <LienExterne href={lien.url}>{lien.titre}</LienExterne>
+              </li>
+            ))}
+          </ul>
+        </Tiroir>
 
-      <Tiroir titre={page.ekilib.titre}>
-        <PhraseLien
-          avant={page.ekilib.avant}
-          lien={page.ekilib.lien}
-          url={page.ekilib.url}
-          apres={page.ekilib.apres}
-        />
-        <h3 className="sous-titre">{page.ekilib.suiteTitre}</h3>
-        <PhraseLien
-          avant={page.ekilib.maisonsAvant}
-          lien={page.ekilib.maisonsLien}
-          url={page.ekilib.maisonsUrl}
-          apres={page.ekilib.maisonsApres}
-        />
-        <p className="corps">
-          <LienExterne href={page.ekilib.procheUrl}>{page.ekilib.proche}</LienExterne>
-        </p>
-        <p className="legende">{remplir(page.ekilib.version, { version: etat.version })}</p>
-        {MISES_A_JOUR_ACTIVES ? <p className="legende">{page.ekilib.miseAJour}</p> : null}
-      </Tiroir>
+        <Tiroir titre={page.ekilib.titre}>
+          <PhraseLien
+            avant={page.ekilib.avant}
+            lien={page.ekilib.lien}
+            url={page.ekilib.url}
+            apres={page.ekilib.apres}
+          />
+          <h3 className="sous-titre">{page.ekilib.suiteTitre}</h3>
+          <PhraseLien
+            avant={page.ekilib.maisonsAvant}
+            lien={page.ekilib.maisonsLien}
+            url={page.ekilib.maisonsUrl}
+            apres={page.ekilib.maisonsApres}
+          />
+          <p className="corps">
+            <LienExterne href={page.ekilib.procheUrl}>{page.ekilib.proche}</LienExterne>
+          </p>
+          <p className="legende">{remplir(page.ekilib.version, { version: etat.version })}</p>
+          {MISES_A_JOUR_ACTIVES ? <p className="legende">{page.ekilib.miseAJour}</p> : null}
+        </Tiroir>
+      </div>
 
       <p className="signature">{page.signatureFin}</p>
     </main>

@@ -8,7 +8,7 @@
     "prochaine": "Lèv · prochaine pause à {heure}",
     "veille": "Lèv · en veille jusqu'à {heure}",
     "sequence": "Démarrer une séquence de travail",
-    "arreterSequences": "Arrêter les séquences",
+    "arreterSequences": "Arrêter la séquence de travail",
     "pause": "Faire une pause maintenant",
     "veille1h": "Mettre en veille pendant 1 heure",
     "reprendre": "Reprendre les rappels",
@@ -22,7 +22,7 @@
     "echeance": "{nom} à {heure}",
     "leve": "Tu t'es levé à {heure} : j'ai décalé la marche.",
     "sequence": "Démarrer une séquence de travail",
-    "arreterSequences": "Arrêter les séquences",
+    "arreterSequences": "Arrêter la séquence de travail",
     "sequenceEnCours": "Séquence {rang} sur {total}, jusqu'à {heure}",
     "pauseSequence": "Pause, jusqu'à {heure}",
     "grandePauseSequence": "Grande pause, jusqu'à {heure}",
@@ -30,8 +30,8 @@
     "pause": "Faire une pause maintenant",
     "rythmeSequence": "{travail} min concentré, puis {pause} min de pause",
     "veille": "Mettre les rappels en veille",
-    "veille30": "Pendant 30 minutes",
-    "veille1h": "Pendant 1 heure",
+    "veille30": "30 min",
+    "veille1h": "1 heure",
     "veilleDemain": "Jusqu'à demain",
     "enVeille": "En veille jusqu'à {heure}",
     "reprendre": "Reprendre",
@@ -164,6 +164,12 @@
       "assis": "Je reste assis",
       "debout": "Finalement, je me lève"
     },
+    "debutSequence": {
+      "titre": "Séquence de travail",
+      "ligne1": "Ta session de focus commence.",
+      "ligne2": "Une seule tâche, un petit pas à la fois.",
+      "suite": "Lèv te rappellera de faire une pause dans {minutes} minutes."
+    },
     "finSequence": {
       "surtitre": "Séquence de travail",
       "rangs": {
@@ -196,7 +202,7 @@
         "9": "neuf",
         "10": "dix"
       },
-      "arreter": "Arrêter les séquences pour aujourd'hui"
+      "arreter": "Arrêter la séquence de travail"
     },
     "finPause": {
       "titre": "On reprend quand tu veux.",
@@ -312,7 +318,7 @@
       "avant": "L'application est proposée gratuitement par l'association ",
       "lien": "Ekilib.re",
       "url": "https://ekilib.re",
-      "apres": ", Maison Sport-Santé au Tampon, à La Réunion. Nous accompagnons chacun, quel que soit son âge, pour pratiquer ou reprendre une activité physique adaptée.",
+      "apres": ", Maison Sport-Santé au Tampon, à La Réunion.",
       "suiteTitre": "Chaque pas compte.",
       "maisonsAvant": "Les ",
       "maisonsLien": "Maisons Sport-Santé",
@@ -336,7 +342,7 @@
     "rythme": "Mon rythme",
     "pret": "Prêt quand tu veux",
     "fin": "Chaque petite pause compte.",
-    "commencer": "Commencer",
+    "commencer": "Respire",
     "termine": "J'ai terminé",
     "consignes": {
       "inspiration": "Inspire par le nez",
@@ -371,7 +377,12 @@
       "3": "3 min",
       "5": "5 min"
     },
-    "mention": "Lèv retient ton rythme pour la prochaine fois. Si tu te sens gêné, reprends simplement ta respiration habituelle."
+    "resumePrereglage": "{nom} ({inspiration}-{pleine}-{expiration}-{vide})",
+    "resumeSouffle": "{inspiration}s - {expiration}s",
+    "resumeCycle": "{inspiration}-{pleine}-{expiration}-{vide}",
+    "retenu": "Lèv retient ton rythme pour la prochaine fois.",
+    "conseil": "Pour t'aider, inspire par le nez en laissant ton ventre se gonfler, puis expire doucement en le laissant rentrer.",
+    "gene": "Si tu ressens une gêne, pas de pression : reviens simplement à ta respiration naturelle."
   },
   "lien": {
     "echec": "Ce lien n'a pas pu s'ouvrir. Tu peux réessayer."

@@ -11,7 +11,13 @@ html,
 body,
 #racine {
   margin: 0;
+  padding: 0;
   height: 100%;
+}
+
+p,
+h1 {
+  margin: 0;
 }
 
 body {

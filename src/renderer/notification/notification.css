@@ -37,6 +37,10 @@ html[data-route='notification'] #racine {
   opacity: 0;
 }
 
+.notification-accompagnement {
+  cursor: pointer;
+}
+
 .notification-logo {
   position: absolute;
   top: var(--espace-20);
@@ -94,6 +98,17 @@ html[data-route='notification'] #racine {
 .notification-idee-texte,
 .notification-message {
   margin: 0;
+}
+
+.notification-lignes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-4);
+}
+
+.notification-ligne-suite {
+  margin-top: var(--espace-4);
+  color: var(--texte-second);
 }
 
 .notification-idee {

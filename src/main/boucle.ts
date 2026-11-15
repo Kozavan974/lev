@@ -66,11 +66,18 @@ export function reevaluer(): void {
 }
 
 export function demarrerSequences(): void {
-  const suivant = demarrerSerie(etat, lireReglages(), new Date())
-  if (!suivant) {
+  const reglages = lireReglages()
+  const suivant = demarrerSerie(etat, reglages, new Date())
+  const notification = suivant?.notification
+  if (!suivant || notification?.genre !== 'debutSequence') {
     return
   }
   etat = suivant
+  cycle += 1
+  const vue = composerVue(reglages, notification, cycle)
+  if (vue) {
+    publierNotification(vue)
+  }
   if (demarree) {
     tick()
     return
@@ -80,7 +87,9 @@ export function demarrerSequences(): void {
 
 export function arreterSequences(): void {
   const fermer =
-    etat.notification?.genre === 'finSequence' || etat.notification?.genre === 'finPause'
+    etat.notification?.genre === 'debutSequence' ||
+    etat.notification?.genre === 'finSequence' ||
+    etat.notification?.genre === 'finPause'
   etat = arreterSerie(etat)
   if (demarree) {
     tick()
@@ -224,7 +233,10 @@ function recevoirReponse(reponse: ReponseBouton): void {
       texte: textes.notification.messages[resultat.message],
       dureeMs: MESSAGE_REPONSE_MS
     })
-  } else if ((genre === 'finSequence' || genre === 'finPause') && !etat.notification) {
+  } else if (
+    (genre === 'debutSequence' || genre === 'finSequence' || genre === 'finPause') &&
+    !etat.notification
+  ) {
     publierRetrait()
   }
   apresEvaluation?.()

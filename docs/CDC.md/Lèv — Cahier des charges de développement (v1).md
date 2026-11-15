@@ -37,42 +37,42 @@ Les maquettes validées sont sur le canevas [Lèv — maquettes de l'application
 
 Ces décisions sont prises. Elles ne sont pas à rediscuter pendant le développement.
 
-| Sujet | Décision |
-| --- | --- |
-| Nom | Lèv |
-| Adresse à l'utilisateur | Tutoiement partout dans l'interface. Les deux signatures restent telles quelles |
-| Voix | Lèv parle à la première personne dans l'accueil et les notifications (« Je te rappellerai… »), et à la troisième personne dans les réglages et « À propos » (« Lèv retient ton rythme ») |
-| Réglage | Zéro réglage obligatoire. L'application fonctionne dès le premier lancement |
-| Enregistrement | Pas de bouton « Enregistrer ». Tout changement s'applique immédiatement |
-| Notifications | Non bloquantes, en bas à droite, sans prise de focus. Jamais de fenêtre centrée ni d'écran assombri |
-| Boutons de réponse | « Je le fais » (principal), « Dans 5 min », « Plus tard ». Jamais « OK » ni « Ignorer » |
-| Pastille « bientôt » | Affichée 2 minutes avant une pause |
-| Réponse à « Dans 5 min » | « D'accord, je reviens dans 5 minutes. » |
-| Compte à rebours | Aucun minuteur qui défile. On affiche une heure (« Reprise à 10h50 ») ou une ligne de parcours |
-| Manques | L'interface ne commente jamais une pause passée ou manquée. Aucun compteur de ce qui n'a pas été fait |
-| Mascotte | Aucune. Le seul personnage est le logo |
-| À propos | Une seule section, qui regroupe l'application et Ekilib.re |
-| Contact | Pas de numéro de téléphone. Renvoi vers ekilib.re |
-| Repère « bouger » | 5 minutes de marche toutes les 30 minutes (Anses, octobre 2025) |
-| Repère « yeux » | 20 minutes par défaut. C'est un choix de l'application, présenté comme tel |
-| Respiration | Respiration carrée 4-4-4-4 par défaut, temps réglables |
-| Idées de mouvement | Rédigées et validées par les enseignants en APA d'Ekilib.re, toujours avec une variante assise |
-| Santé | Application de bien-être. Aucun bénéfice médical annoncé. Mention « ne remplace pas un avis médical » |
+| Sujet                    | Décision                                                                                                                                                                                 |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nom                      | Lèv                                                                                                                                                                                      |
+| Adresse à l'utilisateur  | Tutoiement partout dans l'interface. Les deux signatures restent telles quelles                                                                                                          |
+| Voix                     | Lèv parle à la première personne dans l'accueil et les notifications (« Je te rappellerai… »), et à la troisième personne dans les réglages et « À propos » (« Lèv retient ton rythme ») |
+| Réglage                  | Zéro réglage obligatoire. L'application fonctionne dès le premier lancement                                                                                                              |
+| Enregistrement           | Pas de bouton « Enregistrer ». Tout changement s'applique immédiatement                                                                                                                  |
+| Notifications            | Non bloquantes, en bas à droite, sans prise de focus. Jamais de fenêtre centrée ni d'écran assombri                                                                                      |
+| Boutons de réponse       | « Je le fais » (principal), « Dans 5 min », « Plus tard ». Jamais « OK » ni « Ignorer »                                                                                                  |
+| Pastille « bientôt »     | Affichée 2 minutes avant une pause                                                                                                                                                       |
+| Réponse à « Dans 5 min » | « D'accord, je reviens dans 5 minutes. »                                                                                                                                                 |
+| Compte à rebours         | Aucun minuteur qui défile. On affiche une heure (« Reprise à 10h50 ») ou une ligne de parcours                                                                                           |
+| Manques                  | L'interface ne commente jamais une pause passée ou manquée. Aucun compteur de ce qui n'a pas été fait                                                                                    |
+| Mascotte                 | Aucune. Le seul personnage est le logo                                                                                                                                                   |
+| À propos                 | Une seule section, qui regroupe l'application et Ekilib.re                                                                                                                               |
+| Contact                  | Pas de numéro de téléphone. Renvoi vers ekilib.re                                                                                                                                        |
+| Repère « bouger »        | 5 minutes de marche toutes les 30 minutes (Anses, octobre 2025)                                                                                                                          |
+| Repère « yeux »          | 20 minutes par défaut. C'est un choix de l'application, présenté comme tel                                                                                                               |
+| Respiration              | Respiration carrée 4-4-4-4 par défaut, temps réglables                                                                                                                                   |
+| Idées de mouvement       | Rédigées et validées par les enseignants en APA d'Ekilib.re, toujours avec une variante assise                                                                                           |
+| Santé                    | Application de bien-être. Aucun bénéfice médical annoncé. Mention « ne remplace pas un avis médical »                                                                                    |
 
 ## 3. Pile technique et architecture
 
 Lèv est une application Electron écrite en TypeScript, avec une interface en React. Ce choix privilégie la simplicité de développement dans Cursor et la portabilité vers macOS et Linux avec un seul code.
 
-| Brique | Choix | Rôle |
-| --- | --- | --- |
-| Socle | Electron, dernière version stable | Fenêtres, zone de notification, démarrage automatique, détection d'inactivité |
-| Langage | TypeScript en mode strict | Tout le code |
-| Interface | React + Vite (gabarit `electron-vite`) | Tous les écrans |
-| Styles | CSS natif avec variables (jetons de la section 9) | Pas de bibliothèque de composants |
-| Stockage | `electron-store` (un fichier JSON local) | Réglages et rappels |
-| Empaquetage | `electron-builder`, installateur NSIS par utilisateur | Installation sans droits administrateur |
-| Mises à jour | `electron-updater` | Voir section 13 |
-| Tests | Vitest pour le moteur. Les écrans sont vérifiés à la main | Voir section 14 |
+| Brique       | Choix                                                     | Rôle                                                                          |
+| ------------ | --------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Socle        | Electron, dernière version stable                         | Fenêtres, zone de notification, démarrage automatique, détection d'inactivité |
+| Langage      | TypeScript en mode strict                                 | Tout le code                                                                  |
+| Interface    | React + Vite (gabarit `electron-vite`)                    | Tous les écrans                                                               |
+| Styles       | CSS natif avec variables (jetons de la section 9)         | Pas de bibliothèque de composants                                             |
+| Stockage     | `electron-store` (un fichier JSON local)                  | Réglages et rappels                                                           |
+| Empaquetage  | `electron-builder`, installateur NSIS par utilisateur     | Installation sans droits administrateur                                       |
+| Mises à jour | `electron-updater`                                        | Voir section 13                                                               |
+| Tests        | Vitest pour le moteur. Les écrans sont vérifiés à la main | Voir section 14                                                               |
 
 Contrepartie assumée : une application Electron pèse environ 100 Mo et consomme plus de mémoire qu'une application native. Objectifs : moins de 150 Mo de mémoire au repos, processeur proche de 0 % entre deux rappels. Si ces objectifs ne sont pas tenus, l'alternative à étudier est Tauri, plus légère mais qui demande du Rust.
 
@@ -111,11 +111,11 @@ Les trois fenêtres chargent la même page, `src/renderer/index.html`, et se dis
 
 ### Les fenêtres
 
-| Fenêtre | Caractéristiques |
-| --- | --- |
-| Notification | Sans cadre, toujours au premier plan, absente de la barre des tâches, largeur 420 à 480 px. Affichée avec `showInactive()` : elle ne prend pas le focus à l'apparition. Placée à 24 px des bords de la zone de travail de l'écran principal |
-| Menu | Sans cadre, 380 px de large, ouvert au clic sur l'icône, ancré près d'elle, fermé dès qu'il perd le focus. Aucune barre de défilement |
-| Application | Fenêtre classique redimensionnable (960 × 720 par défaut, minimum 480 × 600), icône `resources/icons/lev.ico` dans la barre de titre. Une seule instance, navigation interne entre les écrans |
+| Fenêtre      | Caractéristiques                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Notification | Sans cadre, toujours au premier plan, absente de la barre des tâches, largeur 420 à 480 px. Affichée avec `showInactive()` : elle ne prend pas le focus à l'apparition. Placée à 24 px des bords de la zone de travail de l'écran principal                                                                                                                                                                                                                                                                                     |
+| Menu         | Sans cadre, carte de 300 px (fenêtre de 360 px, marge d'ombre comprise), ouvert au clic sur l'icône, ancré près d'elle, fermé dès qu'il perd le focus. Aucune barre de défilement                                                                                                                                                                                                                                                                                                                                               |
+| Application  | Fenêtre classique redimensionnable. `useContentSize` : 520 × 580 désigne la zone de contenu, la barre de titre Windows s'ajoute en dehors. Minimum 440 × 460, également en taille de contenu. Icône `resources/icons/lev.ico` dans la barre de titre. Une seule instance, navigation interne entre les écrans. Le contenu occupe toute la largeur, avec une seule marge de page de 12 px sur 14 px. `html`, `body` et `#racine` sont en `height: 100%`, sans `min-height: 100vh`. Les `p` et `h1` n'ont pas de marge par défaut |
 
 Fermer la fenêtre « Application » ne quitte pas Lèv : seule l'entrée « Quitter » du menu arrête l'application.
 
@@ -157,62 +157,68 @@ Trois limites des fenêtres transparentes, documentées par Electron, sont à co
 Toutes les données tiennent dans un seul fichier JSON local, géré par `electron-store` dans le dossier de données de l'utilisateur Windows. Rien n'est envoyé sur un serveur.
 
 ```ts
-type Frequence = 10 | 20 | 30 | 45 | 60 | 120 | 240;        // minutes, liste unique pour toute l'application
-type Repetition = 'jour' | 'semaine' | 'une';                // chaque jour, lundi-vendredi, une seule fois
-type Jours = 'semaine' | 'samedi' | 'jour';                  // lun-ven, lun-sam, tous les jours
+type Frequence = 10 | 20 | 30 | 45 | 60 | 120 | 240 // minutes, liste unique pour toute l'application
+type Repetition = 'jour' | 'semaine' | 'une' // chaque jour, lundi-vendredi, une seule fois
+type Jours = 'semaine' | 'samedi' | 'jour' // lun-ven, lun-sam, tous les jours
 
 interface Rappel {
-  id: string;                    // uuid
-  nom: string;                   // 1 à 40 caractères, non modifiable après création en v1
-  type: 'yeux' | 'bouger' | 'posture' | 'libre';
-  origine: 'base' | 'perso';     // 'base' : fourni avec Lèv ; 'perso' : créé par l'utilisateur
-  mode: 'recurrent' | 'heure';
-  frequenceMin?: Frequence;      // si mode = 'recurrent'
-  heure?: string;                // 'HH:mm', si mode = 'heure'
-  repetition?: Repetition;       // si mode = 'heure'
-  dernierDeclenchement?: string; // 'AAAA-MM-JJ', si mode = 'heure', voir 5.6
-  actif: boolean;
-  reportsDeSuite: number;        // « Plus tard » consécutifs, voir 5.7
-  neRienProposerAvant?: string;  // date ISO, voir 5.7
+  id: string // uuid
+  nom: string // 1 à 40 caractères, non modifiable après création en v1
+  type: 'yeux' | 'bouger' | 'posture' | 'libre'
+  origine: 'base' | 'perso' // 'base' : fourni avec Lèv ; 'perso' : créé par l'utilisateur
+  mode: 'recurrent' | 'heure'
+  frequenceMin?: Frequence // si mode = 'recurrent'
+  heure?: string // 'HH:mm', si mode = 'heure'
+  repetition?: Repetition // si mode = 'heure'
+  dernierDeclenchement?: string // 'AAAA-MM-JJ', si mode = 'heure', voir 5.6
+  actif: boolean
+  reportsDeSuite: number // « Plus tard » consécutifs, voir 5.7
+  neRienProposerAvant?: string // date ISO, voir 5.7
 }
 
 interface Reglages {
-  version: 1;
-  premierLancementFait: boolean;
-  rappels: Rappel[];
-  horaires: { debut: string; fin: string; jours: Jours };       // '08:00', '18:00', 'semaine'
+  version: 1
+  premierLancementFait: boolean
+  rappels: Rappel[]
+  horaires: { debut: string; fin: string; jours: Jours } // '08:00', '18:00', 'semaine'
   sequences: {
-    actif: boolean;               // true : le menu propose les séquences
-    rythme: '25-5' | '50-10' | 'heure' | 'autre';
-    travailMin: number;           // 25
-    pauseMin: number;             // 5
-    grandePauseMin: number;       // 15
-    grandePauseApres: number;     // 4 séquences
-  };
+    actif: boolean // true : le menu propose les séquences
+    rythme: '25-5' | '50-10' | 'heure' | 'autre'
+    travailMin: number // 25
+    pauseMin: number // 5
+    grandePauseMin: number // 15
+    grandePauseApres: number // 4 séquences
+  }
   options: {
-    attendreAccalmie: boolean;        // true
-    pausesSpontanees: boolean;        // true
-    nePasDeranger: boolean;           // true
-    proposerEspacer: boolean;         // true
-    mouvementsAssis: boolean;         // false
-    son: boolean;                     // false
-    lancerAuDemarrage: boolean;       // true
-  };
-  theme: 'auto' | 'clair' | 'sombre';   // 'auto'
-  respiration: { inspiration: number; pleine: number; expiration: number; vide: number; minutes: 1 | 3 | 5 };
-  guidePoste: boolean[];                // 5 cases cochées ou non
-  veilleJusqua?: string;                // date ISO, mise en veille depuis le menu
+    attendreAccalmie: boolean // true
+    pausesSpontanees: boolean // true
+    nePasDeranger: boolean // true
+    proposerEspacer: boolean // true
+    mouvementsAssis: boolean // false
+    son: boolean // false
+    lancerAuDemarrage: boolean // true
+  }
+  theme: 'auto' | 'clair' | 'sombre' // 'auto'
+  respiration: {
+    inspiration: number
+    pleine: number
+    expiration: number
+    vide: number
+    minutes: 1 | 3 | 5
+  }
+  guidePoste: boolean[] // 5 cases cochées ou non
+  veilleJusqua?: string // date ISO, mise en veille depuis le menu
 }
 ```
 
 ### Valeurs au premier lancement
 
-| Rappel | Type | Réglage | Actif |
-| --- | --- | --- | --- |
-| Cligner des yeux | yeux | Toutes les 20 minutes | Oui |
-| Marcher 5 minutes | bouger | Toutes les 30 minutes | Oui |
-| Point posture | posture | Toutes les 2 heures | Oui |
-| Boire un verre d'eau | libre | Toutes les heures | Non |
+| Rappel               | Type    | Réglage               | Actif |
+| -------------------- | ------- | --------------------- | ----- |
+| Cligner des yeux     | yeux    | Toutes les 20 minutes | Oui   |
+| Marcher 5 minutes    | bouger  | Toutes les 30 minutes | Oui   |
+| Point posture        | posture | Toutes les 2 heures   | Oui   |
+| Boire un verre d'eau | libre   | Toutes les heures     | Non   |
 
 Respiration : 4, 4, 4, 4 secondes, 1 minute. Dans la maquette, le rappel « Pause déjeuner » et la case cochée de « Boire un verre d'eau » sont des exemples d'illustration.
 
@@ -270,14 +276,14 @@ Tant qu'un rappel attend une accalmie ou la sortie du plein écran, l'icône res
 
 ### 5.5 Les trois réponses
 
-| Réponse | Effet | Message affiché 3 secondes |
-| --- | --- | --- |
-| Je le fais | Le rappel repart de zéro. Pour « bouger », tous les rappels sont suspendus 5 minutes | « Chaque petite pause compte. » |
-| Dans 5 min | La même notification revient dans 5 minutes. Sans limite de nombre | « D'accord, je reviens dans 5 minutes. » |
-| Plus tard | Le rappel repart de zéro | « Pas de souci, on reprendra plus tard. » |
-| Aucune réponse | La notification s'efface seule (20 secondes pour les yeux, 60 secondes pour les autres). Le rappel repart de zéro, sans message. Le délai est suspendu tant que la souris survole la notification ou qu'elle a le focus | Aucun |
+| Réponse        | Effet                                                                                                                                                                                                                   | Message affiché 3 secondes                |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Je le fais     | Le rappel repart de zéro. Pour « bouger », tous les rappels sont suspendus 5 minutes                                                                                                                                    | « Chaque petite pause compte. »           |
+| Dans 5 min     | La même notification revient dans 5 minutes. Sans limite de nombre                                                                                                                                                      | « D'accord, je reviens dans 5 minutes. »  |
+| Plus tard      | Le rappel repart de zéro                                                                                                                                                                                                | « Pas de souci, on reprendra plus tard. » |
+| Aucune réponse | La notification s'efface seule (20 secondes pour les yeux, 60 secondes pour les autres). Le rappel repart de zéro, sans message. Le délai est suspendu tant que la souris survole la notification ou qu'elle a le focus | Aucun                                     |
 
-Deux notifications ne suivent pas cette dernière règle : la question de rythme (5.7), où l'absence de réponse ne change rien, et la fin de pause d'une séquence (5.8), qui reste affichée.
+Trois notifications ne suivent pas cette dernière règle : la question de rythme (5.7), où l'absence de réponse ne change rien ; la fin de pause d'une séquence (5.8), qui reste affichée ; l'annonce de début de séquence (5.8), qui s'efface au bout de 8 secondes sans remettre de compteur à zéro.
 
 ### 5.6 Rappels à heure fixe
 
@@ -303,7 +309,9 @@ Le compteur revient aussi à zéro quand la fréquence du rappel change. Un rapp
 
 ### 5.8 Séquences de travail
 
-Une séquence se lance à la main depuis le menu. Rythme par défaut : 25 minutes de travail, 5 minutes de pause, une grande pause de 15 minutes après 4 séquences. Les autres rythmes : « 50-10 » (50 et 10 minutes), « une pause par heure » (55 et 5 minutes), « autre » (travail de 10 à 120 minutes, pause de 1 à 30 minutes). La grande pause s'applique à tous.
+Une séquence se lance à la main depuis le menu, ou depuis l'entrée du clic droit sur l'icône. Rythme par défaut : 25 minutes de travail, 5 minutes de pause, une grande pause de 15 minutes après 4 séquences. Les autres rythmes : « 50-10 » (50 et 10 minutes), « une pause par heure » (55 et 5 minutes), « autre » (travail de 10 à 120 minutes, pause de 1 à 30 minutes). La grande pause s'applique à tous.
+
+Dès qu'une séquence démarre, une notification d'accompagnement s'affiche tout de suite. Titre : « Séquence de travail ». Trois lignes, espacées de 4 px : « Ta session de focus commence. », « Une seule tâche, un petit pas à la fois. », puis, un peu détachée et en `--texte-second`, « Lèv te rappellera de faire une pause dans {minutes} minutes. » {minutes} est la durée de travail réglée dans Mes rappels. Le pictogramme est celui de la marche (`bouger`), en `--action`. Elle n'a pas de bouton. Elle s'efface au bout de 8 secondes, et ce délai se fige tant que la souris la survole ou qu'elle a le focus. Un clic sur la carte, ou Échap, la ferme aussi. Ni le clic, ni Échap, ni l'effacement ne remettent un compteur à zéro, et aucun message ne suit.
 
 1. Le menu ne propose les séquences que si la case « Séquences de travail » est cochée dans « Mes rappels ». Elle l'est par défaut.
 2. Pendant le travail, le rappel « bouger » est suspendu : c'est la pause de fin de séquence qui invite à marcher. Les autres rappels continuent. Règle provisoire (section 16) : si la séquence dure plus de 30 minutes, une notification « bouger » est proposée une fois, au milieu.
@@ -311,7 +319,7 @@ Une séquence se lance à la main depuis le menu. Rythme par défaut : 25 minute
 4. Son titre suit le rang de la séquence : « Première séquence bouclée », « Deuxième… », jusqu'à « Dixième… », puis « Séquence 11 bouclée ». La durée et l'heure de reprise de sa phrase sont calculées.
 5. Après la dernière séquence de la série (la quatrième par défaut), la phrase devient « Place à une grande pause : 15 minutes, puis on reprend à 11h30. » Après la grande pause, le compte des séquences repart à 1.
 6. À la fin de la pause, une notification discrète « On reprend quand tu veux. » propose « C'est reparti » et « Encore 5 min ». Elle reste affichée jusqu'à la réponse. Sans réponse au bout de 15 minutes, les séquences s'arrêtent d'elles-mêmes. Cet écran n'est pas maquetté : reprendre le gabarit des autres notifications.
-7. « Arrêter les séquences pour aujourd'hui », ou la fermeture de Lèv, revient au fonctionnement normal.
+7. « Arrêter la séquence de travail », dans le menu, le clic droit ou la notification de fin de séquence, ou la fermeture de Lèv, revient au fonctionnement normal.
 
 ### 5.9 Ne pas déranger et mise en veille
 
@@ -325,15 +333,15 @@ Une séquence se lance à la main depuis le menu. Rythme par défaut : 25 minute
 
 Lèv vit dans la zone de notification de Windows, près de l'horloge, et reste silencieuse. L'icône a trois états de fonctionnement, plus un état de veille.
 
-| État | Quand | Ce que l'on voit |
-| --- | --- | --- |
-| Calme | Par défaut | L'icône seule, immobile, sans chiffre ni couleur vive |
-| Bientôt | 2 minutes avant une pause (voir 5.4) | Une petite pastille jaune en haut à droite de l'icône. Elle remplace la bulle du logo, pour ne pas montrer deux points jaunes |
-| Pause proposée | Tant qu'une notification est affichée | La pastille reste (même icône que « bientôt »), et la notification est visible en bas à droite |
+| État           | Quand                                 | Ce que l'on voit                                                                                                              |
+| -------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Calme          | Par défaut                            | L'icône seule, immobile, sans chiffre ni couleur vive                                                                         |
+| Bientôt        | 2 minutes avant une pause (voir 5.4)  | Une petite pastille jaune en haut à droite de l'icône. Elle remplace la bulle du logo, pour ne pas montrer deux points jaunes |
+| Pause proposée | Tant qu'une notification est affichée | La pastille reste (même icône que « bientôt »), et la notification est visible en bas à droite                                |
 
 - **En veille** : l'icône passe en gris (#7b7f8c), L et bulle en blanc.
 - **Infobulle** au survol : « Lèv · prochaine pause à 10h40 », ou « Lèv · en veille jusqu'à 11h00 ».
-- **Clic gauche** : ouvre le menu (section 7.2). **Clic droit** : menu système natif, texte seul, sans icône. Dans l'ordre : si les séquences de travail sont activées, « Démarrer une séquence de travail », ou « Arrêter les séquences » lorsqu'une série est en cours ; « Faire une pause maintenant » (la notification « bouger », tout de suite) ; « Mettre en veille pendant 1 heure », remplacé par « Reprendre les rappels » lorsque Lèv est déjà en veille ; un séparateur ; « Mes rappels » (fenêtre Application) ; « À propos » (écran « À propos ») ; un séparateur ; « Quitter ».
+- **Clic gauche** : ouvre le menu (section 7.2). **Clic droit** : menu système natif, texte seul, sans icône. Dans l'ordre : si les séquences de travail sont activées, « Démarrer une séquence de travail », ou « Arrêter la séquence de travail » lorsqu'une série est en cours ; « Faire une pause maintenant » (la notification « bouger », tout de suite) ; « Mettre en veille pendant 1 heure », remplacé par « Reprendre les rappels » lorsque Lèv est déjà en veille ; un séparateur ; « Mes rappels » (fenêtre Application) ; « À propos » (écran « À propos ») ; un séparateur ; « Quitter ».
 - Les icônes sont des fichiers `.ico` contenant les tailles 16, 20, 24, 32 et 48 px. Les quatre fichiers sont déjà fournis : tray-calme.ico, tray-bientot.ico, tray-veille.ico, et lev.ico pour l'application (jusqu'à 256 px). À 16 et 24 px, on utilise le dessin simplifié du logo (section 9).
 - Aucun clignotement, aucune animation de l'icône dans la barre des tâches.
 
@@ -357,36 +365,38 @@ De haut en bas :
 
 1. En-tête : logo, « Lèv », « Une pause, naturellement. »
 2. Carte « Tes prochaines pauses » : les deux prochaines échéances, sous la forme « Cligner des yeux à 10h20 ». Le cas échéant, la ligne « Tu t'es levé à 10h10 : j'ai décalé la marche. »
-3. Bouton principal « Démarrer une séquence de travail », affiché seulement si la case « Séquences de travail » est cochée dans « Mes rappels ». Sinon, « Faire une pause maintenant » devient le bouton principal. Pendant une séquence, il devient « Arrêter les séquences » et la carte affiche « Séquence 2 sur 4, jusqu'à 10h45 ». Juste sous « Démarrer une séquence de travail », lorsqu'aucune séquence n'est en cours, une légende en 14 px rappelle le rythme actif : « {travail} min concentré, puis {pause} min de pause ».
+3. Bouton principal « Démarrer une séquence de travail », affiché seulement si la case « Séquences de travail » est cochée dans « Mes rappels ». Sinon, « Faire une pause maintenant » devient le bouton principal. Pendant une séquence, il devient « Arrêter la séquence de travail » et la carte affiche « Séquence 2 sur 4, jusqu'à 10h45 ». Juste sous « Démarrer une séquence de travail », lorsqu'aucune séquence n'est en cours, une légende centrée en 12 px rappelle le rythme actif : « {travail} min concentré, puis {pause} min de pause ». Les boutons du menu mesurent 34 px de haut, en 13,5 px.
 4. Bouton secondaire « Faire une pause maintenant » : affiche tout de suite la notification « bouger ».
-5. « Mettre les rappels en veille » : « Pendant 30 minutes », « Pendant 1 heure », « Jusqu'à demain ». En veille, ce bloc est remplacé par « En veille jusqu'à 11h00 » et un bouton « Reprendre ».
-6. Liens : « Une pause par le souffle », « Bien installer mon poste », « Mes rappels », « À propos », « Quitter ». Les quatre premiers ouvrent la fenêtre Application sur l'écran du même nom.
+5. « Mettre les rappels en veille », puis sur une seule ligne trois pastilles : « 30 min », « 1 heure », « Jusqu'à demain ». En veille, ce bloc est remplacé par « En veille jusqu'à 11h00 » et un bouton « Reprendre ».
+6. Liens : « Une pause par le souffle », « Bien installer mon poste », « Mes rappels », « À propos », « Quitter ». Ils mesurent 28 px de haut, en 13,5 px. Les quatre premiers ouvrent la fenêtre Application sur l'écran du même nom.
 
 ### 7.3 Notifications
 
-Toutes partagent le même gabarit : une carte en bas à droite, un pictogramme dans une pastille, un titre, une phrase, puis les boutons. Planches : « Rappel cligner des yeux », « Rappel bouger » (clair et sombre), « Point posture », « Fin d'une séquence de travail », « Rappel qui s'adapte ».
+Toutes partagent le même gabarit : une carte en bas à droite, un pictogramme dans une pastille, un titre, une phrase, puis les boutons. L'annonce de début de séquence n'a pas de boutons. Planches : « Rappel cligner des yeux », « Rappel bouger » (clair et sombre), « Point posture », « Fin d'une séquence de travail », « Rappel qui s'adapte ».
 
-| Notification | Titre | Phrase | Boutons |
-| --- | --- | --- | --- |
-| Yeux | Tes yeux méritent une pause. | Cligne doucement une dizaine de fois, puis regarde au loin, par la fenêtre si tu peux. | Les trois réponses |
-| Bouger | Envie d'un petit mouvement ? | Quelques pas suffisent, à ton rythme. | Les trois réponses |
-| Bouger, variante assise | Un moment pour te détendre ? | Quelques gestes discrets, à ta place. | Les trois réponses |
-| Posture | Un petit point posture ? | Relâche les épaules, pose les pieds à plat et laisse ton dos retrouver le dossier. | Les trois réponses + lien « Bien installer mon poste » |
-| Rappel libre ou à heure fixe | Le nom du rappel | C'est le moment. | Les trois réponses |
-| Fin de séquence | Deuxième séquence bouclée | Un moment pour te détendre ? 5 minutes, puis on reprend à 10h50. | Les trois réponses + « Arrêter les séquences pour aujourd'hui » |
-| Fin de pause | On reprend quand tu veux. | (aucune) | « C'est reparti », « Encore 5 min » |
-| Rythme | Ce rythme te convient ? | Je peux te proposer « Marcher 5 minutes » toutes les 45 minutes, plutôt que toutes les 30. | « Oui, toutes les 45 min », « Garder ce rythme » |
+| Notification                 | Titre                        | Phrase                                                                                                                           | Boutons                                                                            |
+| ---------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Yeux                         | Tes yeux méritent une pause. | Cligne doucement une dizaine de fois, puis regarde au loin, par la fenêtre si tu peux.                                           | Les trois réponses                                                                 |
+| Bouger                       | Envie d'un petit mouvement ? | Quelques pas suffisent, à ton rythme.                                                                                            | Les trois réponses                                                                 |
+| Bouger, variante assise      | Un moment pour te détendre ? | Quelques gestes discrets, à ta place.                                                                                            | Les trois réponses                                                                 |
+| Posture                      | Un petit point posture ?     | Relâche les épaules, pose les pieds à plat et laisse ton dos retrouver le dossier.                                               | Les trois réponses + lien « Bien installer mon poste »                             |
+| Rappel libre ou à heure fixe | Le nom du rappel             | C'est le moment.                                                                                                                 | Les trois réponses                                                                 |
+| Début de séquence            | Séquence de travail          | Ta session de focus commence. / Une seule tâche, un petit pas à la fois. / Lèv te rappellera de faire une pause dans 25 minutes. | Aucun : un clic ou Échap ferme la carte, sinon elle s'efface au bout de 8 secondes |
+| Fin de séquence              | Deuxième séquence bouclée    | Un moment pour te détendre ? 5 minutes, puis on reprend à 10h50.                                                                 | Les trois réponses + « Arrêter la séquence de travail »                            |
+| Fin de pause                 | On reprend quand tu veux.    | (aucune)                                                                                                                         | « C'est reparti », « Encore 5 min »                                                |
+| Rythme                       | Ce rythme te convient ?      | Je peux te proposer « Marcher 5 minutes » toutes les 45 minutes, plutôt que toutes les 30.                                       | « Oui, toutes les 45 min », « Garder ce rythme »                                   |
 
 Particularités :
 
 - **Bouger** contient un encadré avec une idée tirée au hasard, affichée directement, un bouton « Une autre idée » et un bouton « Je reste assis » (qui devient « Finalement, je me lève »). Si l'option « mouvements assis » est cochée, la variante assise s'affiche d'emblée. Une même idée ne revient pas deux fois de suite.
+- **Début de séquence** reprend le gabarit, sans boutons, avec le pictogramme de la marche. Les trois lignes sont espacées de 4 px ; la troisième, en `--texte-second`, est un peu plus détachée. Le nombre de minutes est celui du travail réglé (25 dans l'exemple du tableau). Le survol ou le focus fige les 8 secondes, comme pour les autres notifications.
 - **Fin de séquence** affiche la ligne de parcours : un tracé courbe avec un point par séquence, les séquences faites en turquoise, la grande pause en jaune.
 - Après une réponse, la carte affiche le message de la section 5.5 pendant 3 secondes, puis disparaît en fondu.
 - La notification n'a pas de bouton de fermeture : « Plus tard » en tient lieu. La touche Échap vaut « Plus tard » quand la notification a le focus.
 
 ### 7.4 Mes rappels (planche « Mes rappels »)
 
-L'écran de réglage unique. Le contenu est centré, sur 680 px au plus, pour que les lignes ne s'étirent pas sur toute la fenêtre. Pas de sous-titre sous « Mes rappels ».
+L'écran de réglage unique. Le contenu occupe toute la largeur de la fenêtre. Pas de sous-titre sous « Mes rappels ». Sous la carte des rappels, trois accordéons fermés, espacés de 6 px : « Mes horaires », « Ajouter un rappel », « Autres réglages ». À la taille par défaut, l'écran tient sans défilement.
 
 **La liste.** Une ligne par rappel :
 
@@ -397,9 +407,9 @@ L'écran de réglage unique. Le contenu est centré, sur 680 px au plus, pour qu
 
 La dernière ligne, « Séquences de travail », cochée par défaut et sans corbeille, a sa propre liste : « 25 minutes, puis 5 de pause », « 50 minutes, puis 10 de pause », « Une pause de 5 minutes par heure », « Autre rythme ». « Autre rythme » révèle deux champs en minutes (travail, pause). Dans la ligne, juste sous l'intitulé et sans trait entre les deux, une précision en 13 px : « Pour travailler concentré par étapes : Lèv attend la fin de la séquence pour t'inviter à marcher, et propose une grande pause de 15 minutes toutes les 4 séquences. »
 
-**Mes horaires.** « De \[08:00\] à \[18:00\] \[du lundi au vendredi\] » (autres choix : « du lundi au samedi », « tous les jours »), puis « En dehors de ces horaires, seuls tes rappels à heure fixe s'affichent. »
+**Mes horaires**, accordéon fermé par défaut, même gabarit que « Autres réglages ». Fermé, le titre est suivi du réglage en 12,5 px, par exemple « Mes horaires · 08:00 – 18:00 ». Ouvert : « De \[08:00\] à \[18:00\] \[du lundi au vendredi\] » (autres choix : « du lundi au samedi », « tous les jours »), puis « En dehors de ces horaires, seuls tes rappels à heure fixe s'affichent. »
 
-**Ajouter un rappel**, en deux questions :
+**Ajouter un rappel**, accordéon fermé par défaut, même gabarit. Ouvert, deux questions :
 
 1. « Quoi ? », aligné à gauche : un champ texte sur toute la largeur de la carte, 40 caractères au plus (exemple affiché : « Par exemple : m'étirer »), puis quatre pastilles qui remplissent le champ : « M'étirer », « Respirer profondément », « Me redresser », « Travailler debout ».
 2. « Quand ? », aligné à gauche, sans le cadre natif du groupe : un sélecteur segmenté compact, « Régulièrement » (sélectionné par défaut) et « À une heure précise », puis les pastilles sur une ligne.
@@ -408,7 +418,7 @@ La dernière ligne, « Séquences de travail », cochée par défaut et sans cor
 
 Une phrase se met à jour en direct : « Lèv te rappellera « M'étirer » toutes les heures. » ou « … à 15h00, chaque jour. » Sans nom saisi, elle indique « Donne un nom à ton rappel pour l'ajouter. » et le bouton « Ajouter le rappel » est inactif. La touche Entrée dans le champ ajoute le rappel. Après l'ajout, le rappel apparaît en fin de liste et le champ se vide.
 
-**Autres réglages**, bloc replié par défaut. Le titre est « Autres réglages », avec un chevron à droite qui pivote de 0° à 180° à l'ouverture, et un survol en pointeur :
+**Autres réglages**, bloc replié par défaut. Fermé, il fait environ 40 px de haut : pas de marge interne sur le bloc, `9 px` sur `14 px` sur le titre, en 14 px, rayon de 8 px. Ouvert, le contenu a une marge de `4 px 14 px 12 px`. Le titre a un chevron à droite qui pivote de 0° à 180° à l'ouverture, et un survol en pointeur :
 
 - Thème : « Automatique, comme mon ordinateur », « Clair », « Sombre ».
 - Sept cases, dans cet ordre : « Attendre que j'aie fini de taper pour afficher un rappel », « Tenir compte des pauses que je prends de moi-même », « Ne pas me déranger en plein écran ou pendant une présentation », « Me proposer d'espacer un rappel quand son rythme ne me convient pas », « Préférer des mouvements discrets, à faire assis », « Jouer un son doux avec chaque rappel », « Lancer Lèv au démarrage de l'ordinateur ».
@@ -419,7 +429,7 @@ En bas de page, un lien « À propos ».
 
 ### 7.5 À propos (planche « À propos »)
 
-Une page de lecture. En haut, un lien discret « ← Mes rappels », puis l'en-tête toujours visible. Les quatre blocs suivants sont des tiroirs fermés par défaut, avec le même chevron que « Autres réglages ». Les textes exacts sont en section 10.5.
+Une page de lecture. En haut, un lien discret « ← Mes rappels », puis l'en-tête toujours visible. Les quatre blocs suivants sont des tiroirs fermés par défaut, espacés de 6 px, avec le même chevron et le même gabarit fin que « Autres réglages ». Les textes exacts sont en section 10.5.
 
 1. En-tête : « Lèv — une pause, naturellement. » et une phrase de présentation.
 2. « Philosophie de l'application » : sept principes courts.
@@ -435,13 +445,13 @@ En haut, un lien discret « ← Mes rappels ». Cinq cartes à cocher, numérot�
 
 ### 7.7 Respiration guidée (planche du même nom)
 
-- En haut, un lien discret « ← Mes rappels ». À gauche, une carte : le titre « Un moment pour souffler », la bulle jaune dans un cadre de 180 px (cercle en pointillés à l'amplitude maximale, halo doux), la consigne du temps en cours en 16 px, quatre étiquettes sur une seule ligne (« Inspire », « Garde », « Souffle », « Pause ») dont une est mise en avant, et le bouton « Commencer », largeur contenue, qui devient « J'ai terminé ».
+- En haut, un lien discret « ← Mes rappels », puis la carte de la séance : le titre « Un moment pour souffler », la bulle jaune dans un cadre de 116 px (cercle en pointillés à l'amplitude maximale, halo doux), la consigne du temps en cours en 16 px, quatre étiquettes sur une seule ligne (« Inspire », « Garde », « Souffle », « Pause ») dont une est mise en avant, et le bouton « Respire », largeur contenue, qui devient « J'ai terminé ». Marge interne de la carte : 10 px sur 14 px. Entre le titre, la bulle, la consigne, les étiquettes et le bouton : 6 px. Entre la carte, les deux accordéons et l'encart : 6 px. Accordéons fermés, le lien de retour, la carte, les deux accordéons et l'encart tiennent dans 490 px : aucun défilement.
 - La bulle grandit pendant l'inspiration, reste pleine pendant la pause, rétrécit pendant l'expiration, reste petite pendant la seconde pause. Le changement de taille dure exactement le temps réglé.
 - Consignes : « Inspire par le nez », « Garde l'air, sans forcer », « Souffle doucement », « Reste tranquille ». Au repos : « Prêt quand tu veux ». À la fin : « Chaque petite pause compte. »
-- À droite, « Mon rythme » : trois rythmes tout prêts sur une seule ligne, « Carrée » (4-4-4-4), « Apaisante » (4-0-6-0), « Régulière » (5-0-5-0), puis quatre réglages, chacun sur une seule ligne, avec boutons − et + de 30 px : « Inspiration » et « Expiration » de 2 à 10 secondes, « Pause, poumons pleins » et « Pause, poumons vides » de 0 à 10 secondes. Une pause à 0 disparaît du cycle et affiche « Aucune ».
-- « Durée » : trois pastilles sur une seule ligne, « 1 min », « 3 min », « 5 min ». La séance se termine à la fin du cycle en cours.
+- Sous la séance, deux accordéons fermés, du même gabarit fin que « Mes rappels ». « Mon rythme » affiche le rythme actif à droite, par exemple « Mon rythme · Carrée (4-4-4-4) », ou « Mon rythme · 4s - 6s » quand les pauses sont à 0 et qu'aucun préréglage ne correspond. Ouvert : trois rythmes tout prêts sur une seule ligne, « Carrée » (4-4-4-4), « Apaisante » (4-0-6-0), « Régulière » (5-0-5-0), puis quatre réglages, chacun sur une seule ligne, avec boutons − et + de 30 px : « Inspiration » et « Expiration » de 2 à 10 secondes, « Pause, poumons pleins » et « Pause, poumons vides » de 0 à 10 secondes. Une pause à 0 disparaît du cycle et affiche « Aucune ». Tout en bas : « Lèv retient ton rythme pour la prochaine fois. »
+- « Durée », second accordéon, affiche la durée active, par exemple « Durée · 1 min ». Ouvert : trois pastilles sur une seule ligne, « 1 min », « 3 min », « 5 min ». La séance se termine à la fin du cycle en cours.
 - Les réglages sont mémorisés. Une modification pendant la séance s'applique au temps suivant.
-- Mention en bas : « Lèv retient ton rythme pour la prochaine fois. Si tu te sens gêné, reprends simplement ta respiration habituelle. »
+- En bas, un encart : fond `--surface-douce`, bordure `--lisere`, filet gauche `--action`, icône d'onde en 18 px, marge interne de 8 px sur 12 px, texte en 12 px, interligne 1,35. Première ligne : « Pour t'aider, inspire par le nez en laissant ton ventre se gonfler, puis expire doucement en le laissant rentrer. » Seconde ligne : « Si tu ressens une gêne, pas de pression : reviens simplement à ta respiration naturelle. »
 
 ## 8. Textes et ton
 
@@ -459,13 +469,13 @@ Lèv parle comme un compagnon bienveillant, jamais comme un coach exigeant. Cett
 
 ### Exemples de référence
 
-| À éviter | À privilégier |
-| --- | --- |
-| « Vous devez bouger ! » | « Envie d'un petit mouvement ? » |
-| « Alerte sédentarité » | « Un moment pour te détendre ? » |
-| « Vos yeux sont fatigués » | « Tes yeux méritent une pause. » |
-| « Échec : pause manquée » | « Pas de souci, on reprendra plus tard. » |
-| « Atteignez votre objectif » | « Chaque petite pause compte. » |
+| À éviter                     | À privilégier                             |
+| ---------------------------- | ----------------------------------------- |
+| « Vous devez bouger ! »      | « Envie d'un petit mouvement ? »          |
+| « Alerte sédentarité »       | « Un moment pour te détendre ? »          |
+| « Vos yeux sont fatigués »   | « Tes yeux méritent une pause. »          |
+| « Échec : pause manquée »    | « Pas de souci, on reprendra plus tard. » |
+| « Atteignez votre objectif » | « Chaque petite pause compte. »           |
 
 ### Organisation des textes
 
@@ -480,34 +490,35 @@ L'ambiance visée est celle d'un lever de soleil : fluide, respirante, douce. Le
 
 ### Couleurs
 
-| Jeton | Thème clair | Thème sombre | Usage |
-| --- | --- | --- | --- |
-| `--fond` | Dégradé vertical `#fdf1e7` → `#f9e6e4` (55 %) → `#ece6f3` | Dégradé vertical `#1c1a2b` → `#2a2238` (60 %) → `#3a2a3c` | Fond des fenêtres et des notifications |
-| `--carte` | `rgba(255,255,255,0.62)` | `rgba(255,255,255,0.06)` | Cartes, champs, boutons secondaires |
-| `--lisere` | `rgba(255,255,255,0.7)` | `rgba(255,255,255,0.08)` | Bordure des cartes |
-| `--separateur` | `rgba(46,42,63,0.08)` | `rgba(255,255,255,0.08)` | Traits entre les lignes |
-| `--texte` | `#2e2a3f` | `#f3e9e2` | Texte principal |
-| `--texte-second` | `#5f5a73` | `#b3aec4` | Précisions, légendes, bordure des champs |
-| `--action` | `#0e6f6a` | `#5fcfc6` | Boutons, liens, cases cochées |
-| `--action-survol` | `#0a5551` | `#84ded6` | Survol et appui |
-| `--sur-action` | `#ffffff` | `#1c1a2b` | Texte posé sur `--action` |
-| `--fond-picto` | `#fde3d2` | `#3a2f3f` | Fond des pictogrammes |
-| `--soleil` | `#f1be5a` | `#f1be5a` | Bulle du logo, pastille « bientôt », grande pause. Jamais de texte dans cette couleur |
-| `--trace` | `#f0d9cc` | `#3a3650` | Partie non parcourue d'une ligne de parcours |
+| Jeton             | Thème clair                                               | Thème sombre                                              | Usage                                                                                 |
+| ----------------- | --------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `--fond`          | Dégradé vertical `#fdf1e7` → `#f9e6e4` (55 %) → `#ece6f3` | Dégradé vertical `#1c1a2b` → `#2a2238` (60 %) → `#3a2a3c` | Fond des fenêtres et des notifications                                                |
+| `--carte`         | `rgba(255,255,255,0.62)`                                  | `rgba(255,255,255,0.06)`                                  | Cartes, champs, boutons secondaires                                                   |
+| `--lisere`        | `rgba(255,255,255,0.7)`                                   | `rgba(255,255,255,0.08)`                                  | Bordure des cartes                                                                    |
+| `--separateur`    | `rgba(46,42,63,0.08)`                                     | `rgba(255,255,255,0.08)`                                  | Traits entre les lignes                                                               |
+| `--texte`         | `#2e2a3f`                                                 | `#f3e9e2`                                                 | Texte principal                                                                       |
+| `--texte-second`  | `#5f5a73`                                                 | `#b3aec4`                                                 | Précisions, légendes, bordure des champs                                              |
+| `--action`        | `#0e6f6a`                                                 | `#5fcfc6`                                                 | Boutons, liens, cases cochées                                                         |
+| `--action-survol` | `#0a5551`                                                 | `#84ded6`                                                 | Survol et appui                                                                       |
+| `--sur-action`    | `#ffffff`                                                 | `#1c1a2b`                                                 | Texte posé sur `--action`                                                             |
+| `--fond-picto`    | `#fde3d2`                                                 | `#3a2f3f`                                                 | Fond des pictogrammes                                                                 |
+| `--surface-douce` | `rgba(45,106,99,0.06)`                                    | `rgba(95,207,198,0.12)`                                   | Encart de conseil de la respiration                                                   |
+| `--soleil`        | `#f1be5a`                                                 | `#f1be5a`                                                 | Bulle du logo, pastille « bientôt », grande pause. Jamais de texte dans cette couleur |
+| `--trace`         | `#f0d9cc`                                                 | `#3a3650`                                                 | Partie non parcourue d'une ligne de parcours                                          |
 
 Le turquoise `--action` et le jaune `--soleil` viennent du logotype Ekilib.re. Le thème « automatique » suit le réglage clair ou sombre de Windows et change sans redémarrage.
 
 ### Typographie
 
 - Une seule police : Atkinson Hyperlegible, graisses 400 et 700. Elle est embarquée dans l'application (licence libre OFL), jamais chargée depuis Internet. Les titres de section demandent la graisse 600 : sans fichier intermédiaire, ils s'affichent avec la graisse 700.
-- Échelle : 22 px (titre de page, chasse −0,01 em), 17 px (titre de notification), 16 px (consigne de respiration), 15,5 px (titre de section et d'accordéon), 14 px (texte courant, libellés, listes, boutons, corps du menu et de la notification, interligne 1,5), 13 px (mentions d'accueil, précision des séquences, étiquettes et pastilles de respiration), 12,5 px (légendes et textes secondaires).
+- Échelle : 22 px (titre de page, chasse −0,01 em), 17 px (titre de notification), 16 px (consigne de respiration), 15,5 px (titre de section), 14 px (texte courant, libellés, listes, boutons, titre d'accordéon, corps de la notification, interligne 1,5), 13,5 px (boutons et liens du menu), 13 px (mentions d'accueil, précision des séquences, étiquettes et pastilles de respiration), 12,5 px (légendes, textes secondaires), 12 px (légende de rythme dans le menu, phrase « Lèv retient ton rythme », les deux lignes de l'encart de conseil, interligne 1,35).
 - Le texte courant est en 14 px. Le 12,5 px est réservé aux légendes et aux textes secondaires. Le 13 px est réservé aux mentions discrètes listées ci-dessus.
 
 ### Formes et espaces
 
-- Cartes, tiroirs, accueil et séance de respiration : rayon de 12 px. Boutons, champs et pastilles : rayon complet (forme de pilule).
-- Boutons, champs et listes mesurent au moins 38 px de haut, avec un padding horizontal de 14 px. Les pastilles de suggestion et de fréquence mesurent 34 px. Les lignes de texte du menu mesurent 32 px, pour que la carte tienne sans défilement. Le bouton « Commencer » de l'accueil mesure 42 px. Les boutons − et + de la respiration mesurent 30 px.
-- Espacements : 4, 6, 10, 12, 14, 16, 18, 20, 24, 32 px. L'espace vertical entre les blocs d'un écran est de 10 px. Marge interne d'une carte : 14 px sur 18 px. Marge interne d'une notification : 20 px.
+- Cartes, accueil et séance de respiration : rayon de 12 px. Les accordéons ont un rayon de 8 px. Boutons, champs et pastilles : rayon complet (forme de pilule).
+- Boutons, champs et listes mesurent au moins 38 px de haut, avec un padding horizontal de 14 px. Les pastilles de suggestion et de fréquence mesurent 34 px, comme les boutons du menu. Les lignes de liens du menu mesurent 28 px. Le bouton « Commencer » de l'accueil mesure 42 px. Les boutons − et + de la respiration mesurent 30 px.
+- Espacements : 4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 32 px. Dans la fenêtre Application, une seule marge de page de 12 px sur 14 px, sans marge cumulée sur `html`, `body` ou `#racine`. L'espace vertical entre les blocs, et entre le lien de retour, le titre et l'introduction, est de 6 px. Marge interne d'une carte : 14 px sur 18 px. La carte de la séance de respiration fait exception : 10 px sur 14 px, et 6 px entre le titre, la bulle, la consigne, les étiquettes et le bouton. Le cadre de la bulle mesure 116 px. L'encart de conseil a une marge interne de 8 px sur 12 px. Marge interne d'une notification : 20 px.
 - Ombre sous les notifications, le menu et la carte d'accueil : `0 6px 24px rgba(46,42,63,0.10)`. La bulle de respiration a un halo `0 0 28px rgba(233,196,106,0.35)`.
 - Trois niveaux de bouton : principal (fond `--action`), secondaire (bordure `--action`, fond `--carte`), discret (texte `--texte-second`, sans bordure).
 
@@ -553,24 +564,24 @@ Deux listes : `debout` et `assis`. Chaque idée est une phrase de 160 caractère
 
 Les six idées ci-dessous sont des exemples provisoires. Elles doivent être relues ou réécrites par les enseignants en APA avant diffusion. Objectif pour la v1 : au moins 15 idées par liste.
 
-| Liste | Idée provisoire |
-| --- | --- |
-| debout | Va remplir ta gourde en passant par le chemin le plus long, ou monte un étage à pied. |
-| debout | Marche jusqu'à une fenêtre, regarde au loin, puis roule doucement les épaules vers l'arrière, cinq fois. |
-| debout | Fais le tour de l'étage à ton rythme, en laissant les bras se balancer. |
-| assis | Sans te lever : décolle les talons, puis les pointes de pieds, dix fois. Laisse ensuite rouler les épaules vers l'arrière. |
-| assis | Sans te lever : redresse-toi, puis tourne lentement la tête à droite et à gauche, cinq fois, sans forcer. |
-| assis | Sans te lever : tends une jambe devant toi, tiens trois respirations, puis change de côté. |
+| Liste  | Idée provisoire                                                                                                            |
+| ------ | -------------------------------------------------------------------------------------------------------------------------- |
+| debout | Va remplir ta gourde en passant par le chemin le plus long, ou monte un étage à pied.                                      |
+| debout | Marche jusqu'à une fenêtre, regarde au loin, puis roule doucement les épaules vers l'arrière, cinq fois.                   |
+| debout | Fais le tour de l'étage à ton rythme, en laissant les bras se balancer.                                                    |
+| assis  | Sans te lever : décolle les talons, puis les pointes de pieds, dix fois. Laisse ensuite rouler les épaules vers l'arrière. |
+| assis  | Sans te lever : redresse-toi, puis tourne lentement la tête à droite et à gauche, cinq fois, sans forcer.                  |
+| assis  | Sans te lever : tends une jambe devant toi, tiens trois respirations, puis change de côté.                                 |
 
 ### 10.2 Guide du poste (`content/guide.fr.json`)
 
-| Étape | Titre | Texte |
-| --- | --- | --- |
-| 1 | L'écran | Place-le bien en face de toi, le haut de l'écran à la hauteur de tes yeux. Tourne-le de côté par rapport à la fenêtre pour éviter les reflets. |
-| 2 | Le siège | Assieds-toi au fond du siège, le dos en contact avec le dossier. Tes pieds reposent à plat sur le sol, ou sur un repose-pieds. |
-| 3 | Le clavier et la souris | Laisse 10 à 15 cm entre le bord du bureau et le clavier pour poser tes avant-bras. Garde la souris tout près du clavier, sans appuyer les poignets en continu. |
-| 4 | La lumière | Évite une fenêtre ou une lampe juste devant ou derrière l'écran. Règle les stores et l'éclairage selon le moment de la journée. |
-| 5 | Avec un ordinateur portable | Si tu y travailles longtemps, surélève-le et branche un clavier et une souris séparés. |
+| Étape | Titre                       | Texte                                                                                                                                                          |
+| ----- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | L'écran                     | Place-le bien en face de toi, le haut de l'écran à la hauteur de tes yeux. Tourne-le de côté par rapport à la fenêtre pour éviter les reflets.                 |
+| 2     | Le siège                    | Assieds-toi au fond du siège, le dos en contact avec le dossier. Tes pieds reposent à plat sur le sol, ou sur un repose-pieds.                                 |
+| 3     | Le clavier et la souris     | Laisse 10 à 15 cm entre le bord du bureau et le clavier pour poser tes avant-bras. Garde la souris tout près du clavier, sans appuyer les poignets en continu. |
+| 4     | La lumière                  | Évite une fenêtre ou une lampe juste devant ou derrière l'écran. Règle les stores et l'éclairage selon le moment de la journée.                                |
+| 5     | Avec un ordinateur portable | Si tu y travailles longtemps, surélève-le et branche un clavier et une souris séparés.                                                                         |
 
 Encadré, sous les cinq cartes. Titre : « Et surtout, change souvent de position ». Phrase : « Même bien installé, la meilleure posture reste celle dont on bouge régulièrement. »
 
@@ -578,15 +589,15 @@ Mention affichée : « D'après les recommandations de l'INRS sur le travail sur
 
 ### 10.3 Textes de référence de l'écran « À propos »
 
-| Organisme | Titre et lien |
-| --- | --- |
-| Anses, octobre 2025 | [Marcher régulièrement 5 minutes pour préserver sa santé](https://www.anses.fr/fr/actualite/marcher-regulierement-5-minutes-preserver-sa-sante) |
-| INRS | [Prévention des risques liés aux postures sédentaires au travail](https://www.inrs.fr/risques/postures-sedentaires/prevention-risques.html) |
-| OMS, novembre 2020 | [Lignes directrices sur l'activité physique et la sédentarité](https://www.who.int/fr/publications-detail/9789240014886) |
+| Organisme                            | Titre et lien                                                                                                                                                                                                                                                   |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Anses, octobre 2025                  | [Marcher régulièrement 5 minutes pour préserver sa santé](https://www.anses.fr/fr/actualite/marcher-regulierement-5-minutes-preserver-sa-sante)                                                                                                                 |
+| INRS                                 | [Prévention des risques liés aux postures sédentaires au travail](https://www.inrs.fr/risques/postures-sedentaires/prevention-risques.html)                                                                                                                     |
+| OMS, novembre 2020                   | [Lignes directrices sur l'activité physique et la sédentarité](https://www.who.int/fr/publications-detail/9789240014886)                                                                                                                                        |
 | Santé publique France, décembre 2025 | [Sédentarité : prévalence et connaissance des recommandations, Baromètre 2024](https://www.santepubliquefrance.fr/nutrition-et-activite-physique/rapportsynthese/sedentarite-prevalence-et-connaissance-des-recommandations-barometre-de-sante-publique-france) |
-| Santé publique France | [Réduire le temps passé assis (mangerbouger.fr)](https://www.mangerbouger.fr/l-essentiel/les-recommandations-sur-l-alimentation-l-activite-physique-et-la-sedentarite/reduire/reduire-le-temps-passe-assis) |
-| Code du travail | [Article R. 4542-4, interruptions du travail sur écran](https://code.travail.gouv.fr/code-du-travail/r4542-4) |
-| INRS | [Travail sur écran, réglementation et normes](https://www.inrs.fr/risques/travail-ecran/reglementation-normes.html) |
+| Santé publique France                | [Réduire le temps passé assis (mangerbouger.fr)](https://www.mangerbouger.fr/l-essentiel/les-recommandations-sur-l-alimentation-l-activite-physique-et-la-sedentarite/reduire/reduire-le-temps-passe-assis)                                                     |
+| Code du travail                      | [Article R. 4542-4, interruptions du travail sur écran](https://code.travail.gouv.fr/code-du-travail/r4542-4)                                                                                                                                                   |
+| INRS                                 | [Travail sur écran, réglementation et normes](https://www.inrs.fr/risques/travail-ecran/reglementation-normes.html)                                                                                                                                             |
 
 Seule la page de l'Anses a été ouverte et lue en entier pendant la conception. Les six autres liens sont à tester un par un avant publication.
 
@@ -604,27 +615,27 @@ Ces textes sont à reprendre mot pour mot dans `content/fr.json`.
 
 **Philosophie de l'application**
 
-| Titre | Texte |
-| --- | --- |
-| Rester assis longtemps compte, même quand on fait du sport | Une séance de sport le soir ne suffit pas à effacer une journée entière passée sur une chaise. Ce qui aide, c'est d'interrompre souvent la position assise. |
-| De petits gestes, souvent | Quelques pas, un étage à pied, un regard par la fenêtre. Rien à réussir, rien à mesurer : chaque petite pause compte. |
-| Une invitation, jamais un reproche | Tu peux reporter une pause ou la passer. L'application ne tient aucun compte de ce que tu n'as pas fait. |
-| Le travail reste au centre | Les rappels se font discrets et se taisent quand tu présentes ou travailles en plein écran. Les séquences de travail t'aident à te concentrer, puis à vraiment t'arrêter. |
-| Le bon moment | Lèv attend que tu aies fini de taper, tient compte des pauses que tu prends de toi-même et respecte tes horaires. |
-| Des idées écrites par des professionnels | Chaque invitation à bouger propose un mouvement simple à faire au bureau, avec toujours une variante à faire assis. |
-| Chez toi, pour toi | Aucun compte, aucune inscription, aucune donnée personnelle demandée. Tes réglages restent sur ton ordinateur. L'application est gratuite et ne remplace pas l'avis d'un professionnel de santé. |
+| Titre                                                      | Texte                                                                                                                                                                                            |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Rester assis longtemps compte, même quand on fait du sport | Une séance de sport le soir ne suffit pas à effacer une journée entière passée sur une chaise. Ce qui aide, c'est d'interrompre souvent la position assise.                                      |
+| De petits gestes, souvent                                  | Quelques pas, un étage à pied, un regard par la fenêtre. Rien à réussir, rien à mesurer : chaque petite pause compte.                                                                            |
+| Une invitation, jamais un reproche                         | Tu peux reporter une pause ou la passer. L'application ne tient aucun compte de ce que tu n'as pas fait.                                                                                         |
+| Le travail reste au centre                                 | Les rappels se font discrets et se taisent quand tu présentes ou travailles en plein écran. Les séquences de travail t'aident à te concentrer, puis à vraiment t'arrêter.                        |
+| Le bon moment                                              | Lèv attend que tu aies fini de taper, tient compte des pauses que tu prends de toi-même et respecte tes horaires.                                                                                |
+| Des idées écrites par des professionnels                   | Chaque invitation à bouger propose un mouvement simple à faire au bureau, avec toujours une variante à faire assis.                                                                              |
+| Chez toi, pour toi                                         | Aucun compte, aucune inscription, aucune donnée personnelle demandée. Tes réglages restent sur ton ordinateur. L'application est gratuite et ne remplace pas l'avis d'un professionnel de santé. |
 
 **Les repères que suit l'application**
 
-| Titre | Texte |
-| --- | --- |
-| Se lever toutes les 30 minutes | L'Anses et l'INRS conseillent d'interrompre la position assise toutes les 30 minutes dans l'idéal. C'est le rythme proposé par défaut. |
-| Marcher 5 minutes | Pour un adulte, l'Anses conseille 5 minutes de marche, à allure tranquille ou modérée. C'est la durée de la pause active. |
-| Quitter l'écran des yeux | Le Code du travail prévoit que le travail sur écran soit régulièrement interrompu par des pauses ou des changements d'activité. Le rappel toutes les 20 minutes est un choix de l'application, que tu peux modifier. |
+| Titre                          | Texte                                                                                                                                                                                                                |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Se lever toutes les 30 minutes | L'Anses et l'INRS conseillent d'interrompre la position assise toutes les 30 minutes dans l'idéal. C'est le rythme proposé par défaut.                                                                               |
+| Marcher 5 minutes              | Pour un adulte, l'Anses conseille 5 minutes de marche, à allure tranquille ou modérée. C'est la durée de la pause active.                                                                                            |
+| Quitter l'écran des yeux       | Le Code du travail prévoit que le travail sur écran soit régulièrement interrompu par des pauses ou des changements d'activité. Le rappel toutes les 20 minutes est un choix de l'application, que tu peux modifier. |
 
 Lien sous ce bloc : « Bien installer mon poste, en cinq réglages ».
 
-**Ekilib.re.** « L'application est proposée gratuitement par l'association Ekilib.re, Maison Sport-Santé au Tampon, à La Réunion. Nous accompagnons chacun, quel que soit son âge, pour pratiquer ou reprendre une activité physique adaptée. » Le lien `https://ekilib.re` est posé sur le mot « Ekilib.re ». Il n'y a pas de lien séparé « Découvrir Ekilib.re ».
+**Ekilib.re.** « L'application est proposée gratuitement par l'association Ekilib.re, Maison Sport-Santé au Tampon, à La Réunion. » Le lien `https://ekilib.re` est posé sur le mot « Ekilib.re ». Il n'y a pas de lien séparé « Découvrir Ekilib.re ».
 
 Sous-titre « Chaque pas compte. » : « Les Maisons Sport-Santé sont des lieux d'accueil, d'information et d'orientation vers une activité physique adaptée à tes besoins, tes envies et ta santé. Elles proposent un accompagnement personnalisé, quel que soit ton âge ou ton niveau de départ. » Le lien `https://www.sports.gouv.fr/maisons-sport-sante` est posé sur « Maisons Sport-Santé ».
 
@@ -736,16 +747,16 @@ Chaque règle de la section 5 a au moins un test. Cas obligatoires :
 
 Le développement se fait en huit lots, dans cet ordre. Chaque lot se termine par une application qui se lance et se teste : on ne commence pas le suivant avant.
 
-| Lot | Contenu | Terminé quand |
-| --- | --- | --- |
-| 0. Socle | Projet `electron-vite` en TypeScript strict, arborescence de la section 3, règles de sécurité, icône dans la zone de notification, fichier de réglages avec valeurs par défaut, jetons de couleur, police et icônes fournies à l'avance (section 17) | L'icône apparaît, « Quitter » fonctionne, les réglages par défaut sont écrits sur le disque |
-| 1. Moteur et première notification | Moteur avec horloge injectée (5.1, 5.4, 5.5), fenêtre de notification, rappels « yeux » et « bouger », messages de réponse | Les deux rappels se déclenchent et répondent aux trois boutons. Tests 1, 5, 6 et 18 au vert |
-| 2. Menu et « Mes rappels » | Menu complet, liste des rappels, ajout des deux types, retrait avec « Annuler », « Rétablir les rappels d'origine », horaires, rappels à heure fixe (5.6) | On peut créer, régler et retirer un rappel sans redémarrer. Tests 2, 8, 12, 13, 15 et 17 au vert |
-| 3. Le bon moment | Accalmie, pauses spontanées, mise en veille, états de l'icône, pastille « bientôt », détection du plein écran par appel natif, étude technique « Ne pas déranger » (5.9) | Tests 3, 4, 9, 11 et 14 au vert. Compte rendu de l'étude technique rédigé |
-| 4. Séquences de travail | Règles 5.8, notifications de fin de séquence et de fin de pause, ligne de parcours, état dans le menu | Une série de quatre séquences se déroule jusqu'à la grande pause. Tests 10 et 16 au vert |
-| 5. Contenus et écrans annexes | Premier lancement, « À propos », guide du poste, point posture, idées de mouvement avec variante assise, respiration guidée | Tous les écrans de la section 7 existent et sont conformes à ce document |
-| 6. Finitions | Rappel qui s'adapte (5.7), thème sombre et automatique, son, accessibilité (section 12), animation du logo | Test 7 au vert. Parcours clavier et NVDA validés. Contrastes mesurés |
-| 7. Livraison | Installateur, démarrage automatique, mises à jour, signature si décidée, contrôle manuel complet | La liste de contrôle de la section 14 est entièrement cochée sur Windows 10 et 11 |
+| Lot                                | Contenu                                                                                                                                                                                                                                              | Terminé quand                                                                                    |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| 0. Socle                           | Projet `electron-vite` en TypeScript strict, arborescence de la section 3, règles de sécurité, icône dans la zone de notification, fichier de réglages avec valeurs par défaut, jetons de couleur, police et icônes fournies à l'avance (section 17) | L'icône apparaît, « Quitter » fonctionne, les réglages par défaut sont écrits sur le disque      |
+| 1. Moteur et première notification | Moteur avec horloge injectée (5.1, 5.4, 5.5), fenêtre de notification, rappels « yeux » et « bouger », messages de réponse                                                                                                                           | Les deux rappels se déclenchent et répondent aux trois boutons. Tests 1, 5, 6 et 18 au vert      |
+| 2. Menu et « Mes rappels »         | Menu complet, liste des rappels, ajout des deux types, retrait avec « Annuler », « Rétablir les rappels d'origine », horaires, rappels à heure fixe (5.6)                                                                                            | On peut créer, régler et retirer un rappel sans redémarrer. Tests 2, 8, 12, 13, 15 et 17 au vert |
+| 3. Le bon moment                   | Accalmie, pauses spontanées, mise en veille, états de l'icône, pastille « bientôt », détection du plein écran par appel natif, étude technique « Ne pas déranger » (5.9)                                                                             | Tests 3, 4, 9, 11 et 14 au vert. Compte rendu de l'étude technique rédigé                        |
+| 4. Séquences de travail            | Règles 5.8, notifications de fin de séquence et de fin de pause, ligne de parcours, état dans le menu                                                                                                                                                | Une série de quatre séquences se déroule jusqu'à la grande pause. Tests 10 et 16 au vert         |
+| 5. Contenus et écrans annexes      | Premier lancement, « À propos », guide du poste, point posture, idées de mouvement avec variante assise, respiration guidée                                                                                                                          | Tous les écrans de la section 7 existent et sont conformes à ce document                         |
+| 6. Finitions                       | Rappel qui s'adapte (5.7), thème sombre et automatique, son, accessibilité (section 12), animation du logo                                                                                                                                           | Test 7 au vert. Parcours clavier et NVDA validés. Contrastes mesurés                             |
+| 7. Livraison                       | Installateur, démarrage automatique, mises à jour, signature si décidée, contrôle manuel complet                                                                                                                                                     | La liste de contrôle de la section 14 est entièrement cochée sur Windows 10 et 11                |
 
 Les contenus définitifs des enseignants en APA (section 10.1) peuvent arriver en parallèle : il suffit de remplacer le fichier JSON avant le lot 7.
 
@@ -753,21 +764,21 @@ Les contenus définitifs des enseignants en APA (section 10.1) peuvent arriver e
 
 Seize points restent à trancher : les treize du tableau et les trois qui le suivent. Chacun a une règle provisoire, pour que le développement ne soit pas bloqué.
 
-| Point | À décider | Règle provisoire | Avant le lot |
-| --- | --- | --- | --- |
-| Rappels actifs au départ | Lesquels sont cochés au premier lancement | Yeux, marcher et posture actifs ; eau proposée mais décochée | 1 |
-| Longues séquences | Que faire quand une séquence dépasse 30 minutes assis (rythmes 50-10 et « une pause par heure ») | Une invitation discrète à se lever au milieu de la séquence | 4 |
-| Visioconférences | Peut-on lire de façon fiable le mode « Ne pas déranger » de Windows | Plein écran et mode présentation seulement (5.9) | 3 |
-| Logotype | La bulle au-dessus du L et l'accent du « è » font double emploi | Garder les deux, comme sur la maquette | 5 |
-| Logo Ekilib.re | Fichier du logo de l'association pour l'écran « À propos » | Nom en toutes lettres, sans logo | 5 |
-| Idées de mouvement | Relecture et rédaction par les enseignants en APA | Les six exemples, marqués provisoires | 7 |
-| Guide du poste | Relecture des cinq consignes et de la mention de source | Textes de la section 10.2 | 7 |
-| Son | Quel son, créé ou libre de droits | Option masquée tant qu'aucun son n'est choisi | 6 |
-| Écrans sombres | Seuls le menu et le rappel « bouger » ont une maquette sombre | Appliquer les jetons sombres de la section 9 | 6 |
-| Licence | Logiciel libre ou non, et quelle licence | Mention « Tous droits réservés, Ekilib.re » | 7 |
-| Nom | Vérifier que « Lèv » est disponible comme marque et comme nom de domaine | Aucune : à vérifier avant toute communication publique | 7 |
-| Signature du code | Achat d'un certificat au nom de l'association | Livrer sans signature en test interne uniquement | 7 |
-| Hébergement | Où sont publiés l'installateur et les mises à jour | Mises à jour désactivées tant que ce n'est pas décidé | 7 |
+| Point                    | À décider                                                                                        | Règle provisoire                                             | Avant le lot |
+| ------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ------------ |
+| Rappels actifs au départ | Lesquels sont cochés au premier lancement                                                        | Yeux, marcher et posture actifs ; eau proposée mais décochée | 1            |
+| Longues séquences        | Que faire quand une séquence dépasse 30 minutes assis (rythmes 50-10 et « une pause par heure ») | Une invitation discrète à se lever au milieu de la séquence  | 4            |
+| Visioconférences         | Peut-on lire de façon fiable le mode « Ne pas déranger » de Windows                              | Plein écran et mode présentation seulement (5.9)             | 3            |
+| Logotype                 | La bulle au-dessus du L et l'accent du « è » font double emploi                                  | Garder les deux, comme sur la maquette                       | 5            |
+| Logo Ekilib.re           | Fichier du logo de l'association pour l'écran « À propos »                                       | Nom en toutes lettres, sans logo                             | 5            |
+| Idées de mouvement       | Relecture et rédaction par les enseignants en APA                                                | Les six exemples, marqués provisoires                        | 7            |
+| Guide du poste           | Relecture des cinq consignes et de la mention de source                                          | Textes de la section 10.2                                    | 7            |
+| Son                      | Quel son, créé ou libre de droits                                                                | Option masquée tant qu'aucun son n'est choisi                | 6            |
+| Écrans sombres           | Seuls le menu et le rappel « bouger » ont une maquette sombre                                    | Appliquer les jetons sombres de la section 9                 | 6            |
+| Licence                  | Logiciel libre ou non, et quelle licence                                                         | Mention « Tous droits réservés, Ekilib.re »                  | 7            |
+| Nom                      | Vérifier que « Lèv » est disponible comme marque et comme nom de domaine                         | Aucune : à vérifier avant toute communication publique       | 7            |
+| Signature du code        | Achat d'un certificat au nom de l'association                                                    | Livrer sans signature en test interne uniquement             | 7            |
+| Hébergement              | Où sont publiés l'installateur et les mises à jour                                               | Mises à jour désactivées tant que ce n'est pas décidé        | 7            |
 
 Trois points ajoutés à la relecture de cohérence :
 
@@ -804,16 +815,19 @@ alwaysApply: true
 # Règles générales du projet Lèv
 
 ## Source de vérité
+
 - `docs/CDC.md` est le cahier des charges. Lis la section concernée avant de coder.
 - `docs/maquettes/` contient les maquettes. En cas d'écart, le cahier des charges fait foi.
 - Si une règle manque ou semble contradictoire, pose la question. N'invente pas de fonctionnalité.
 
 ## Périmètre
+
 - Un seul lot à la fois (section 15). Ne commence pas le lot suivant.
 - N'ajoute jamais : statistiques, historique, compte utilisateur, mesure d'audience, appel réseau autre que la mise à jour prévue en section 13.
 - N'ajoute aucune dépendance sans la proposer et la justifier d'abord.
 
 ## Code
+
 - TypeScript strict, aucun `any`.
 - Tout ce qui dépend de Windows passe par `src/main/platform/`. Aucun `process.platform` ailleurs.
 - Sécurité Electron : `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`.
@@ -821,12 +835,14 @@ alwaysApply: true
 - Le raccourci clavier global n'est enregistré que pendant l'affichage d'une notification.
 
 ## Ton des textes (section 8)
+
 - Tutoiement, phrases courtes, invitation ou question.
 - Jamais d'ordre, d'alerte, de reproche, de compteur de pauses manquées.
 - Bouton principal d'une pause : « Je le fais ». Jamais « OK » ni « Ignorer ».
 - Pas de point d'exclamation, pas d'émoji, pas de majuscules d'insistance.
 
 ## Fin de lot
+
 - Lance les tests et la vérification des types.
 - Résume ce qui est fait, ce qui ne l'est pas, et les questions ouvertes.
 ```
@@ -863,7 +879,7 @@ alwaysApply: false
 - Aucun texte en dur : tout vient de `src/content/fr.json`.
 - Aucune couleur ni taille en dur : uniquement les variables CSS de la section 9.
 - Éléments HTML natifs (`button`, `a`, `input`, `label`, `select`). Jamais de `div` cliquable.
-- Cibles de 38 px minimum (34 px pour les pastilles, 32 px pour les lignes du menu, 30 px pour les boutons − et + de la respiration), focus visible sur les éléments interactifs.
+- Cibles de 38 px minimum (34 px pour les pastilles et les boutons du menu, 28 px pour les liens du menu, 30 px pour les boutons − et + de la respiration), focus visible sur les éléments interactifs.
 - Respecte `prefers-reduced-motion`.
 - Les écrans passent par l'API du preload. Jamais d'accès direct au disque ni à `ipcRenderer`.
 - La notification mesure sa hauteur avec `ResizeObserver` et la transmet au processus principal, qui l'arrondit en entier avant `setBounds()`.

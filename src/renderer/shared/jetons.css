@@ -25,6 +25,7 @@
   --action-survol: #0a5551;
   --sur-action: #ffffff;
   --fond-picto: #fde3d2;
+  --surface-douce: rgba(45, 106, 99, 0.06);
   --soleil: #f1be5a;
   --trace: #f0d9cc;
 
@@ -45,8 +46,10 @@
   --graisse-consigne: 600;
   --graisse-forte: 700;
 
+  --espace-2: 2px;
   --espace-4: 4px;
   --espace-6: 6px;
+  --espace-8: 8px;
   --espace-10: 10px;
   --espace-12: 12px;
   --espace-14: 14px;
@@ -56,28 +59,34 @@
   --espace-32: 32px;
 
   --rayon-carte: 12px;
+  --rayon-repli: 8px;
+  --rayon-conseil: 10px;
+  --icone-conseil: 18px;
   --rayon-accueil: 12px;
   --rayon-seance: 12px;
   --rayon-pilule: 999px;
   --cible-min: 38px;
   --cible-pastille: 34px;
-  --cible-menu: 32px;
+  --cible-menu: 28px;
+  --cible-menu-bouton: 34px;
   --cible-pas: 30px;
   --cible-commencer: 42px;
-  --largeur-reglages: 680px;
+  --texte-menu: 13.5px;
+  --texte-menu-legende: 12px;
+  --pad-repli-y: 9px;
   --largeur-accueil: 460px;
   --largeur-commencer: 200px;
   --largeur-seance: 180px;
   --logo-accueil: 52px;
   --logo-accueil-dessin: 32px;
-  --bulle-respiration: 180px;
-  --colonne-min: 300px;
+  --bulle-respiration: 116px;
+  --interligne-conseil: 1.35;
   --pad-carte-y: 14px;
   --pad-carte-x: 18px;
   --pad-accueil-y: 14px;
   --pad-accueil-x: 18px;
-  --pad-seance-y: 14px;
-  --pad-seance-x: 18px;
+  --pad-seance-y: 10px;
+  --pad-seance-x: 14px;
   --ombre-flottante: 0 6px 24px rgba(46, 42, 63, 0.1);
   --halo-bulle: 0 0 28px rgba(233, 196, 106, 0.35);
   --contour-focus: 3px solid var(--action);
@@ -97,6 +106,7 @@
   --action-survol: #84ded6;
   --sur-action: #1c1a2b;
   --fond-picto: #3a2f3f;
+  --surface-douce: rgba(95, 207, 198, 0.12);
   --soleil: #f1be5a;
   --trace: #3a3650;
   color-scheme: dark;

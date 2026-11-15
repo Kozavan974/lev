@@ -8,7 +8,7 @@ const MARGE_OMBRE_PX = 30
 /** Distance entre la carte et le bord de la zone de travail, au repli. */
 const MARGE_BORD_PX = 24
 
-const LARGEUR_CARTE_PX = 380
+const LARGEUR_CARTE_PX = 300
 const LARGEUR_FENETRE_PX = LARGEUR_CARTE_PX + MARGE_OMBRE_PX * 2
 const DELAI_DESTRUCTION_MS = 60_000
 const DELAI_REOUVERTURE_MS = 300

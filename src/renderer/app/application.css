@@ -5,11 +5,17 @@ html[data-route='app'] body {
 .application {
   display: flex;
   flex-direction: column;
-  gap: var(--espace-10);
+  gap: var(--espace-6);
   width: 100%;
-  max-width: var(--largeur-reglages);
-  margin: 0 auto;
-  padding: var(--espace-24) var(--espace-16);
+  max-width: 100%;
+  margin: 0;
+  padding: var(--espace-12) var(--espace-14);
+}
+
+.tiroirs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-6);
 }
 
 .carte {
@@ -183,16 +189,31 @@ label.question {
   min-height: var(--cible-min);
 }
 
+.carte.repli {
+  gap: 0;
+  padding: 0;
+  border-radius: var(--rayon-repli);
+}
+
 .repli > summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--espace-10);
-  min-height: var(--cible-min);
-  font-size: var(--titre-section);
+  min-height: 0;
+  padding: var(--pad-repli-y) var(--espace-14);
+  border-radius: var(--rayon-repli);
+  font-size: var(--texte-courant);
   font-weight: var(--graisse-titre);
   list-style: none;
   cursor: pointer;
+}
+
+.repli-resume {
+  margin-left: var(--espace-6);
+  color: var(--texte-second);
+  font-size: var(--legende);
+  font-weight: var(--graisse-texte);
 }
 
 .repli > summary::-webkit-details-marker {
@@ -222,7 +243,7 @@ label.question {
   display: flex;
   flex-direction: column;
   gap: var(--espace-10);
-  padding-top: var(--espace-10);
+  padding: var(--espace-4) var(--espace-14) var(--espace-12);
 }
 
 .lien-bas {
@@ -263,6 +284,10 @@ label.question {
   display: flex;
   flex-direction: column;
   gap: var(--espace-10);
+}
+
+.entete {
+  gap: var(--espace-6);
 }
 
 .liste-textes {
@@ -378,7 +403,9 @@ label.question {
 }
 
 .retour .bouton-texte {
+  min-height: 0;
   padding: 0;
+  line-height: 1.2;
   color: var(--texte-second);
 }
 
@@ -421,10 +448,10 @@ label.question {
 }
 
 .respiration {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--colonne-min)), 1fr));
-  gap: var(--espace-16);
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-6);
+  line-height: 1.2;
 }
 
 .respiration > * {
@@ -435,7 +462,7 @@ label.question {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--espace-16);
+  gap: var(--espace-6);
   padding: var(--pad-seance-y) var(--pad-seance-x);
   border: 1px solid var(--lisere);
   border-radius: var(--rayon-seance);
@@ -547,4 +574,46 @@ label.question {
   font-size: var(--legende);
   text-align: center;
   white-space: nowrap;
+}
+
+.respiration-retenu {
+  margin: 0;
+  color: var(--texte-second);
+  font-size: var(--texte-menu-legende);
+}
+
+.conseil {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espace-10);
+  padding: var(--espace-8) var(--espace-12);
+  font-size: var(--texte-menu-legende);
+  line-height: var(--interligne-conseil);
+  border: 1px solid var(--lisere);
+  border-left: 3px solid var(--action);
+  border-radius: var(--rayon-conseil);
+  background: var(--surface-douce);
+}
+
+.conseil-icone {
+  width: var(--icone-conseil);
+  height: var(--icone-conseil);
+  flex: none;
+  margin-top: var(--espace-2);
+  color: var(--action);
+}
+
+.conseil-principal {
+  margin: 0;
+  color: var(--texte);
+  font-size: inherit;
+  font-weight: var(--graisse-titre);
+  line-height: inherit;
+}
+
+.conseil-suite {
+  margin: var(--espace-4) 0 0;
+  color: var(--texte-second);
+  font-size: inherit;
+  line-height: inherit;
 }

@@ -3,6 +3,7 @@ import type { Rappel, Reglages, TypeRappel } from '../modeles'
 import {
   ACCALMIE_MAX_MS,
   ACCALMIE_SECONDES,
+  AFFICHAGE_DEBUT_SEQUENCE_MS,
   AFFICHAGE_NOTIFICATION_AUTRE_MS,
   AFFICHAGE_NOTIFICATION_YEUX_MS,
   BIENTOT_AVANT_MS,
@@ -23,6 +24,7 @@ import {
   creerSerie,
   enchainterTravail,
   estGrande,
+  ID_DEBUT_SEQUENCE,
   ID_FIN_PAUSE,
   ID_FIN_SEQUENCE,
   minutesDePause,
@@ -47,7 +49,7 @@ export interface DetailSequence {
 }
 
 export interface NotificationEnCours {
-  genre: 'rappel' | 'finSequence' | 'finPause'
+  genre: 'rappel' | 'debutSequence' | 'finSequence' | 'finPause'
   rappelId: string
   depuisMs: number
   delaiMs: number
@@ -381,6 +383,9 @@ export function repondre(
     return { etat, message: null }
   }
   const maintenantMs = maintenant.getTime()
+  if (notification.genre === 'debutSequence') {
+    return { etat: { ...etat, notification: null }, message: null }
+  }
   if (notification.genre === 'finSequence') {
     return repondreFinSequence(etat, reglages, reponse, maintenantMs)
   }
@@ -1114,7 +1119,12 @@ export function demarrerSerie(
   if (!serie) {
     return null
   }
-  return { ...etat, serie }
+  return {
+    ...etat,
+    serie,
+    attente: null,
+    notification: notificationDebut(maintenant.getTime())
+  }
 }
 
 export function arreterSerie(etat: EtatMoteur): EtatMoteur {
@@ -1123,7 +1133,10 @@ export function arreterSerie(etat: EtatMoteur): EtatMoteur {
   return {
     ...etat,
     serie: null,
-    notification: genre === 'finSequence' || genre === 'finPause' ? null : etat.notification,
+    notification:
+      genre === 'debutSequence' || genre === 'finSequence' || genre === 'finPause'
+        ? null
+        : etat.notification,
     attente: attenteId === ID_FIN_SEQUENCE || attenteId === ID_FIN_PAUSE ? null : etat.attente,
     pauseJusquaMs: etat.serie?.phase === 'pause' ? null : etat.pauseJusquaMs
   }
@@ -1168,6 +1181,18 @@ function montrerSequence(
     reglages,
     entree
   )
+}
+
+function notificationDebut(depuisMs: number): NotificationEnCours {
+  return {
+    genre: 'debutSequence',
+    rappelId: ID_DEBUT_SEQUENCE,
+    depuisMs,
+    delaiMs: AFFICHAGE_DEBUT_SEQUENCE_MS,
+    charge: CHARGE_VIDE,
+    resteAffichee: false,
+    sequence: null
+  }
 }
 
 function notificationRappel(

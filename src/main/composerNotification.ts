@@ -10,6 +10,9 @@ export function composerVue(
   notification: NotificationEnCours,
   cycle: number
 ): VueNotification | null {
+  if (notification.genre === 'debutSequence') {
+    return vueDebut(notification, reglages, cycle)
+  }
   if (notification.genre === 'finSequence') {
     return notification.sequence ? vueFinSequence(notification, notification.sequence, cycle) : null
   }
@@ -64,6 +67,28 @@ export function composerVue(
     textes.notification.libre.phrase,
     null,
     false
+  )
+}
+
+function vueDebut(
+  notification: NotificationEnCours,
+  reglages: Reglages,
+  cycle: number
+): VueNotification {
+  const textesDebut = textes.notification.debutSequence
+  return vue(
+    notification,
+    cycle,
+    'debutSequence',
+    textesDebut.titre,
+    [
+      textesDebut.ligne1,
+      textesDebut.ligne2,
+      remplir(textesDebut.suite, { minutes: String(reglages.sequences.travailMin) })
+    ].join('\n'),
+    null,
+    false,
+    { boutons: 'aucun' }
   )
 }
 

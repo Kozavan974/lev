@@ -2,10 +2,10 @@ import { BrowserWindow } from 'electron'
 import textes from '../content/fr.json'
 import { chargerPage, creerFenetre } from './windows'
 
-const LARGEUR_PX = 960
-const HAUTEUR_PX = 720
-const LARGEUR_MIN_PX = 480
-const HAUTEUR_MIN_PX = 600
+const LARGEUR_PX = 520
+const HAUTEUR_PX = 580
+const LARGEUR_MIN_PX = 440
+const HAUTEUR_MIN_PX = 460
 
 let fenetre: BrowserWindow | null = null
 
@@ -24,6 +24,7 @@ export function ouvrirApplication(): void {
     height: HAUTEUR_PX,
     minWidth: LARGEUR_MIN_PX,
     minHeight: HAUTEUR_MIN_PX,
+    useContentSize: true,
     center: true,
     title: textes.application.nom,
     backgroundColor: '#fdf1e7'

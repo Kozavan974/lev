@@ -26,9 +26,9 @@ export type ReponseBouton =
   'jeLeFais' | 'dans5min' | 'plusTard' | 'cestReparti' | 'encore5min' | 'arreterSequences'
 
 export type TypeVueNotification =
-  'yeux' | 'bouger' | 'posture' | 'libre' | 'finSequence' | 'finPause'
+  'yeux' | 'bouger' | 'posture' | 'libre' | 'debutSequence' | 'finSequence' | 'finPause'
 
-export type BoutonsNotification = 'trois' | 'reprise'
+export type BoutonsNotification = 'trois' | 'reprise' | 'aucun'
 
 export interface ParcoursSequence {
   faits: number
@@ -165,7 +165,15 @@ export interface ApiLev {
   definirHauteurMenu(hauteurPx: number): void
 }
 
-const TYPES_VUE = ['yeux', 'bouger', 'posture', 'libre', 'finSequence', 'finPause'] as const
+const TYPES_VUE = [
+  'yeux',
+  'bouger',
+  'posture',
+  'libre',
+  'debutSequence',
+  'finSequence',
+  'finPause'
+] as const
 
 export function estReponseBouton(valeur: unknown): valeur is ReponseBouton {
   return (
@@ -194,7 +202,7 @@ export function estVueNotification(valeur: unknown): valeur is VueNotification {
     (valeur.surtitre === null || typeof valeur.surtitre === 'string') &&
     estParcours(valeur.parcours) &&
     (valeur.legende === null || typeof valeur.legende === 'string') &&
-    (valeur.boutons === 'trois' || valeur.boutons === 'reprise') &&
+    (valeur.boutons === 'trois' || valeur.boutons === 'reprise' || valeur.boutons === 'aucun') &&
     typeof valeur.lienArret === 'boolean' &&
     typeof valeur.lienPoste === 'boolean' &&
     typeof valeur.resteAffichee === 'boolean'
