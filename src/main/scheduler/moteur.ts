@@ -1,3 +1,4 @@
+import { jourDeRepetition, jourLocal } from '../../partage/format'
 import type { Rappel, Reglages, TypeRappel } from '../modeles'
 import {
   AFFICHAGE_NOTIFICATION_AUTRE_MS,
@@ -5,6 +6,7 @@ import {
   BIENTOT_AVANT_MS,
   BIENTOT_FREQUENCE_MIN_MINUTES,
   FENETRE_PRIORITE_MS,
+  HEURE_FIXE_RETARD_MAX_MS,
   MESSAGE_REPONSE_MS,
   PAUSE_BOUGER_MS,
   REPORT_CINQ_MIN_MS,
@@ -31,6 +33,13 @@ export interface ReportEnAttente {
   charge: ChargeNotification
 }
 
+/** Heure fixe écartée : elle attend la fermeture, puis 2 minutes. */
+export interface HeureFixeDifferee {
+  rappelId: string
+  /** Null tant que la notification en cours n'est pas fermée. */
+  pasAvantMs: number | null
+}
+
 export interface EtatMoteur {
   compteursMs: Readonly<Record<string, number>>
   dernierInstantMs: number | null
@@ -41,6 +50,7 @@ export interface EtatMoteur {
   bloqueJusquaMs: number | null
   pauseJusquaMs: number | null
   report: ReportEnAttente | null
+  heureFixeDifferee: HeureFixeDifferee | null
 }
 
 /** L'inactivité est injectée pour le lot 3. Le lot 1 ne s'en sert pas. */
@@ -49,6 +59,8 @@ export interface EntreeMoteur {
   inactiviteSec: number
   sessionOuverte: boolean
   reveil: boolean
+  /** Plein écran ou présentation. Le lot 3 alimentera ce drapeau. */
+  pleinEcran?: boolean
 }
 
 export interface AffichageDemande {
@@ -57,10 +69,18 @@ export interface AffichageDemande {
   charge: ChargeNotification
 }
 
+/** Écriture à faire dans les réglages : déclenchement, ou abandon du jour. */
+export interface EffetHeureFixe {
+  rappelId: string
+  dernierDeclenchement: string
+  desactiver: boolean
+}
+
 export interface DecisionMoteur {
   etat: EtatMoteur
   afficher: AffichageDemande | null
   bientot: boolean
+  effets: readonly EffetHeureFixe[]
 }
 
 export type ReponseRappel = 'jeLeFais' | 'dans5min' | 'plusTard' | 'aucune'
@@ -94,7 +114,8 @@ export function creerEtat(): EtatMoteur {
     notification: null,
     bloqueJusquaMs: null,
     pauseJusquaMs: null,
-    report: null
+    report: null,
+    heureFixeDifferee: null
   }
 }
 
@@ -161,11 +182,89 @@ export function evaluer(
     veilleActive: enVeille
   }
 
+  const resolution = resoudreHeureFixe(courant, reglages, entree, enVeille)
+  courant = resolution.etat
+
+  if (resolution.afficher) {
+    return {
+      etat: ecarterDejaDus(courant, reglages),
+      afficher: resolution.afficher,
+      bientot: true,
+      effets: resolution.effets
+    }
+  }
+
+  if (courant.notification) {
+    courant = ecarterDejaDus(courant, reglages)
+  }
+
+  if (resolution.bloqueRecurrents) {
+    return {
+      etat: courant,
+      afficher: null,
+      bientot: calculerBientot(courant, reglages) || resolution.bientot,
+      effets: resolution.effets
+    }
+  }
+
   const choix = choisir(courant, reglages, maintenantMs)
   return {
     etat: choix.etat,
     afficher: choix.afficher,
-    bientot: calculerBientot(choix.etat, reglages)
+    bientot: calculerBientot(choix.etat, reglages) || resolution.bientot,
+    effets: resolution.effets
+  }
+}
+
+/** Affiche tout de suite le rappel « bouger », même décoché ou hors horaires. */
+export function poserPauseImmediate(
+  etat: EtatMoteur,
+  reglages: Reglages,
+  maintenant: Date
+): { etat: EtatMoteur; afficher: AffichageDemande } | null {
+  const maintenantMs = maintenant.getTime()
+  if (etat.notification) {
+    return null
+  }
+  if (etat.bloqueJusquaMs !== null && maintenantMs < etat.bloqueJusquaMs) {
+    return null
+  }
+  const bouger = reglages.rappels.find((rappel) => rappel.type === 'bouger')
+  if (!bouger) {
+    return null
+  }
+  const charge = chargeInitiale(bouger, reglages)
+  const notification: NotificationEnCours = {
+    rappelId: bouger.id,
+    depuisMs: maintenantMs,
+    delaiMs: AFFICHAGE_NOTIFICATION_AUTRE_MS,
+    charge
+  }
+  const report = etat.report?.rappelId === bouger.id ? null : etat.report
+  return {
+    etat: { ...etat, notification, report },
+    afficher: { rappelId: bouger.id, delaiMs: notification.delaiMs, charge }
+  }
+}
+
+export function appliquerEffets(reglages: Reglages, effets: readonly EffetHeureFixe[]): Reglages {
+  if (effets.length === 0) {
+    return reglages
+  }
+  const parId = new Map(effets.map((effet) => [effet.rappelId, effet]))
+  return {
+    ...reglages,
+    rappels: reglages.rappels.map((rappel) => {
+      const effet = parId.get(rappel.id)
+      if (!effet) {
+        return rappel
+      }
+      const suivant: Rappel = { ...rappel, dernierDeclenchement: effet.dernierDeclenchement }
+      if (effet.desactiver) {
+        suivant.actif = false
+      }
+      return suivant
+    })
   }
 }
 
@@ -291,20 +390,24 @@ function choisir(
 
 function listerCandidats(etat: EtatMoteur, reglages: Reglages, maintenantMs: number): Candidat[] {
   const candidats: Candidat[] = []
+  const report = etat.report
+  if (report && maintenantMs >= report.jusquaMs) {
+    const reporte = reglages.rappels.find((rappel) => rappel.id === report.rappelId)
+    if (reporte) {
+      candidats.push({
+        rappel: reporte,
+        dejaDu: true,
+        snooze: true,
+        charge: report.charge
+      })
+    }
+  }
   for (const rappel of rappelsSuivis(reglages)) {
-    const periode = periodeMs(rappel)
-    if (periode === null) {
+    if (report?.rappelId === rappel.id) {
       continue
     }
-    if (etat.report?.rappelId === rappel.id) {
-      if (maintenantMs >= etat.report.jusquaMs) {
-        candidats.push({
-          rappel,
-          dejaDu: true,
-          snooze: true,
-          charge: etat.report.charge
-        })
-      }
+    const periode = periodeMs(rappel)
+    if (periode === null) {
       continue
     }
     const restant = periode - (etat.compteursMs[rappel.id] ?? 0)
@@ -428,8 +531,8 @@ function plusPrioritaire(candidats: readonly Candidat[]): Candidat | null {
 
 /** Négatif si `a` passe avant `b`. Moins fréquent d'abord, puis posture, bouger, libre, yeux. */
 function compareRappel(a: Rappel, b: Rappel): number {
-  const frequenceA = -(a.frequenceMin ?? 0)
-  const frequenceB = -(b.frequenceMin ?? 0)
+  const frequenceA = a.mode === 'heure' ? -1_000_000 : -(a.frequenceMin ?? 0)
+  const frequenceB = b.mode === 'heure' ? -1_000_000 : -(b.frequenceMin ?? 0)
   if (frequenceA !== frequenceB) {
     return frequenceA - frequenceB
   }
@@ -451,6 +554,181 @@ function cloner(etat: EtatMoteur): EtatMoteur {
     notification: etat.notification
       ? { ...etat.notification, charge: { ...etat.notification.charge } }
       : null,
-    report: etat.report ? { ...etat.report, charge: { ...etat.report.charge } } : null
+    report: etat.report ? { ...etat.report, charge: { ...etat.report.charge } } : null,
+    heureFixeDifferee: etat.heureFixeDifferee ? { ...etat.heureFixeDifferee } : null
   }
+}
+
+interface OccurrenceHeure {
+  rappel: Rappel
+  prevuMs: number
+  cle: string
+}
+
+interface ResolutionHeure {
+  etat: EtatMoteur
+  effets: EffetHeureFixe[]
+  afficher: AffichageDemande | null
+  bloqueRecurrents: boolean
+  bientot: boolean
+}
+
+function resoudreHeureFixe(
+  etat: EtatMoteur,
+  reglages: Reglages,
+  entree: EntreeMoteur,
+  enVeille: boolean
+): ResolutionHeure {
+  const maintenantMs = entree.maintenant.getTime()
+  const retenu = !entree.sessionOuverte || enVeille || entree.pleinEcran === true
+  const dedans: OccurrenceHeure[] = []
+  const avant: OccurrenceHeure[] = []
+  const effets: EffetHeureFixe[] = []
+
+  for (const rappel of reglages.rappels) {
+    if (!rappel.actif || rappel.mode !== 'heure' || !rappel.heure || !rappel.repetition) {
+      continue
+    }
+    for (const delta of [-1, 0]) {
+      const occurrence = lireOccurrence(rappel, entree.maintenant, delta)
+      if (!occurrence) {
+        continue
+      }
+      const fin = occurrence.prevuMs + HEURE_FIXE_RETARD_MAX_MS
+      if (maintenantMs < occurrence.prevuMs) {
+        if (delta === 0) {
+          avant.push(occurrence)
+        }
+      } else if (maintenantMs < fin) {
+        dedans.push(occurrence)
+      } else if (delta === 0) {
+        effets.push(effetDe(rappel, occurrence.cle))
+      }
+    }
+  }
+
+  dedans.sort((a, b) => a.prevuMs - b.prevuMs)
+  const principal = dedans[0]
+  const proche =
+    avant.some((occurrence) => occurrence.prevuMs - maintenantMs <= FENETRE_PRIORITE_MS) ||
+    dedans.length > 0
+
+  if (!principal) {
+    return {
+      etat: { ...etat, heureFixeDifferee: null },
+      effets,
+      afficher: null,
+      bloqueRecurrents: !retenu && proche,
+      bientot: proche
+    }
+  }
+
+  if (retenu) {
+    return { etat, effets, afficher: null, bloqueRecurrents: false, bientot: true }
+  }
+
+  if (!peutAfficher(etat, maintenantMs)) {
+    return {
+      etat: {
+        ...etat,
+        heureFixeDifferee: { rappelId: principal.rappel.id, pasAvantMs: null }
+      },
+      effets,
+      afficher: null,
+      bloqueRecurrents: true,
+      bientot: true
+    }
+  }
+
+  const differee = etat.heureFixeDifferee
+  if (differee?.rappelId === principal.rappel.id && differee.pasAvantMs === null) {
+    return {
+      etat: {
+        ...etat,
+        heureFixeDifferee: {
+          rappelId: principal.rappel.id,
+          pasAvantMs: maintenantMs + FENETRE_PRIORITE_MS
+        }
+      },
+      effets,
+      afficher: null,
+      bloqueRecurrents: true,
+      bientot: true
+    }
+  }
+  if (
+    differee?.rappelId === principal.rappel.id &&
+    differee.pasAvantMs !== null &&
+    maintenantMs < differee.pasAvantMs
+  ) {
+    return { etat, effets, afficher: null, bloqueRecurrents: true, bientot: true }
+  }
+
+  const charge = chargeInitiale(principal.rappel, reglages)
+  const notification: NotificationEnCours = {
+    rappelId: principal.rappel.id,
+    depuisMs: maintenantMs,
+    delaiMs: AFFICHAGE_NOTIFICATION_AUTRE_MS,
+    charge
+  }
+  const suivant = dedans[1]
+  const report = etat.report?.rappelId === principal.rappel.id ? null : etat.report
+  return {
+    etat: {
+      ...etat,
+      report,
+      notification,
+      heureFixeDifferee: suivant ? { rappelId: suivant.rappel.id, pasAvantMs: null } : null
+    },
+    effets: [...effets, effetDe(principal.rappel, principal.cle)],
+    afficher: { rappelId: principal.rappel.id, delaiMs: notification.delaiMs, charge },
+    bloqueRecurrents: false,
+    bientot: true
+  }
+}
+
+function lireOccurrence(
+  rappel: Rappel,
+  maintenant: Date,
+  deltaJours: number
+): OccurrenceHeure | null {
+  if (!rappel.heure || !rappel.repetition) {
+    return null
+  }
+  const [heures, minutes] = rappel.heure.split(':').map(Number)
+  const jour = new Date(
+    maintenant.getFullYear(),
+    maintenant.getMonth(),
+    maintenant.getDate() + deltaJours,
+    heures,
+    minutes,
+    0,
+    0
+  )
+  if (!jourDeRepetition(rappel.repetition, jour)) {
+    return null
+  }
+  const cle = jourLocal(jour)
+  if (rappel.dernierDeclenchement === cle) {
+    return null
+  }
+  return { rappel, prevuMs: jour.getTime(), cle }
+}
+
+function effetDe(rappel: Rappel, cle: string): EffetHeureFixe {
+  return {
+    rappelId: rappel.id,
+    dernierDeclenchement: cle,
+    desactiver: rappel.repetition === 'une'
+  }
+}
+
+function peutAfficher(etat: EtatMoteur, maintenantMs: number): boolean {
+  if (etat.notification) {
+    return false
+  }
+  if (etat.bloqueJusquaMs !== null && maintenantMs < etat.bloqueJusquaMs) {
+    return false
+  }
+  return true
 }

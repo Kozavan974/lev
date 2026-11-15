@@ -1,0 +1,76 @@
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--cible-min);
+  padding: 0 var(--espace-14);
+  border-radius: var(--rayon-pilule);
+  font: inherit;
+  cursor: pointer;
+}
+
+.bouton-principal {
+  border: none;
+  background: var(--action);
+  color: var(--sur-action);
+  font-weight: var(--graisse-forte);
+}
+
+.bouton-principal:hover {
+  background: var(--action-survol);
+}
+
+.bouton-secondaire {
+  border: 1px solid var(--action);
+  background: var(--carte);
+  color: var(--action);
+}
+
+.bouton-secondaire:hover {
+  border-color: var(--action-survol);
+  color: var(--action-survol);
+}
+
+.bouton-discret {
+  border: none;
+  background: transparent;
+  color: var(--texte-second);
+  padding: 0 var(--espace-10);
+}
+
+.bouton-discret:hover {
+  color: var(--texte);
+}
+
+.bouton-texte {
+  border: none;
+  background: transparent;
+  color: var(--action);
+  font: inherit;
+  cursor: pointer;
+}
+
+.bouton-texte:hover {
+  color: var(--action-survol);
+}
+
+.bouton:disabled {
+  opacity: 0.45;
+}
+
+.champ,
+.select {
+  min-height: var(--cible-min);
+  padding: 0 var(--espace-14);
+  border: 1px solid var(--texte-second);
+  border-radius: var(--rayon-pilule);
+  background: var(--carte);
+  color: var(--texte);
+}
+
+.case {
+  width: var(--espace-20);
+  height: var(--espace-20);
+  min-height: var(--espace-20);
+  accent-color: var(--action);
+}

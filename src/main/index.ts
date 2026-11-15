@@ -1,7 +1,10 @@
 import { app, Menu } from 'electron'
+import { detruireApplication, ouvrirApplication } from './applicationFenetre'
 import { arreterBoucle, demarrerBoucle } from './boucle'
 import { installerPolitiqueContenu } from './ipc'
+import { basculerMenu, detruireMenu } from './menuFenetre'
 import { configurerPlateforme } from './platform'
+import { brancherEcrans } from './pontEcrans'
 import { initialiserStore } from './store'
 import { creerZoneNotification, detruireZoneNotification } from './tray'
 
@@ -12,7 +15,9 @@ if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
   app.on('second-instance', () => {
-    // Le lot 2 ouvrira « Mes rappels » dans l'instance déjà lancée.
+    if (app.isReady()) {
+      ouvrirApplication()
+    }
   })
 
   app.on('window-all-closed', () => {
@@ -21,6 +26,8 @@ if (!app.requestSingleInstanceLock()) {
 
   app.on('before-quit', () => {
     arreterBoucle()
+    detruireMenu()
+    detruireApplication()
     detruireZoneNotification()
   })
 
@@ -30,7 +37,11 @@ if (!app.requestSingleInstanceLock()) {
       Menu.setApplicationMenu(null)
       initialiserStore()
       installerPolitiqueContenu()
-      creerZoneNotification()
+      creerZoneNotification({
+        clicGauche: basculerMenu,
+        ouvrirRappels: ouvrirApplication
+      })
+      brancherEcrans()
       demarrerBoucle()
     })
     .catch((erreur: unknown) => {

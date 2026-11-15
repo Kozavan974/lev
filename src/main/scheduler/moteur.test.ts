@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest'
-import type { Rappel, Reglages, TypeRappel } from '../modeles'
+import { jourLocal } from '../../partage/format'
+import type { Rappel, Reglages, Repetition, TypeRappel } from '../modeles'
 import { reglagesParDefaut } from '../reglages'
 import {
   AFFICHAGE_NOTIFICATION_AUTRE_MS,
   AFFICHAGE_NOTIFICATION_YEUX_MS,
   FENETRE_PRIORITE_MS,
+  MESSAGE_REPONSE_MS,
   PAUSE_BOUGER_MS
 } from './constantes'
-import { estDansHoraires } from './horaires'
+import { estDansHoraires, finVeilleDemain } from './horaires'
 import {
+  appliquerEffets,
   creerEtat,
   evaluer,
+  poserPauseImmediate,
   repondre,
   type ChargeNotification,
   type EntreeMoteur,
@@ -24,8 +28,13 @@ function au(jour: number, heures: number, minutes: number, secondes = 0): Date {
   return new Date(2026, 10, jour, heures, minutes, secondes)
 }
 
-function entree(instant: Date, sessionOuverte = true, reveil = false): EntreeMoteur {
-  return { maintenant: instant, inactiviteSec: 0, sessionOuverte, reveil }
+function entree(
+  instant: Date,
+  sessionOuverte = true,
+  reveil = false,
+  pleinEcran = false
+): EntreeMoteur {
+  return { maintenant: instant, inactiviteSec: 0, sessionOuverte, reveil, pleinEcran }
 }
 
 function parType(reglages: Reglages, type: TypeRappel): Rappel {
@@ -275,6 +284,164 @@ describe('moteur de rappels', () => {
   })
 })
 
+describe('rappels à heure fixe', () => {
+  it('désactive un rappel une seule fois après affichage, sans le rattraper s’il a été manqué', () => {
+    const { reglages, id } = heureFixe('15:00', 'une')
+    const montre = evaluer(amorcer(reglages, au(16, 14, 0)), reglages, entree(au(16, 15, 0)))
+    expect(montre.afficher?.rappelId).toBe(id)
+    const apres = appliquerEffets(reglages, montre.effets)
+    expect(apres.rappels.find((rappel) => rappel.id === id)?.actif).toBe(false)
+    expect(apres.rappels.find((rappel) => rappel.id === id)?.dernierDeclenchement).toBe(
+      '2026-11-16'
+    )
+
+    const lendemain = evaluer(creerEtat(), apres, entree(au(17, 15, 0)))
+    expect(lendemain.afficher).toBeNull()
+
+    const manque = evaluer(creerEtat(), reglages, entree(au(16, 15, 20)))
+    expect(manque.afficher).toBeNull()
+    const abandonne = appliquerEffets(reglages, manque.effets)
+    expect(abandonne.rappels.find((rappel) => rappel.id === id)?.actif).toBe(false)
+    const pasRattrape = evaluer(creerEtat(), abandonne, entree(au(17, 15, 0)))
+    expect(pasRattrape.afficher).toBeNull()
+  })
+
+  it('ne déclenche un rappel à heure fixe qu’une fois, même dans la même minute', () => {
+    const { reglages, id } = heureFixe('15:00', 'jour')
+    const premier = evaluer(amorcer(reglages, au(16, 14, 0)), reglages, entree(au(16, 15, 0, 5)))
+    expect(premier.afficher?.rappelId).toBe(id)
+    const arme = appliquerEffets(reglages, premier.effets)
+
+    const reponse = repondre(premier.etat, arme, 'plusTard', au(16, 15, 0, 10))
+    const encore = evaluer(reponse.etat, arme, entree(au(16, 15, 0, 40)))
+    expect(encore.afficher).toBeNull()
+    expect(encore.effets).toEqual([])
+
+    const reporte = repondre(premier.etat, arme, 'dans5min', au(16, 15, 0, 10))
+    const retour = evaluer(reporte.etat, arme, entree(au(16, 15, 5, 10)))
+    expect(retour.afficher?.rappelId).toBe(id)
+    expect(retour.effets).toEqual([])
+  })
+
+  it('affiche un rappel à heure fixe hors horaires, avant un récurrent, et le retient puis l’abandonne', () => {
+    const { reglages, id } = heureFixe('07:30', 'jour')
+    const hors = evaluer(creerEtat(), reglages, entree(au(16, 7, 30)))
+    expect(hors.afficher?.rappelId).toBe(id)
+
+    const { reglages: ensemble, id: idFixe } = heureFixe('15:00', 'jour')
+    const yeuxEnsemble = parType(ensemble, 'yeux')
+    const dus = presDuSeuil([yeuxEnsemble], au(16, 15, 0))
+    const priorite = evaluer(dus, ensemble, entree(new Date(au(16, 15, 0).getTime() + 1000)))
+    expect(priorite.afficher?.rappelId).toBe(idFixe)
+    expect(priorite.etat.compteursMs[yeuxEnsemble.id]).toBe(0)
+
+    const samedi = evaluer(
+      creerEtat(),
+      heureFixe('15:00', 'semaine').reglages,
+      entree(au(14, 15, 0))
+    )
+    expect(samedi.afficher).toBeNull()
+    expect(samedi.effets).toEqual([])
+    const lundi = evaluer(
+      creerEtat(),
+      heureFixe('15:00', 'semaine').reglages,
+      entree(au(16, 15, 0))
+    )
+    expect(lundi.afficher).not.toBeNull()
+
+    const tenu = heureFixe('15:00', 'jour')
+    const verrouille = evaluer(creerEtat(), tenu.reglages, entree(au(16, 15, 2), false))
+    expect(verrouille.afficher).toBeNull()
+    expect(verrouille.effets).toEqual([])
+    const relache = evaluer(verrouille.etat, tenu.reglages, entree(au(16, 15, 6)))
+    expect(relache.afficher?.rappelId).toBe(tenu.id)
+
+    const plein = evaluer(creerEtat(), tenu.reglages, entree(au(16, 15, 2), true, false, true))
+    expect(plein.afficher).toBeNull()
+    const sorti = evaluer(plein.etat, tenu.reglages, entree(au(16, 15, 4)))
+    expect(sorti.afficher?.rappelId).toBe(tenu.id)
+
+    const veilleJusqua = au(16, 15, 20).toISOString()
+    const pendant = evaluer(creerEtat(), { ...tenu.reglages, veilleJusqua }, entree(au(16, 15, 5)))
+    expect(pendant.afficher).toBeNull()
+    expect(pendant.effets).toEqual([])
+    const tropTard = evaluer(
+      pendant.etat,
+      { ...tenu.reglages, veilleJusqua },
+      entree(au(16, 15, 20))
+    )
+    expect(tropTard.afficher).toBeNull()
+    expect(tropTard.effets[0]?.dernierDeclenchement).toBe(jourLocal(au(16, 15, 20)))
+  })
+
+  it('affiche l’heure fixe deux minutes après la fermeture de la notification précédente', () => {
+    const { reglages, id } = heureFixe('15:00', 'jour')
+    const yeux = parType(reglages, 'yeux')
+    const occupe = {
+      ...creerEtat(),
+      notification: {
+        rappelId: yeux.id,
+        depuisMs: au(16, 15, 0).getTime(),
+        delaiMs: AFFICHAGE_NOTIFICATION_YEUX_MS,
+        charge: { assis: false, ideeIndex: null }
+      }
+    }
+    const differe = evaluer(occupe, reglages, entree(au(16, 15, 0)))
+    expect(differe.afficher).toBeNull()
+
+    const ferme = repondre(differe.etat, reglages, 'plusTard', au(16, 15, 0))
+    const arme = appliquerEffets(reglages, differe.effets)
+    const justeApres = evaluer(
+      ferme.etat,
+      arme,
+      entree(new Date(au(16, 15, 0).getTime() + MESSAGE_REPONSE_MS))
+    )
+    expect(justeApres.afficher).toBeNull()
+    const tropTot = evaluer(
+      justeApres.etat,
+      arme,
+      entree(new Date(au(16, 15, 0).getTime() + MESSAGE_REPONSE_MS + FENETRE_PRIORITE_MS - 1000))
+    )
+    expect(tropTot.afficher).toBeNull()
+    const aLHeure = evaluer(
+      tropTot.etat,
+      arme,
+      entree(new Date(au(16, 15, 0).getTime() + MESSAGE_REPONSE_MS + FENETRE_PRIORITE_MS))
+    )
+    expect(aLHeure.afficher?.rappelId).toBe(id)
+  })
+
+  it('prend en compte une fréquence raccourcie avec le compteur déjà avancé', () => {
+    const reglages = seulement(['yeux'])
+    const yeux = parType(reglages, 'yeux')
+    const etat = {
+      ...amorcer(reglages, au(16, 8, 0)),
+      compteursMs: { [yeux.id]: 15 * MINUTE }
+    }
+    const raccourci: Reglages = {
+      ...reglages,
+      rappels: reglages.rappels.map((rappel) =>
+        rappel.id === yeux.id ? { ...rappel, frequenceMin: 10 } : rappel
+      )
+    }
+    const decision = evaluer(etat, raccourci, entree(au(16, 8, 0)))
+    expect(decision.afficher?.rappelId).toBe(yeux.id)
+  })
+
+  it('affiche tout de suite la pause demandée, sans empiler une seconde notification', () => {
+    const reglages = seulement(['bouger'])
+    const bouger = { ...parType(reglages, 'bouger'), actif: false }
+    const reglage: Reglages = {
+      ...reglages,
+      rappels: reglages.rappels.map((rappel) => (rappel.id === bouger.id ? bouger : rappel))
+    }
+    const pause = poserPauseImmediate(creerEtat(), reglage, au(16, 7, 0))
+    expect(pause?.afficher.rappelId).toBe(bouger.id)
+    const seconde = pause ? poserPauseImmediate(pause.etat, reglage, au(16, 7, 1)) : null
+    expect(seconde).toBeNull()
+  })
+})
+
 describe('horaires', () => {
   it('traite une plage qui passe minuit, selon le jour où elle commence', () => {
     const horaires = { debut: '20:00', fin: '02:00', jours: 'semaine' as const }
@@ -292,8 +459,56 @@ describe('horaires', () => {
     expect(estDansHoraires(samedi23, horaires)).toBe(false)
     expect(estDansHoraires(dimanche01, horaires)).toBe(false)
     expect(estDansHoraires(au(14, 21, 0), { ...horaires, jours: 'jour' })).toBe(true)
+    expect(estDansHoraires(au(16, 23, 0), { debut: '20:00', fin: '02:00', jours: 'jour' })).toBe(
+      true
+    )
+    expect(estDansHoraires(au(17, 1, 0), { debut: '20:00', fin: '02:00', jours: 'jour' })).toBe(
+      true
+    )
+    expect(estDansHoraires(au(17, 3, 0), { debut: '20:00', fin: '02:00', jours: 'jour' })).toBe(
+      false
+    )
+  })
+
+  it('place « jusqu’à demain » au début du prochain jour travaillé', () => {
+    const mardi = finVeilleDemain(au(16, 10, 0), { debut: '08:00', fin: '18:00', jours: 'semaine' })
+    expect(mardi.getDate()).toBe(17)
+    expect(mardi.getHours()).toBe(8)
+
+    const lundiSoir = finVeilleDemain(au(13, 21, 0), {
+      debut: '20:00',
+      fin: '02:00',
+      jours: 'semaine'
+    })
+    expect(lundiSoir.getDate()).toBe(16)
+    expect(lundiSoir.getHours()).toBe(20)
   })
 })
+
+function heureFixe(heure: string, repetition: Repetition): { reglages: Reglages; id: string } {
+  const reglages = reglagesParDefaut()
+  const id = 'fixe-test'
+  return {
+    id,
+    reglages: {
+      ...reglages,
+      rappels: [
+        ...reglages.rappels.map((rappel) => ({ ...rappel, actif: rappel.type === 'yeux' })),
+        {
+          id,
+          nom: 'Pause déjeuner',
+          type: 'libre',
+          origine: 'perso',
+          mode: 'heure',
+          heure,
+          repetition,
+          actif: true,
+          reportsDeSuite: 0
+        }
+      ]
+    }
+  }
+}
 
 function presDuSeuil(rappels: readonly Rappel[], instant: Date): EtatMoteur {
   const compteursMs: Record<string, number> = {}

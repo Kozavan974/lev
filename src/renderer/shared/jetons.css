@@ -31,9 +31,10 @@
   --titre-accueil: 38px;
   --titre-ecran: 26px;
   --titre-carte: 25px;
+  --titre-section: 20px;
   --texte-accueil: 21px;
   --texte-important: 19px;
-  --texte-courant: 17px;
+  --texte-courant: 16px;
   --legende: 14px;
 
   --graisse-texte: 400;
@@ -41,13 +42,18 @@
 
   --espace-6: 6px;
   --espace-10: 10px;
+  --espace-12: 12px;
+  --espace-14: 14px;
   --espace-16: 16px;
   --espace-20: 20px;
   --espace-24: 24px;
 
   --rayon-carte: 16px;
   --rayon-pilule: 999px;
-  --cible-min: 48px;
+  --cible-min: 38px;
+  --cible-pastille: 34px;
+  --cible-menu: 32px;
+  --largeur-reglages: 680px;
   --ombre-flottante: 0 6px 24px rgba(46, 42, 63, 0.1);
   --contour-focus: 3px solid var(--action);
 

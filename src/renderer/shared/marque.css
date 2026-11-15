@@ -1,0 +1,44 @@
+.marque {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-16);
+}
+
+.marque-icone {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--cible-min);
+  height: var(--cible-min);
+  border-radius: 24%;
+  background: var(--action);
+  color: var(--sur-action);
+}
+
+.marque-logo {
+  width: var(--espace-24);
+  height: var(--espace-24);
+}
+
+.marque-textes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-6);
+}
+
+.marque-titre {
+  margin: 0;
+  font-size: var(--texte-important);
+  font-weight: var(--graisse-forte);
+  line-height: 1.2;
+}
+
+.marque-titre-page {
+  font-size: var(--titre-ecran);
+}
+
+.marque-detail {
+  margin: 0;
+  color: var(--texte-second);
+}

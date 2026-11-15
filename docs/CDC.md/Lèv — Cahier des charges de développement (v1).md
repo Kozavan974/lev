@@ -114,8 +114,8 @@ Les trois fenêtres chargent la même page, `src/renderer/index.html`, et se dis
 | Fenêtre | Caractéristiques |
 | --- | --- |
 | Notification | Sans cadre, toujours au premier plan, absente de la barre des tâches, largeur 420 à 480 px. Affichée avec `showInactive()` : elle ne prend pas le focus à l'apparition. Placée à 24 px des bords de la zone de travail de l'écran principal |
-| Menu | Sans cadre, 380 px de large, ouvert au clic sur l'icône, ancré près d'elle, fermé dès qu'il perd le focus |
-| Application | Fenêtre classique redimensionnable (960 × 720 par défaut, minimum 480 × 600). Une seule instance, navigation interne entre les écrans |
+| Menu | Sans cadre, 380 px de large, ouvert au clic sur l'icône, ancré près d'elle, fermé dès qu'il perd le focus. Aucune barre de défilement |
+| Application | Fenêtre classique redimensionnable (960 × 720 par défaut, minimum 480 × 600), icône `resources/icons/lev.ico` dans la barre de titre. Une seule instance, navigation interne entre les écrans |
 
 Fermer la fenêtre « Application » ne quitte pas Lèv : seule l'entrée « Quitter » du menu arrête l'application.
 
@@ -134,7 +134,7 @@ Chaque fenêtre Electron lance son propre processus. Garder les trois fenêtres 
 
 - **Options de la notification** : `frame: false`, `transparent: true`, `skipTaskbar: true`, `focusable: true`, affichage par `showInactive()`. Elle ne prend pas le focus à l'apparition, mais peut le recevoir par un clic ou par le raccourci clavier.
 - **Ombre** : la fenêtre dépasse la carte de 30 px transparents de chaque côté, sinon l'ombre est coupée. La position de la fenêtre compense cette marge pour que la carte reste à 24 px des bords de la zone de travail.
-- **Hauteur** : la hauteur de la carte varie selon le contenu. L'écran la mesure avec `ResizeObserver` et l'envoie au processus principal, qui redimensionne la fenêtre en gardant le bord bas fixe. La mesure est un nombre à virgule, alors que setBounds() n'accepte que des entiers : la hauteur est arrondie à l'entier supérieur (Math.ceil) pour ne jamais rogner la carte, et les positions à l'entier le plus proche (Math.round). Jamais de barre de défilement, jamais de vide.
+- **Hauteur** : la hauteur de la carte varie selon le contenu. L'écran la mesure avec `ResizeObserver` et l'envoie au processus principal, qui redimensionne la fenêtre en gardant le bord bas fixe. La mesure est un nombre à virgule, alors que setBounds() n'accepte que des entiers : la hauteur est arrondie à l'entier supérieur (Math.ceil) pour ne jamais rogner la carte, et les positions à l'entier le plus proche (Math.round). `html` et `body` de `#/menu` et de `#/notification` ont `overflow: hidden` : la barre de défilement ne doit jamais apparaître dans la marge transparente. Les espacements verticaux du menu sont resserrés pour que la carte tienne dans la zone de travail. Jamais de vide.
 - **Premier plan** : `setAlwaysOnTop(true, 'pop-up-menu')` comme point de départ. À vérifier au lot 1 : la notification reste au-dessus de la barre des tâches de Windows 11 et ne recouvre pas un jeu ou une vidéo en plein écran.
 - **Position du menu** : calculée depuis `tray.getBounds()`. Si l'icône est rangée dans le tiroir des icônes masquées, ces coordonnées sont nulles ou hors écran : le menu se place alors en bas à droite de la zone de travail de l'écran principal.
 - **Mise à l'échelle** : toutes les positions sont calculées en pixels logiques avec le module `screen`. À tester à 100, 125, 150, 175 et 200 %.
@@ -386,14 +386,14 @@ Particularités :
 
 ### 7.4 Mes rappels (planche « Mes rappels »)
 
-L'écran de réglage unique. Sous-titre : « Tout est déjà réglé. Coche, ajuste ou ajoute un rappel : c'est pris en compte tout de suite. »
+L'écran de réglage unique. Le contenu est centré, sur 680 px au plus, pour que les lignes ne s'étirent pas sur toute la fenêtre. Sous-titre : « Tout est déjà réglé. Coche, ajuste ou ajoute un rappel : c'est pris en compte tout de suite. »
 
 **La liste.** Une ligne par rappel :
 
 - une case pour l'activer, suivie du nom ;
 - pour un rappel récurrent, une liste déroulante de fréquence (10, 20, 30, 45 minutes, 1 heure, 2 heures, 4 heures) ;
 - pour un rappel à heure fixe, un champ d'heure et une liste (« Chaque jour », « Du lundi au vendredi », « Une seule fois ») ;
-- une corbeille, absente sur les rappels « yeux », « bouger » et « posture », qui retire le rappel immédiatement. Un bandeau « « Nom » est retiré. » avec « Annuler » reste affiché jusqu'à l'action suivante. Aucune fenêtre de confirmation.
+- une corbeille, seulement pour un rappel créé par la personne (`origine` « perso »). Les quatre rappels de base, y compris « Boire un verre d'eau », n'en ont pas. Le bouton est compact, dans une colonne fixe au bord droit, pour que les listes déroulantes restent alignées entre elles. Il retire le rappel immédiatement. Un bandeau « « Nom » est retiré. » avec « Annuler » reste affiché jusqu'à l'action suivante. Aucune fenêtre de confirmation.
 
 La dernière ligne, « Séquences de travail », cochée par défaut et sans corbeille, a sa propre liste : « 25 minutes, puis 5 de pause », « 50 minutes, puis 10 de pause », « Une pause de 5 minutes par heure », « Autre rythme ». « Autre rythme » révèle deux champs en minutes (travail, pause).
 
@@ -401,14 +401,14 @@ La dernière ligne, « Séquences de travail », cochée par défaut et sans cor
 
 **Ajouter un rappel**, en deux questions :
 
-1. « Quoi ? » : un champ texte de 40 caractères au plus (exemple affiché : « Par exemple : m'étirer ») et quatre suggestions qui remplissent le champ : « M'étirer », « Respirer profondément », « Me redresser », « Travailler debout ».
-2. « Quand ? » : deux boutons exclusifs, « Régulièrement » (sélectionné par défaut) et « À une heure précise ».
+1. « Quoi ? », aligné à gauche : un champ texte sur toute la largeur de la carte, 40 caractères au plus (exemple affiché : « Par exemple : m'étirer »), puis quatre pastilles qui remplissent le champ : « M'étirer », « Respirer profondément », « Me redresser », « Travailler debout ».
+2. « Quand ? », aligné à gauche, sans le cadre natif du groupe : un sélecteur segmenté compact, « Régulièrement » (sélectionné par défaut) et « À une heure précise », puis les pastilles sur une ligne.
    - Régulièrement : cinq pastilles, « 20 min », « 30 min », « 1 heure » (par défaut), « 2 heures », « 4 heures ».
    - À une heure précise : un champ d'heure (15:00 par défaut) et trois pastilles, « Chaque jour » (par défaut), « Du lundi au vendredi », « Une seule fois ».
 
 Une phrase se met à jour en direct : « Lèv te rappellera « M'étirer » toutes les heures. » ou « … à 15h00, chaque jour. » Sans nom saisi, elle indique « Donne un nom à ton rappel pour l'ajouter. » et le bouton « Ajouter le rappel » est inactif. La touche Entrée dans le champ ajoute le rappel. Après l'ajout, le rappel apparaît en fin de liste et le champ se vide.
 
-**Autres réglages**, bloc replié par défaut, intitulé « Autres réglages : bon moment, mouvements, thème, son » :
+**Autres réglages**, bloc replié par défaut. Le titre est « Autres réglages », avec un chevron à droite qui pivote de 0° à 180° à l'ouverture, et un survol en pointeur :
 
 - Thème : « Automatique, comme mon ordinateur », « Clair », « Sombre ».
 - Sept cases, dans cet ordre : « Attendre que j'aie fini de taper pour afficher un rappel », « Tenir compte des pauses que je prends de moi-même », « Ne pas me déranger en plein écran ou pendant une présentation », « Me proposer d'espacer un rappel quand son rythme ne me convient pas », « Préférer des mouvements discrets, à faire assis », « Jouer un son doux avec chaque rappel », « Lancer Lèv au démarrage de l'ordinateur ».
@@ -500,14 +500,14 @@ Le turquoise `--action` et le jaune `--soleil` viennent du logotype Ekilib.re. L
 ### Typographie
 
 - Une seule police : Atkinson Hyperlegible, graisses 400 et 700. Elle est embarquée dans l'application (licence libre OFL), jamais chargée depuis Internet.
-- Échelle : 38 px (titre d'accueil), 26 px (titre d'écran), 25 px (titre de carte ou de notification), 21 px (texte d'accueil), 19 px (information importante), 17 px (texte courant), 14 px (légende).
-- Le texte courant ne descend jamais sous 17 px. Le 14 px est réservé aux légendes et aux mentions.
+- Échelle : 38 px (titre d'accueil), 26 px (titre d'écran), 25 px (titre de carte ou de notification), 20 px (titre de section dans « Mes rappels »), 21 px (texte d'accueil), 19 px (information importante), 16 px (texte courant), 14 px (légende).
+- Le texte courant ne descend jamais sous 16 px. Le 14 px est réservé aux légendes et aux mentions.
 
 ### Formes et espaces
 
 - Cartes : rayon de 16 px. Boutons, champs et pastilles : rayon complet (forme de pilule).
-- Tout élément cliquable mesure au moins 48 px de haut.
-- Espacements : 6, 10, 16, 20, 24 px. Marge interne d'une carte : 20 px.
+- Boutons, champs et listes mesurent au moins 38 px de haut, avec un padding horizontal de 14 px. Les pastilles de suggestion et de fréquence mesurent 34 px. Les lignes de texte du menu mesurent 32 px, pour que la carte tienne sans défilement.
+- Espacements : 6, 10, 12, 14, 16, 20, 24 px. Dans « Mes rappels », l'espace vertical entre les lignes est de 10 à 12 px. Marge interne d'une carte : 16 px sur cet écran, 20 px sur une notification.
 - Ombre uniquement sous les notifications et le menu : `0 6px 24px rgba(46,42,63,0.10)`.
 - Trois niveaux de bouton : principal (fond `--action`), secondaire (bordure `--action`, fond `--carte`), discret (texte `--texte-second`, sans bordure).
 
@@ -859,7 +859,7 @@ alwaysApply: false
 - Aucun texte en dur : tout vient de `src/content/fr.json`.
 - Aucune couleur ni taille en dur : uniquement les variables CSS de la section 9.
 - Éléments HTML natifs (`button`, `a`, `input`, `label`, `select`). Jamais de `div` cliquable.
-- Cibles de 48 px minimum, focus toujours visible.
+- Cibles de 38 px minimum (34 px pour les pastilles, 32 px pour les lignes du menu), focus toujours visible.
 - Respecte `prefers-reduced-motion`.
 - Les écrans passent par l'API du preload. Jamais d'accès direct au disque ni à `ipcRenderer`.
 - La notification mesure sa hauteur avec `ResizeObserver` et la transmet au processus principal, qui l'arrondit en entier avant `setBounds()`.

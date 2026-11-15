@@ -1,0 +1,210 @@
+html[data-route='app'] body {
+  overflow: auto;
+}
+
+.application {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-12);
+  width: 100%;
+  max-width: var(--largeur-reglages);
+  margin: 0 auto;
+  padding: var(--espace-24) var(--espace-16);
+}
+
+.carte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-12);
+  padding: var(--espace-16);
+  border: 1px solid var(--lisere);
+  border-radius: var(--rayon-carte);
+  background: var(--carte);
+}
+
+.titre-carte {
+  margin: 0;
+  font-size: var(--titre-section);
+  font-weight: var(--graisse-forte);
+}
+
+.ligne {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content var(--cible-pastille);
+  align-items: center;
+  column-gap: var(--espace-10);
+  min-height: var(--cible-min);
+  padding-bottom: var(--espace-10);
+  border-bottom: 1px solid var(--separateur);
+}
+
+.ligne:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.ligne-nom {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--espace-10);
+  min-height: var(--cible-min);
+}
+
+.ligne-reglages,
+.ligne-corbeille {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--espace-10);
+}
+
+.corbeille {
+  width: var(--cible-pastille);
+  min-height: var(--cible-pastille);
+  padding: 0;
+}
+
+.corbeille-icone {
+  width: var(--espace-16);
+  height: var(--espace-16);
+}
+
+.groupe-pastilles,
+.horaires-ligne,
+.champs-rythme {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--espace-10);
+  width: 100%;
+}
+
+.pastille {
+  min-height: var(--cible-pastille);
+  padding: 0 var(--espace-14);
+}
+
+.segment {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 0;
+  padding: 0;
+  border: 1px solid var(--lisere);
+  border-radius: var(--rayon-pilule);
+  background: var(--carte);
+}
+
+.segment .bouton {
+  flex: none;
+  min-height: var(--cible-pastille);
+  padding: 0 var(--espace-14);
+}
+
+.segment .bouton-secondaire {
+  border-color: transparent;
+  background: transparent;
+}
+
+.question {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espace-10);
+  width: 100%;
+  margin: 0;
+  border: none;
+  padding: 0;
+  min-inline-size: 0;
+  font-weight: var(--graisse-forte);
+  text-align: left;
+}
+
+label.question {
+  align-items: stretch;
+}
+
+.champ-nom {
+  width: 100%;
+}
+
+.question > legend {
+  padding: 0;
+}
+
+.phrase,
+.precision {
+  margin: 0;
+  color: var(--texte-second);
+}
+
+.ajout-bas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-16);
+}
+
+.bandeau {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-16);
+  min-height: var(--cible-min);
+  margin: 0;
+}
+
+.choix {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-10);
+  min-height: var(--cible-min);
+}
+
+.repli > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espace-10);
+  min-height: var(--cible-min);
+  font-size: var(--titre-section);
+  font-weight: var(--graisse-forte);
+  list-style: none;
+  cursor: pointer;
+}
+
+.repli > summary::-webkit-details-marker {
+  display: none;
+}
+
+.repli > summary::marker {
+  content: '';
+}
+
+.repli > summary:hover {
+  color: var(--action);
+}
+
+.chevron {
+  width: var(--espace-16);
+  height: var(--espace-16);
+  flex: none;
+  transition: transform 160ms ease;
+}
+
+.repli[open] > summary .chevron {
+  transform: rotate(180deg);
+}
+
+.corps-repli {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-10);
+  padding-top: var(--espace-10);
+}
+
+.lien-bas {
+  margin: 0;
+}

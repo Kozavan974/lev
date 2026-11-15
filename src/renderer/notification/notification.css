@@ -5,6 +5,10 @@
   padding: var(--marge-ombre);
 }
 
+html[data-route='notification'] {
+  overflow: hidden;
+}
+
 html[data-route='notification'] body {
   display: flex;
   flex-direction: column;
@@ -108,50 +112,6 @@ html[data-route='notification'] #racine {
 
 .notification-actions {
   margin-top: var(--espace-16);
-}
-
-.bouton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--cible-min);
-  padding: 0 var(--espace-20);
-  border-radius: var(--rayon-pilule);
-  font: inherit;
-  cursor: pointer;
-}
-
-.bouton-principal {
-  border: none;
-  background: var(--action);
-  color: var(--sur-action);
-  font-weight: var(--graisse-forte);
-}
-
-.bouton-principal:hover {
-  background: var(--action-survol);
-}
-
-.bouton-secondaire {
-  border: 1px solid var(--action);
-  background: var(--carte);
-  color: var(--action);
-}
-
-.bouton-secondaire:hover {
-  border-color: var(--action-survol);
-  color: var(--action-survol);
-}
-
-.bouton-discret {
-  border: none;
-  background: transparent;
-  color: var(--texte-second);
-  padding: 0 var(--espace-10);
-}
-
-.bouton-discret:hover {
-  color: var(--texte);
 }
 
 .notification-message {

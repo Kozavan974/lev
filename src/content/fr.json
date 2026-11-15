@@ -4,7 +4,115 @@
   },
   "tray": {
     "infobulle": "Lèv",
+    "prochaine": "Lèv · prochaine pause à {heure}",
+    "veille": "Lèv · en veille jusqu'à {heure}",
+    "mesRappels": "Mes rappels",
     "quitter": "Quitter"
+  },
+  "menu": {
+    "devise": "Une pause, naturellement.",
+    "pauses": "Tes prochaines pauses",
+    "echeance": "{nom} à {heure}",
+    "sequence": "Démarrer une séquence de travail",
+    "pause": "Faire une pause maintenant",
+    "veille": "Mettre les rappels en veille",
+    "veille30": "Pendant 30 minutes",
+    "veille1h": "Pendant 1 heure",
+    "veilleDemain": "Jusqu'à demain",
+    "enVeille": "En veille jusqu'à {heure}",
+    "reprendre": "Reprendre",
+    "respirer": "Respirer un moment",
+    "poste": "Bien installer mon poste",
+    "rappels": "Mes rappels",
+    "apropos": "À propos",
+    "quitter": "Quitter"
+  },
+  "rappels": {
+    "titre": "Mes rappels",
+    "soustitre": "Tout est déjà réglé. Coche, ajuste ou ajoute un rappel : c'est pris en compte tout de suite.",
+    "annuler": "Annuler",
+    "retirer": "Retirer « {nom} »",
+    "retire": "« {nom} » est retiré.",
+    "sequences": "Séquences de travail",
+    "horaires": "Mes horaires",
+    "de": "De",
+    "a": "à",
+    "horsHoraires": "En dehors de ces horaires, seuls tes rappels à heure fixe s'affichent.",
+    "ajout": "Ajouter un rappel",
+    "quoi": "Quoi ?",
+    "exemple": "Par exemple : m'étirer",
+    "quand": "Quand ?",
+    "regulier": "Régulièrement",
+    "heurePrecise": "À une heure précise",
+    "ajouter": "Ajouter le rappel",
+    "sansNom": "Donne un nom à ton rappel pour l'ajouter.",
+    "phraseRegulier": "Lèv te rappellera « {nom} » {frequence}.",
+    "phraseHeure": "Lèv te rappellera « {nom} » à {heure}, {repetition}.",
+    "autres": "Autres réglages",
+    "theme": "Thème",
+    "retablir": "Rétablir les rappels d'origine",
+    "retabli": "Rappels d'origine rétablis.",
+    "apropos": "À propos",
+    "frequenceListe": {
+      "10": "Toutes les 10 minutes",
+      "20": "Toutes les 20 minutes",
+      "30": "Toutes les 30 minutes",
+      "45": "Toutes les 45 minutes",
+      "60": "Toutes les heures",
+      "120": "Toutes les 2 heures",
+      "240": "Toutes les 4 heures"
+    },
+    "frequencePastille": {
+      "20": "20 min",
+      "30": "30 min",
+      "60": "1 heure",
+      "120": "2 heures",
+      "240": "4 heures"
+    },
+    "frequencePhrase": {
+      "20": "toutes les 20 minutes",
+      "30": "toutes les 30 minutes",
+      "60": "toutes les heures",
+      "120": "toutes les 2 heures",
+      "240": "toutes les 4 heures"
+    },
+    "repetitionListe": {
+      "jour": "Chaque jour",
+      "semaine": "Du lundi au vendredi",
+      "une": "Une seule fois"
+    },
+    "repetitionPhrase": {
+      "jour": "chaque jour",
+      "semaine": "du lundi au vendredi",
+      "une": "une seule fois"
+    },
+    "jours": {
+      "semaine": "du lundi au vendredi",
+      "samedi": "du lundi au samedi",
+      "jour": "tous les jours"
+    },
+    "rythmes": {
+      "25-5": "25 minutes, puis 5 de pause",
+      "50-10": "50 minutes, puis 10 de pause",
+      "heure": "Une pause de 5 minutes par heure",
+      "autre": "Autre rythme"
+    },
+    "travail": "Travail",
+    "pauseRythme": "Pause",
+    "suggestions": ["M'étirer", "Respirer profondément", "Me redresser", "Travailler debout"],
+    "themes": {
+      "auto": "Automatique, comme mon ordinateur",
+      "clair": "Clair",
+      "sombre": "Sombre"
+    },
+    "options": {
+      "attendreAccalmie": "Attendre que j'aie fini de taper pour afficher un rappel",
+      "pausesSpontanees": "Tenir compte des pauses que je prends de moi-même",
+      "nePasDeranger": "Ne pas me déranger en plein écran ou pendant une présentation",
+      "proposerEspacer": "Me proposer d'espacer un rappel quand son rythme ne me convient pas",
+      "mouvementsAssis": "Préférer des mouvements discrets, à faire assis",
+      "lancerAuDemarrage": "Lancer Lèv au démarrage de l'ordinateur"
+    }
   },
   "notification": {
     "yeux": {

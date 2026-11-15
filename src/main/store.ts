@@ -31,6 +31,13 @@ export function lireReglages(): Reglages {
   return normaliser(migrer(memoire.store))
 }
 
+export function enregistrerReglages(reglages: Reglages): void {
+  if (!memoire) {
+    throw new Error('Les réglages ne sont pas prêts.')
+  }
+  memoire.store = versEnregistrement(reglages)
+}
+
 function versEnregistrement(reglages: Reglages): Record<string, unknown> {
   const valeur: unknown = JSON.parse(JSON.stringify(reglages))
   if (typeof valeur !== 'object' || valeur === null || Array.isArray(valeur)) {

@@ -19,8 +19,16 @@ import {
 } from './notificationFenetre'
 import { choisirIdee, retenirIdee } from './selectionIdees'
 import { INTERVALLE_EVALUATION_MS, MESSAGE_REPONSE_MS } from './scheduler/constantes'
-import { creerEtat, evaluer, noterCharge, repondre, type EtatMoteur } from './scheduler/moteur'
-import { lireReglages } from './store'
+import {
+  appliquerEffets,
+  creerEtat,
+  evaluer,
+  noterCharge,
+  poserPauseImmediate,
+  repondre,
+  type EtatMoteur
+} from './scheduler/moteur'
+import { enregistrerReglages, lireReglages } from './store'
 
 let etat: EtatMoteur = creerEtat()
 let cycle = 0
@@ -29,6 +37,39 @@ let veilleSysteme = false
 let reveilEnAttente = false
 let intervalle: ReturnType<typeof setInterval> | null = null
 let demarree = false
+let apresEvaluation: (() => void) | null = null
+
+export function definirApresEvaluation(action: () => void): void {
+  apresEvaluation = action
+}
+
+export function lireEtatMoteur(): EtatMoteur {
+  return etat
+}
+
+export function reevaluer(): void {
+  if (demarree) {
+    tick()
+  }
+}
+
+export function demanderPauseMaintenant(): void {
+  const reglages = lireReglages()
+  const resultat = poserPauseImmediate(etat, reglages, new Date())
+  if (!resultat) {
+    return
+  }
+  etat = preparerIdee(resultat.etat, reglages)
+  if (!etat.notification) {
+    return
+  }
+  cycle += 1
+  const vue = composerVue(reglages, etat.notification, cycle)
+  if (vue) {
+    publierNotification(vue)
+  }
+  apresEvaluation?.()
+}
 
 export function demarrerBoucle(): void {
   if (demarree) {
@@ -98,9 +139,14 @@ function tick(): void {
     maintenant: new Date(),
     inactiviteSec: 0,
     sessionOuverte: !verrouille && !veilleSysteme,
-    reveil
+    reveil,
+    pleinEcran: false
   })
   etat = decision.etat
+  if (decision.effets.length > 0) {
+    enregistrerReglages(appliquerEffets(reglages, decision.effets))
+  }
+  apresEvaluation?.()
   if (!decision.afficher || !etat.notification) {
     return
   }

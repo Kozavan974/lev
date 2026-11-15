@@ -1,6 +1,9 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import {
+  CANAL_ECRAN,
   CANAL_NOTIFICATION,
+  estActionEcran,
+  estEtatEcran,
   estReponseBouton,
   estVueMessage,
   estVueNotification,
@@ -57,6 +60,37 @@ const api: ApiLev = {
   },
   masquageTermine: () => {
     ipcRenderer.send(CANAL_NOTIFICATION.masquee)
+  },
+  lireEtat: async () => {
+    const valeur: unknown = await ipcRenderer.invoke(CANAL_ECRAN.lire)
+    if (!estEtatEcran(valeur)) {
+      throw new Error('État illisible.')
+    }
+    return valeur
+  },
+  surEtat: (recevoir) => {
+    const ecouter = (_evenement: IpcRendererEvent, valeur: unknown): void => {
+      if (estEtatEcran(valeur)) {
+        recevoir(valeur)
+      }
+    }
+    ipcRenderer.on(CANAL_ECRAN.etat, ecouter)
+    return () => {
+      ipcRenderer.removeListener(CANAL_ECRAN.etat, ecouter)
+    }
+  },
+  agir: (action) => {
+    if (estActionEcran(action)) {
+      ipcRenderer.send(CANAL_ECRAN.action, action)
+    }
+  },
+  fermerMenu: () => {
+    ipcRenderer.send(CANAL_ECRAN.fermerMenu)
+  },
+  definirHauteurMenu: (hauteurPx: number) => {
+    if (typeof hauteurPx === 'number' && Number.isFinite(hauteurPx)) {
+      ipcRenderer.send(CANAL_ECRAN.hauteurMenu, hauteurPx)
+    }
   }
 }
 
