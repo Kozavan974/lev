@@ -355,11 +355,11 @@ L'application compte sept écrans ou familles d'écrans. Chacun correspond à un
 
 ### 7.1 Premier lancement (planche « Premier lancement »)
 
-Affiché une seule fois, dans la fenêtre « Application ».
+Affiché dans la fenêtre « Application », au premier lancement, puis à la demande depuis « À propos » (section 7.5). Le fichier de réglages n'est écrit qu'au premier passage.
 
 - Le contenu tient dans une carte centrée dans la fenêtre (460 px au plus, fond `--carte`, bordure `--lisere`, rayon 12 px, marge interne 14 px sur 18 px, ombre douce). Logo de 52 px, puis le texte exact : « Bienvenue dans Lèv. » en 22 px, « Je te rappellerai doucement de bouger et de reposer tes yeux. » et « Tu choisis le rythme — et tu peux changer d'avis à tout moment. » en 14 px.
-- Bouton principal « Commencer », largeur contenue (au moins 200 px, 42 px de haut) : ferme la fenêtre, Lèv démarre avec les rappels par défaut.
-- Lien discret « Choisir mon rythme », juste sous le bouton : ouvre « Mes rappels ».
+- Bouton principal « Commencer », largeur contenue (au moins 200 px, 42 px de haut). Au premier lancement, il ferme la fenêtre, enregistre `premierLancementFait`, et Lèv démarre avec les rappels par défaut. Quand l'écran a été rouvert, il ramène à « Mes rappels » sans réécrire `reglages.json`.
+- Lien discret « Choisir mon rythme », juste sous le bouton : ouvre « Mes rappels ». Au premier lancement, ce lien enregistre aussi `premierLancementFait`. Quand l'écran a été rouvert, il n'écrit rien.
 - En bas de la carte, séparées par un trait fin, trois mentions cochées en 13 px : « Aucun compte », « Aucune inscription », « Aucune donnée personnelle ».
 - Aucun tutoriel, aucune étape suivante.
 
@@ -400,7 +400,7 @@ Particularités :
 
 ### 7.4 Mes rappels (planche « Mes rappels »)
 
-L'écran de réglage unique. Le contenu occupe toute la largeur de la fenêtre. Pas de sous-titre sous « Mes rappels ». Sous la carte des rappels, trois accordéons fermés, espacés de 6 px : « Mes horaires », « Ajouter un rappel », « Autres réglages ». À la taille par défaut, l'écran tient sans défilement.
+L'écran de réglage unique. Le contenu occupe toute la largeur de la fenêtre. Sous le titre, une phrase en 12,5 px, couleur `--texte-second` : « Choisis les pauses régulières qui t'aident à bouger et reposer tes yeux. » Sous la carte des rappels, trois accordéons fermés, espacés de 6 px : « Mes horaires », « Ajouter un rappel », « Autres réglages ». À la taille par défaut, l'écran tient sans défilement.
 
 **La liste.** Une ligne par rappel :
 
@@ -409,7 +409,7 @@ L'écran de réglage unique. Le contenu occupe toute la largeur de la fenêtre. 
 - pour un rappel à heure fixe, un champ d'heure et une liste (« Chaque jour », « Du lundi au vendredi », « Une seule fois ») ;
 - une corbeille, seulement pour un rappel créé par la personne (`origine` « perso »). Les quatre rappels de base, y compris « Boire un verre d'eau », n'en ont pas. Le bouton est compact, dans une colonne fixe au bord droit, pour que les listes déroulantes restent alignées entre elles. Il retire le rappel immédiatement. Un bandeau « « Nom » est retiré. » avec « Annuler » reste affiché jusqu'à l'action suivante. Aucune fenêtre de confirmation.
 
-La dernière ligne, « Séquences de travail », cochée par défaut et sans corbeille, a sa propre liste : « 25 minutes, puis 5 de pause », « 50 minutes, puis 10 de pause », « Une pause de 5 minutes par heure », « Autre rythme ». « Autre rythme » révèle deux champs en minutes (travail, pause). Dans la ligne, juste sous l'intitulé et sans trait entre les deux, une précision en 13 px : « Pour travailler concentré par étapes : Lèv attend la fin de la séquence pour t'inviter à marcher, et propose une grande pause de 15 minutes toutes les 4 séquences. »
+La dernière ligne, « Séquences de travail », cochée par défaut et sans corbeille, a sa propre liste : « 25 minutes, puis 5 de pause », « 50 minutes, puis 10 de pause », « Une pause de 5 minutes par heure », « Autre rythme ». « Autre rythme » révèle deux champs en minutes (travail, pause). Dans la ligne, juste sous l'intitulé et sans trait entre les deux, une accroche en 12,5 px, couleur `--texte-second` : « Alterne des temps de concentration et des pauses courtes pour garder le cap sans t'épuiser. » Puis la précision en 13 px : « Pour travailler concentré par étapes : Lèv attend la fin de la séquence pour t'inviter à marcher, et propose une grande pause de 15 minutes toutes les 4 séquences. »
 
 **Mes horaires**, accordéon fermé par défaut, même gabarit que « Autres réglages ». Fermé, le titre est suivi du réglage en 12,5 px, par exemple « Mes horaires · 08:00 – 18:00 ». Ouvert : « De \[08:00\] à \[18:00\] \[du lundi au vendredi\] » (autres choix : « du lundi au samedi », « tous les jours »), puis « En dehors de ces horaires, seuls tes rappels à heure fixe s'affichent. »
 
@@ -441,15 +441,17 @@ Une page de lecture. En haut, un lien discret « ← Mes rappels », puis l'en-t
 4. « Textes de référence » : sept liens (section 10.3), ouverts dans le navigateur par défaut.
 5. « Ekilib.re » : présentation de l'association, avec le lien sur le nom, puis « Chaque pas compte. », le lien vers les Maisons Sport-Santé, le lien vers la carte, le numéro de version, la licence, puis la vérification des mises à jour (section 10.5).
 
-La page se termine par « Lèv — levez-vous, respirez. »
+Sous les tiroirs, un bouton discret « Revoir l'écran de bienvenue » rouvre l'écran d'accueil sans modifier `reglages.json` (section 7.1). Le lien « Découvrir l'association Ekilib.re » ouvre `https://ekilib.re` dans le navigateur. Le libellé lu est « Découvrir l'association Ekilib.re. S'ouvre dans le navigateur. »
+
+La page se termine par « Lèv — levez-vous, respirez. », puis une ligne en 12,5 px, couleur `--texte-second` : « Propulsé par Electron {electron} et Chromium {chrome} ». Les deux numéros viennent de `process.versions`, lus par le preload, sans appel réseau.
 
 ### 7.6 Bien installer mon poste (planche du même nom)
 
-En haut, un lien discret « ← Mes rappels ». Cinq cartes à cocher, numérotées « Étape 1 sur 5 » à « Étape 5 sur 5 », dont l'état est mémorisé. Les textes sont en section 10.2. Suivent un encadré « Et surtout, change souvent de position », avec la phrase « Même bien installé, la meilleure posture reste celle dont on bouge régulièrement. », les boutons « C'est tout bon » et « Je finirai plus tard » (les deux ferment la fenêtre, ou reviennent à l'écran précédent si le guide a été ouvert depuis celui-ci), puis la mention de source et, dans le même bloc compact, la vidéo de l'INRS (section 10.2). La fenêtre reste de 520 × 580 px.
+En haut, un lien discret « ← Mes rappels », puis le titre et la phrase en 12,5 px, couleur `--texte-second` : « Quelques repères simples pour ajuster ton écran, ton siège et ta posture. » Cinq cartes à cocher, numérotées « Étape 1 sur 5 » à « Étape 5 sur 5 », dont l'état est mémorisé. Les textes sont en section 10.2. Suivent un encadré « Et surtout, change souvent de position », avec la phrase « Même bien installé, la meilleure posture reste celle dont on bouge régulièrement. », les boutons « C'est tout bon » et « Je finirai plus tard » (les deux ferment la fenêtre, ou reviennent à l'écran précédent si le guide a été ouvert depuis celui-ci), puis la mention de source et, dans le même bloc compact, la vidéo de l'INRS (section 10.2). La fenêtre reste de 520 × 580 px.
 
 ### 7.7 Respiration guidée (planche du même nom)
 
-- En haut, un lien discret « ← Mes rappels », puis la carte de la séance : le titre « Un moment pour souffler », la bulle jaune dans un cadre de 116 px (cercle en pointillés à l'amplitude maximale, halo doux), la consigne du temps en cours en 16 px, quatre étiquettes sur une seule ligne (« Inspire », « Garde », « Souffle », « Pause ») dont une est mise en avant, et le bouton « Respire », largeur contenue, qui devient « J'ai terminé ». Marge interne de la carte : 10 px sur 14 px. Entre le titre, la bulle, la consigne, les étiquettes et le bouton : 6 px. Entre la carte, les deux accordéons et l'encart : 6 px. Accordéons fermés, le lien de retour, la carte, les deux accordéons et l'encart tiennent dans 490 px : aucun défilement.
+- En haut, un lien discret « ← Mes rappels », puis la carte de la séance : le titre « Un moment pour souffler », la phrase en 12,5 px, couleur `--texte-second` : « Prends deux minutes pour ralentir ta respiration et relâcher la pression. », la bulle jaune dans un cadre de 116 px (cercle en pointillés à l'amplitude maximale, halo doux), la consigne du temps en cours en 16 px, quatre étiquettes sur une seule ligne (« Inspire », « Garde », « Souffle », « Pause ») dont une est mise en avant, et le bouton « Respire », largeur contenue, qui devient « J'ai terminé ». Marge interne de la carte : 10 px sur 14 px. Entre le titre, l'accroche, la bulle, la consigne, les étiquettes et le bouton : 6 px. Entre la carte, les deux accordéons et l'encart : 6 px. Accordéons fermés, le lien de retour, la carte, les deux accordéons et l'encart tiennent dans la fenêtre de 520 × 580 px : aucun défilement. La bulle reste de 116 px.
 - La bulle grandit pendant l'inspiration, reste pleine pendant la pause, rétrécit pendant l'expiration, reste petite pendant la seconde pause. Le changement de taille dure exactement le temps réglé.
 - Consignes : « Inspire par le nez », « Garde l'air, sans forcer », « Souffle doucement », « Reste tranquille ». Au repos : « Prêt quand tu veux ». À la fin : « Chaque petite pause compte. »
 - Sous la séance, deux accordéons fermés, du même gabarit fin que « Mes rappels ». « Mon rythme » affiche le rythme actif à droite, par exemple « Mon rythme · Carrée (4-4-4-4) », ou « Mon rythme · 4s - 6s » quand les pauses sont à 0 et qu'aucun préréglage ne correspond. Ouvert : trois rythmes tout prêts sur une seule ligne, « Carrée » (4-4-4-4), « Apaisante » (4-0-6-0), « Régulière » (5-0-5-0), puis quatre réglages, chacun sur une seule ligne, avec boutons − et + de 30 px : « Inspiration » et « Expiration » de 2 à 10 secondes, « Pause, poumons pleins » et « Pause, poumons vides » de 0 à 10 secondes. Une pause à 0 disparaît du cycle et affiche « Aucune ». Tout en bas : « Lèv retient ton rythme pour la prochaine fois. »
@@ -641,7 +643,7 @@ Ces textes sont à reprendre mot pour mot dans `content/fr.json`.
 
 Lien sous ce bloc : « Bien installer mon poste, en cinq réglages ».
 
-**Ekilib.re.** « L'application est proposée gratuitement par l'association Ekilib.re, Maison Sport-Santé au Tampon, à La Réunion. » Le lien `https://ekilib.re` est posé sur le mot « Ekilib.re ». Il n'y a pas de lien séparé « Découvrir Ekilib.re ».
+**Ekilib.re.** « L'application est proposée gratuitement par l'association Ekilib.re, Maison Sport-Santé au Tampon, à La Réunion. » Le lien `https://ekilib.re` est posé sur le mot « Ekilib.re ». Un lien séparé « Découvrir l'association Ekilib.re » pointe aussi vers `https://ekilib.re`. Le libellé lu est « Découvrir l'association Ekilib.re. S'ouvre dans le navigateur. » Il est affiché sous les tiroirs, avec le bouton « Revoir l'écran de bienvenue ». Ce bouton rouvre l'accueil sans modifier `reglages.json`.
 
 Sous-titre « Chaque pas compte. » : « Les Maisons Sport-Santé sont des lieux d'accueil, d'information et d'orientation vers une activité physique adaptée à tes besoins, tes envies et ta santé. Elles proposent un accompagnement personnalisé, quel que soit ton âge ou ton niveau de départ. » Le lien `https://www.sports.gouv.fr/maisons-sport-sante` est posé sur « Maisons Sport-Santé ».
 
@@ -649,7 +651,7 @@ Phrase liée, en dessous : « Trouve la Maison Sport-Santé la plus proche de ch
 
 Puis « Version 1.0.0 · Tous droits réservés, Ekilib.re » (mention provisoire, section 16). Sous la version, un bouton discret « Vérifier les mises à jour ». Pendant l'appel : « Vérification en cours… ». Si la version installée est la dernière : « Tu utilises déjà la dernière version de Lèv. » Si la vérification ne peut pas aboutir : « Vérification impossible pour le moment. » Si une version plus récente existe : « Une nouvelle version ({version}) est disponible. » et un lien « Télécharger sur GitHub » vers `https://github.com/Kozavan974/lev/releases/latest`. Quand une version plus récente a déjà été constatée, ce message et ce lien sont affichés sans nouvel appel.
 
-Dernière ligne de la page : « Lèv — levez-vous, respirez. »
+Dernière signature : « Lèv — levez-vous, respirez. » Sous elle, en 12,5 px et en `--texte-second` : « Propulsé par Electron {electron} et Chromium {chrome} ». `{electron}` et `{chrome}` sont lus dans `process.versions` par le preload. Aucun outil de build n'est cité.
 
 ## 11. Confidentialité et sécurité
 
@@ -670,7 +672,7 @@ Lèv ne collecte, ne transmet et ne conserve aucune donnée personnelle en dehor
 - `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true` sur toutes les fenêtres.
 - Une politique de sécurité de contenu stricte : aucun script ni style distant, aucun `eval`.
 - Le `preload` n'expose que des fonctions nommées et typées, jamais `ipcRenderer` entier.
-- Les liens externes passent par `shell.openExternal`, après vérification que l'adresse commence par `https://` et appartient à l'un de ces domaines : anses.fr, inrs.fr, who.int, santepubliquefrance.fr, mangerbouger.fr, code.travail.gouv.fr, ekilib.re, sports.gouv.fr, getwemap.com, youtube.com, youtu.be. Un sous-domaine de ces noms est accepté, par exemple `www.sports.gouv.fr`, `livemap.getwemap.com` ou `www.youtube.com`. `github.com` est accepté aussi, ainsi que `www.github.com`, mais pas ses autres sous-domaines : `api.github.com` sert uniquement à l'appel de la section 13 et n'est pas ouvert dans le navigateur.
+- Les liens externes passent par `shell.openExternal`, après vérification que l'adresse commence par `https://` et appartient à l'un de ces domaines : anses.fr, inrs.fr, who.int, santepubliquefrance.fr, mangerbouger.fr, code.travail.gouv.fr, ekilib.re, sports.gouv.fr, getwemap.com, youtube.com, youtu.be. Un sous-domaine de ces noms est accepté, par exemple `www.sports.gouv.fr`, `livemap.getwemap.com`, `www.youtube.com` ou `www.ekilib.re`. Le lien « Découvrir l'association Ekilib.re » ouvre `https://ekilib.re` par cette liste. `github.com` est accepté aussi, ainsi que `www.github.com`, mais pas ses autres sous-domaines : `api.github.com` sert uniquement à l'appel de la section 13 et n'est pas ouvert dans le navigateur.
 - L'unique appel spontané est un GET HTTPS vers `https://api.github.com/repos/Kozavan974/lev/releases/latest` (section 13). Cette adresse n'est pas ouverte dans le navigateur. Le lien de téléchargement, lui, passe par la liste blanche (`github.com`).
 - Toute navigation et toute ouverture de fenêtre depuis un écran sont bloquées.
 - Une seule instance de l'application à la fois (`requestSingleInstanceLock`).
@@ -737,7 +739,7 @@ Chaque règle de la section 5 a au moins un test. Cas obligatoires :
 ### Contrôle manuel avant version
 
 - [ ] Installation sans droits d'administrateur sur Windows 10 et Windows 11
-- [ ] Premier lancement : l'accueil s'affiche une seule fois
+- [ ] Premier lancement : l'accueil s'affiche tout seul une seule fois, et se revoit depuis « À propos »
 - [ ] La notification ne prend jamais le focus pendant la frappe dans un autre logiciel
 - [ ] La notification est correctement placée avec une barre des tâches en bas, sur le côté, et à 150 % de mise à l'échelle
 - [ ] Avec deux écrans, la notification apparaît sur l'écran principal

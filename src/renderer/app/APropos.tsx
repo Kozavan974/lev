@@ -20,6 +20,7 @@ export function APropos(): React.JSX.Element {
 
   const page = textes.apropos
   const maj = page.ekilib.maj
+  const moteurs = window.lev.versionsTechniques()
   let annonce = ''
   let proposerTelechargement = false
   if (suivi.phase === 'cours') {
@@ -140,7 +141,28 @@ export function APropos(): React.JSX.Element {
         </Tiroir>
       </div>
 
+      <p>
+        <button
+          type="button"
+          className="bouton-texte"
+          onClick={() => {
+            window.lev.agir({ type: 'revoirAccueil' })
+          }}
+        >
+          {page.revoirAccueil}
+        </button>
+      </p>
+      <p className="corps">
+        <LienExterne href={page.decouvrir.url} ariaLabel={page.decouvrir.aria}>
+          {page.decouvrir.lien}
+        </LienExterne>
+      </p>
       <p className="signature">{page.signatureFin}</p>
+      {moteurs ? (
+        <p className="legende">
+          {remplir(page.moteurs, { electron: moteurs.electron, chrome: moteurs.chrome })}
+        </p>
+      ) : null}
     </main>
   )
 }

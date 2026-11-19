@@ -61,7 +61,7 @@ export function MesRappels(): React.JSX.Element {
 
   return (
     <main className="application">
-      <Marque titre={textes.rappels.titre} niveau="page" />
+      <Marque titre={textes.rappels.titre} detail={textes.rappels.accroche} niveau="page" />
       <section className="carte">
         {reglages.rappels.map((rappel) => (
           <LigneRappel key={rappel.id} rappel={rappel} />
@@ -100,6 +100,7 @@ export function MesRappels(): React.JSX.Element {
             </div>
             <span className="ligne-corbeille" />
           </div>
+          <p className="legende sequences-accroche">{textes.rappels.sequencesAccroche}</p>
           <p className="sequences-precision">{textes.rappels.sequencesPrecision}</p>
         </div>
         {reglages.sequences.rythme === 'autre' ? (

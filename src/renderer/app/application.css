@@ -63,6 +63,10 @@ html[data-route='app'] body {
   column-gap: var(--espace-10);
 }
 
+.ligne-sequences .sequences-accroche {
+  margin-top: var(--espace-4);
+}
+
 .sequences-precision {
   margin: var(--espace-4) 0 0;
   color: var(--texte-second);

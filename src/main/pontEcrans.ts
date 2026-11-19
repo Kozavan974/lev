@@ -26,7 +26,7 @@ import {
 import { fermerMenu, fenetreMenu, recevoirHauteurMenu } from './menuFenetre'
 import { lienAutorise } from './liens'
 import { appliquerResultatMaj, majDisponibleDepuis, verifierMiseAJourDistante } from './misesAJour'
-import { ecranApresRelance } from './demarrage'
+import { ecranApresRelance, suiteApresAccueil } from './demarrage'
 import { appliquerDemarrageAutomatique } from './platform'
 import type { TypeRappel } from './modeles'
 import { notificationEstVisible } from './notificationFenetre'
@@ -99,6 +99,10 @@ function agir(action: ActionEcran): void {
   }
   if (action.type === 'terminerAccueil') {
     terminerAccueil(action.suite)
+    return
+  }
+  if (action.type === 'revoirAccueil') {
+    revoirAccueil()
     return
   }
   if (action.type === 'fermerGuide') {
@@ -185,23 +189,33 @@ export function ouvrirDepuisRelance(): void {
 }
 
 function terminerAccueil(suite: 'fermer' | 'rappels'): void {
-  const resultat = executerAction(
-    lireReglages(),
-    annulation,
-    { type: 'premierLancement' },
-    contexteAction()
-  )
-  if (!resultat) {
-    return
+  const issue = suiteApresAccueil(lireReglages().premierLancementFait, suite)
+  if (issue.ecrire) {
+    const resultat = executerAction(
+      lireReglages(),
+      annulation,
+      { type: 'premierLancement' },
+      contexteAction()
+    )
+    if (!resultat) {
+      return
+    }
+    annulation = resultat.annulation
+    enregistrerReglages(resultat.reglages)
   }
-  annulation = resultat.annulation
-  enregistrerReglages(resultat.reglages)
   ecran = 'rappels'
   retourGuide = null
-  if (suite === 'fermer') {
+  if (issue.suite === 'fermer') {
     fermerApplication()
     return
   }
+  diffuser()
+}
+
+function revoirAccueil(): void {
+  ecran = 'accueil'
+  retourGuide = null
+  ouvrirApplication()
   diffuser()
 }
 

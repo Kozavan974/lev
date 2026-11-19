@@ -7,6 +7,7 @@ import { lienAutorise } from './liens'
 const LIENS_REFERENCES = [
   ...textes.apropos.references.liens.map((lien) => lien.url),
   textes.apropos.ekilib.url,
+  textes.apropos.decouvrir.url,
   textes.apropos.ekilib.maisonsUrl,
   textes.apropos.ekilib.procheUrl,
   guide.lien.url,
@@ -19,6 +20,19 @@ const LIENS_REFERENCES = [
 ]
 
 describe('liens externes', () => {
+  it('accepte le lien vers Ekilib.re et ses sous-domaines', () => {
+    expect(textes.apropos.decouvrir.lien).toBe("Découvrir l'association Ekilib.re")
+    expect(textes.apropos.decouvrir.url).toBe('https://ekilib.re')
+    expect(textes.apropos.decouvrir.aria).toBe(
+      "Découvrir l'association Ekilib.re. S'ouvre dans le navigateur."
+    )
+    expect(lienAutorise(textes.apropos.decouvrir.url)).toBe(true)
+    expect(lienAutorise('https://www.ekilib.re/')).toBe(true)
+    expect(lienAutorise('https://asso.ekilib.re/page')).toBe(true)
+    expect(lienAutorise('http://ekilib.re')).toBe(false)
+    expect(lienAutorise('https://ekilib.re.evil.com/')).toBe(false)
+  })
+
   it('accepte la vidéo de l’INRS sur YouTube et youtu.be', () => {
     expect(lienAutorise('https://www.youtube.com/watch?v=Hqb1863vYiY')).toBe(true)
     expect(lienAutorise('https://youtube.com/watch?v=Hqb1863vYiY')).toBe(true)
@@ -76,6 +90,23 @@ describe('contenus du lot 5', () => {
       expect(idee.length).toBeGreaterThan(0)
       expect(idee.length).toBeLessThanOrEqual(160)
     }
+  })
+
+  it('porte les phrases d’accroche des vues principales', () => {
+    expect(textes.rappels.accroche).toBe(
+      "Choisis les pauses régulières qui t'aident à bouger et reposer tes yeux."
+    )
+    expect(textes.rappels.sequencesAccroche).toBe(
+      "Alterne des temps de concentration et des pauses courtes pour garder le cap sans t'épuiser."
+    )
+    expect(textes.respiration.accroche).toBe(
+      'Prends deux minutes pour ralentir ta respiration et relâcher la pression.'
+    )
+    expect(textes.poste.accroche).toBe(
+      'Quelques repères simples pour ajuster ton écran, ton siège et ta posture.'
+    )
+    expect(textes.apropos.revoirAccueil).toBe("Revoir l'écran de bienvenue")
+    expect(textes.apropos.moteurs).toBe('Propulsé par Electron {electron} et Chromium {chrome}')
   })
 
   it('porte les cinq étapes et la phrase de l’encadré', () => {

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { deciderOuverture, ecranApresRelance, estDemarrageAuto } from './demarrage'
+import {
+  deciderOuverture,
+  ecranApresRelance,
+  estDemarrageAuto,
+  suiteApresAccueil
+} from './demarrage'
 
 describe('ouverture au lancement', () => {
   it("ouvre la bienvenue tant que le premier lancement n'est pas fait", () => {
@@ -29,5 +34,17 @@ describe('seconde instance', () => {
 
   it("ouvre Mes rappels une fois l'accueil terminé", () => {
     expect(ecranApresRelance(true)).toBe('rappels')
+  })
+})
+
+describe('sortie de l’accueil', () => {
+  it('écrit le fichier au premier lancement', () => {
+    expect(suiteApresAccueil(false, 'fermer')).toEqual({ ecrire: true, suite: 'fermer' })
+    expect(suiteApresAccueil(false, 'rappels')).toEqual({ ecrire: true, suite: 'rappels' })
+  })
+
+  it('revient à Mes rappels sans réécrire quand l’accueil est rouvert', () => {
+    expect(suiteApresAccueil(true, 'fermer')).toEqual({ ecrire: false, suite: 'rappels' })
+    expect(suiteApresAccueil(true, 'rappels')).toEqual({ ecrire: false, suite: 'rappels' })
   })
 })

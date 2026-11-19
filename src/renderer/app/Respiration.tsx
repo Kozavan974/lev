@@ -114,6 +114,7 @@ export function Respiration(): React.JSX.Element {
           <h1 className="titre-ecran" tabIndex={-1}>
             {textes.respiration.titre}
           </h1>
+          <p className="legende">{textes.respiration.accroche}</p>
           <div className="bulle-cadre" aria-hidden="true">
             <div className="bulle" ref={bulleRef} />
           </div>

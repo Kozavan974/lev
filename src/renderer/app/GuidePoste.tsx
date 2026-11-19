@@ -22,6 +22,7 @@ export function GuidePoste(): React.JSX.Element {
       <h1 className="titre-ecran" tabIndex={-1}>
         {textes.poste.titre}
       </h1>
+      <p className="legende">{textes.poste.accroche}</p>
       {guide.etapes.map((etape, index) => {
         const coche = etat.reglages.guidePoste[index] === true
         return (

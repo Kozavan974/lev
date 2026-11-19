@@ -8,6 +8,7 @@ import type {
   Theme
 } from '../partage/modeles'
 import { FREQUENCES } from '../partage/modeles'
+import type { VersionsTechniques } from '../partage/versions'
 
 export const CANAL_NOTIFICATION = {
   prete: 'notification:prete',
@@ -151,6 +152,7 @@ export type ActionEcran =
   | { type: 'ouvrirRappels' }
   | { type: 'ouvrirEcran'; ecran: EcranNavigation }
   | { type: 'terminerAccueil'; suite: 'fermer' | 'rappels' }
+  | { type: 'revoirAccueil' }
   | { type: 'fermerGuide' }
   | { type: 'premierLancement' }
   | { type: 'guide'; index: number; coche: boolean }
@@ -181,6 +183,7 @@ export interface ApiLev {
   agir(action: ActionEcran): void
   ouvrirLien(url: string): Promise<boolean>
   verifierMisesAJour(): Promise<EtatMaj>
+  versionsTechniques(): VersionsTechniques | null
   fermerMenu(): void
   definirHauteurMenu(hauteurPx: number): void
 }
@@ -268,7 +271,8 @@ const ACTIONS_SANS_CHARGE = [
   'demarrerSequence',
   'arreterSequences',
   'premierLancement',
-  'fermerGuide'
+  'fermerGuide',
+  'revoirAccueil'
 ] as const
 
 export function estActionEcran(valeur: unknown): valeur is ActionEcran {

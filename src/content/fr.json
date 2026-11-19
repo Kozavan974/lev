@@ -44,10 +44,12 @@
   },
   "rappels": {
     "titre": "Mes rappels",
+    "accroche": "Choisis les pauses régulières qui t'aident à bouger et reposer tes yeux.",
     "annuler": "Annuler",
     "retirer": "Retirer « {nom} »",
     "retire": "« {nom} » est retiré.",
     "sequences": "Séquences de travail",
+    "sequencesAccroche": "Alterne des temps de concentration et des pauses courtes pour garder le cap sans t'épuiser.",
     "sequencesPrecision": "Pour travailler concentré par étapes : Lèv attend la fin de la séquence pour t'inviter à marcher, et propose une grande pause de 15 minutes toutes les 4 séquences.",
     "horaires": "Mes horaires",
     "de": "De",
@@ -370,10 +372,18 @@
         "url": "https://github.com/Kozavan974/lev/releases/latest"
       }
     },
+    "revoirAccueil": "Revoir l'écran de bienvenue",
+    "decouvrir": {
+      "lien": "Découvrir l'association Ekilib.re",
+      "url": "https://ekilib.re",
+      "aria": "Découvrir l'association Ekilib.re. S'ouvre dans le navigateur."
+    },
+    "moteurs": "Propulsé par Electron {electron} et Chromium {chrome}",
     "signatureFin": "Lèv — levez-vous, respirez."
   },
   "poste": {
     "titre": "Bien installer mon poste",
+    "accroche": "Quelques repères simples pour ajuster ton écran, ton siège et ta posture.",
     "etape": "Étape {numero} sur {total}",
     "toutBon": "C'est tout bon",
     "plusTard": "Je finirai plus tard",
@@ -387,6 +397,7 @@
   },
   "respiration": {
     "titre": "Un moment pour souffler",
+    "accroche": "Prends deux minutes pour ralentir ta respiration et relâcher la pression.",
     "rythme": "Mon rythme",
     "pret": "Prêt quand tu veux",
     "fin": "Chaque petite pause compte.",

@@ -28,3 +28,19 @@ export function deciderOuverture(entree: {
 export function ecranApresRelance(premierLancementFait: boolean): 'accueil' | 'rappels' {
   return premierLancementFait ? 'rappels' : 'accueil'
 }
+
+export type SuiteAccueil = 'fermer' | 'rappels'
+
+/**
+ * Premier passage : on écrit premierLancementFait et on suit le bouton.
+ * Accueil rouvert depuis À propos : Mes rappels, sans réécrire le fichier.
+ */
+export function suiteApresAccueil(
+  premierLancementFait: boolean,
+  suite: SuiteAccueil
+): { ecrire: boolean; suite: SuiteAccueil } {
+  if (premierLancementFait) {
+    return { ecrire: false, suite: 'rappels' }
+  }
+  return { ecrire: true, suite }
+}

@@ -23,7 +23,9 @@ export function Marque({
         ) : (
           <p className="marque-titre">{titre}</p>
         )}
-        {detail ? <p className="marque-detail">{detail}</p> : null}
+        {detail ? (
+          <p className={niveau === 'page' ? 'legende' : 'marque-detail'}>{detail}</p>
+        ) : null}
       </div>
     </div>
   )

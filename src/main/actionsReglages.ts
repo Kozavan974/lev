@@ -11,6 +11,7 @@ export type ActionReglage = Exclude<
   | { type: 'ouvrirRappels' }
   | { type: 'ouvrirEcran' }
   | { type: 'terminerAccueil' }
+  | { type: 'revoirAccueil' }
   | { type: 'fermerGuide' }
   | { type: 'quitter' }
   | { type: 'demarrerSequence' }
