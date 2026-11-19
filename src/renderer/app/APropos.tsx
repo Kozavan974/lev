@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import textes from '../../content/fr.json'
 import { remplir } from '../../partage/format'
-import type { EtatMaj } from '../../preload/contrat'
+import type { EtatMaj, VersionsTechniques } from '../../preload/contrat'
 import { LienExterne } from '../shared/LienExterne'
 import { RetourRappels } from '../shared/RetourRappels'
 import { useEtatEcran } from '../shared/useEtatEcran'
@@ -12,7 +12,26 @@ type SuiviMaj = { phase: 'repos' } | { phase: 'cours' } | { phase: 'reponse'; re
 export function APropos(): React.JSX.Element {
   const etat = useEtatEcran()
   const [suivi, setSuivi] = useState<SuiviMaj>({ phase: 'repos' })
+  const [moteurs, setMoteurs] = useState<VersionsTechniques | null>(null)
   useFocusTitre(etat !== null)
+  useEffect(() => {
+    let actif = true
+    void window.lev.versionsTechniques().then(
+      (valeur) => {
+        if (actif) {
+          setMoteurs(valeur)
+        }
+      },
+      () => {
+        if (actif) {
+          setMoteurs(null)
+        }
+      }
+    )
+    return () => {
+      actif = false
+    }
+  }, [])
 
   if (!etat) {
     return <main className="application" />
@@ -20,7 +39,6 @@ export function APropos(): React.JSX.Element {
 
   const page = textes.apropos
   const maj = page.ekilib.maj
-  const moteurs = window.lev.versionsTechniques()
   let annonce = ''
   let proposerTelechargement = false
   if (suivi.phase === 'cours') {
@@ -111,7 +129,12 @@ export function APropos(): React.JSX.Element {
           <p className="corps">
             <LienExterne href={page.ekilib.procheUrl}>{page.ekilib.proche}</LienExterne>
           </p>
-          <p className="legende">{remplir(page.ekilib.version, { version: etat.version })}</p>
+          <p className="legende">{page.ekilib.droits}</p>
+          <p className="corps">
+            <LienExterne href={page.decouvrir.url} ariaLabel={page.decouvrir.aria}>
+              {page.decouvrir.lien}
+            </LienExterne>
+          </p>
           <button
             type="button"
             className="bouton-texte"
@@ -152,15 +175,13 @@ export function APropos(): React.JSX.Element {
           {page.revoirAccueil}
         </button>
       </p>
-      <p className="corps">
-        <LienExterne href={page.decouvrir.url} ariaLabel={page.decouvrir.aria}>
-          {page.decouvrir.lien}
-        </LienExterne>
-      </p>
-      <p className="signature">{page.signatureFin}</p>
       {moteurs ? (
-        <p className="legende">
-          {remplir(page.moteurs, { electron: moteurs.electron, chrome: moteurs.chrome })}
+        <p className="legende signature-technique">
+          {remplir(page.moteurs, {
+            version: moteurs.version,
+            electron: moteurs.electron,
+            chrome: moteurs.chrome
+          })}
         </p>
       ) : null}
     </main>

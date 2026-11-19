@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
-import { versionsTechniquesDepuis } from '../partage/versions'
+import { estVersionsTechniques } from '../partage/versions'
 import {
   CANAL_ECRAN,
   CANAL_NOTIFICATION,
@@ -109,7 +109,10 @@ const api: ApiLev = {
     }
     return valeur
   },
-  versionsTechniques: () => versionsTechniquesDepuis(process.versions),
+  versionsTechniques: async () => {
+    const valeur: unknown = await ipcRenderer.invoke(CANAL_ECRAN.versions)
+    return estVersionsTechniques(valeur) ? valeur : null
+  },
   fermerMenu: () => {
     ipcRenderer.send(CANAL_ECRAN.fermerMenu)
   },

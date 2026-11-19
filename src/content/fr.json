@@ -361,7 +361,7 @@
       "maisonsApres": " sont des lieux d'accueil, d'information et d'orientation vers une activité physique adaptée à tes besoins, tes envies et ta santé. Elles proposent un accompagnement personnalisé, quel que soit ton âge ou ton niveau de départ.",
       "proche": "Trouve la Maison Sport-Santé la plus proche de chez toi.",
       "procheUrl": "https://livemap.getwemap.com/embed?emmid=13462&iframeEmbed=true&iframeid=9d84e72b-50f8-49e9-9ed6-c2b6b756e94e&parentOrigin=https%3A%2F%2Flivemap.getwemap.com&replaceContainer=false&token=NRAY1Q8M32GFJ8ZOVMBSO3HUZ",
-      "version": "Version {version} · Tous droits réservés, Ekilib.re",
+      "droits": "Tous droits réservés, Ekilib.re",
       "maj": {
         "verifier": "Vérifier les mises à jour",
         "cours": "Vérification en cours…",
@@ -378,8 +378,7 @@
       "url": "https://ekilib.re",
       "aria": "Découvrir l'association Ekilib.re. S'ouvre dans le navigateur."
     },
-    "moteurs": "Propulsé par Electron {electron} et Chromium {chrome}",
-    "signatureFin": "Lèv — levez-vous, respirez."
+    "moteurs": "Lèv v{version} · Propulsé par Electron {electron} et Chromium {chrome}"
   },
   "poste": {
     "titre": "Bien installer mon poste",

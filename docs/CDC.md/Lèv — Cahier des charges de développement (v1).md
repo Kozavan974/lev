@@ -6,7 +6,7 @@ Nov 13, 2026 · @Laurent
 
 Lèv est une application de bureau gratuite qui invite, sans jamais l'imposer, à bouger et à reposer ses yeux pendant le travail sur écran. Elle est éditée par l'association Ekilib.re, Maison Sport-Santé au Tampon (La Réunion).
 
-- **Signatures** : « Lèv — une pause, naturellement. » et « Lèv — levez-vous, respirez. »
+- **Signature** : « Lèv — une pause, naturellement. »
 - **Public** : grand public, toute personne qui travaille sur ordinateur.
 - **Plateforme** : Windows 10 et 11 pour la v1. Le code doit rester portable vers macOS, puis Linux.
 - **Promesse** : aucun compte, aucune inscription, aucune donnée personnelle demandée. Tout reste sur l'ordinateur.
@@ -40,7 +40,7 @@ Ces décisions sont prises. Elles ne sont pas à rediscuter pendant le développ
 | Sujet                    | Décision                                                                                                                                                                                 |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Nom                      | Lèv                                                                                                                                                                                      |
-| Adresse à l'utilisateur  | Tutoiement partout dans l'interface. Les deux signatures restent telles quelles                                                                                                          |
+| Adresse à l'utilisateur  | Tutoiement partout dans l'interface. La signature « Lèv — une pause, naturellement. » reste telle quelle                                                                                |
 | Voix                     | Lèv parle à la première personne dans l'accueil et les notifications (« Je te rappellerai… »), et à la troisième personne dans les réglages et « À propos » (« Lèv retient ton rythme ») |
 | Réglage                  | Zéro réglage obligatoire. L'application fonctionne dès le premier lancement                                                                                                              |
 | Enregistrement           | Pas de bouton « Enregistrer ». Tout changement s'applique immédiatement                                                                                                                  |
@@ -439,11 +439,11 @@ Une page de lecture. En haut, un lien discret « ← Mes rappels », puis l'en-t
 2. « Philosophie de l'application » : sept principes courts.
 3. « Les repères que suit l'application » : se lever toutes les 30 minutes, marcher 5 minutes, quitter l'écran des yeux. Lien vers « Bien installer mon poste ».
 4. « Textes de référence » : sept liens (section 10.3), ouverts dans le navigateur par défaut.
-5. « Ekilib.re » : présentation de l'association, avec le lien sur le nom, puis « Chaque pas compte. », le lien vers les Maisons Sport-Santé, le lien vers la carte, le numéro de version, la licence, puis la vérification des mises à jour (section 10.5).
+5. « Ekilib.re » : présentation de l'association, avec le lien sur le nom, puis « Chaque pas compte. », le lien vers les Maisons Sport-Santé, le lien vers la carte, la mention « Tous droits réservés, Ekilib.re », le lien « Découvrir l'association Ekilib.re », puis la vérification des mises à jour (section 10.5).
 
-Sous les tiroirs, un bouton discret « Revoir l'écran de bienvenue » rouvre l'écran d'accueil sans modifier `reglages.json` (section 7.1). Le lien « Découvrir l'association Ekilib.re » ouvre `https://ekilib.re` dans le navigateur. Le libellé lu est « Découvrir l'association Ekilib.re. S'ouvre dans le navigateur. »
+Sous les tiroirs, seul un bouton discret « Revoir l'écran de bienvenue » rouvre l'écran d'accueil sans modifier `reglages.json` (section 7.1).
 
-La page se termine par « Lèv — levez-vous, respirez. », puis une ligne en 12,5 px, couleur `--texte-second` : « Propulsé par Electron {electron} et Chromium {chrome} ». Les deux numéros viennent de `process.versions`, lus par le preload, sans appel réseau.
+La page se termine par un filet (`--separateur`), puis une ligne en 12,5 px, couleur `--texte-second` : « Lèv v{version} · Propulsé par Electron {electron} et Chromium {chrome} ». `{version}` vient de `app.getVersion()`. `{electron}` et `{chrome}` viennent de `process.versions`. Aucun appel réseau, aucun outil de build.
 
 ### 7.6 Bien installer mon poste (planche du même nom)
 
@@ -465,7 +465,7 @@ Lèv parle comme un compagnon bienveillant, jamais comme un coach exigeant. Cett
 
 ### Règles d'écriture
 
-1. Tutoiement partout, sauf dans la signature « Lèv — levez-vous, respirez. », gardée telle quelle. Phrases courtes, mots simples.
+1. Tutoiement partout. Phrases courtes, mots simples.
 2. Une invitation ou une question, jamais un ordre ni une alerte.
 3. Aucun libellé ne constate un manque, un retard ou un échec. Aucun chiffre sur ce qui n'a pas été fait.
 4. Le bouton principal d'une proposition de pause est toujours « Je le fais ». Les mots « OK », « Ignorer », « Fermer », « Annuler la pause » sont interdits sur une notification.
@@ -643,15 +643,15 @@ Ces textes sont à reprendre mot pour mot dans `content/fr.json`.
 
 Lien sous ce bloc : « Bien installer mon poste, en cinq réglages ».
 
-**Ekilib.re.** « L'application est proposée gratuitement par l'association Ekilib.re, Maison Sport-Santé au Tampon, à La Réunion. » Le lien `https://ekilib.re` est posé sur le mot « Ekilib.re ». Un lien séparé « Découvrir l'association Ekilib.re » pointe aussi vers `https://ekilib.re`. Le libellé lu est « Découvrir l'association Ekilib.re. S'ouvre dans le navigateur. » Il est affiché sous les tiroirs, avec le bouton « Revoir l'écran de bienvenue ». Ce bouton rouvre l'accueil sans modifier `reglages.json`.
+**Ekilib.re.** « L'application est proposée gratuitement par l'association Ekilib.re, Maison Sport-Santé au Tampon, à La Réunion. » Le lien `https://ekilib.re` est posé sur le mot « Ekilib.re ». Un lien séparé « Découvrir l'association Ekilib.re » pointe aussi vers `https://ekilib.re`, dans ce tiroir, juste au-dessus de la vérification des mises à jour. Le libellé lu est « Découvrir l'association Ekilib.re. S'ouvre dans le navigateur. »
 
 Sous-titre « Chaque pas compte. » : « Les Maisons Sport-Santé sont des lieux d'accueil, d'information et d'orientation vers une activité physique adaptée à tes besoins, tes envies et ta santé. Elles proposent un accompagnement personnalisé, quel que soit ton âge ou ton niveau de départ. » Le lien `https://www.sports.gouv.fr/maisons-sport-sante` est posé sur « Maisons Sport-Santé ».
 
 Phrase liée, en dessous : « Trouve la Maison Sport-Santé la plus proche de chez toi. » Elle ouvre `https://livemap.getwemap.com/embed?emmid=13462&iframeEmbed=true&iframeid=9d84e72b-50f8-49e9-9ed6-c2b6b756e94e&parentOrigin=https%3A%2F%2Flivemap.getwemap.com&replaceContainer=false&token=NRAY1Q8M32GFJ8ZOVMBSO3HUZ`.
 
-Puis « Version 1.0.0 · Tous droits réservés, Ekilib.re » (mention provisoire, section 16). Sous la version, un bouton discret « Vérifier les mises à jour ». Pendant l'appel : « Vérification en cours… ». Si la version installée est la dernière : « Tu utilises déjà la dernière version de Lèv. » Si la vérification ne peut pas aboutir : « Vérification impossible pour le moment. » Si une version plus récente existe : « Une nouvelle version ({version}) est disponible. » et un lien « Télécharger sur GitHub » vers `https://github.com/Kozavan974/lev/releases/latest`. Quand une version plus récente a déjà été constatée, ce message et ce lien sont affichés sans nouvel appel.
+Puis « Tous droits réservés, Ekilib.re » (mention provisoire, section 16). Le numéro de version n'est plus dans ce tiroir : il rejoint la ligne technique en bas de page. Sous la mention, le lien « Découvrir l'association Ekilib.re », puis un bouton discret « Vérifier les mises à jour ». Pendant l'appel : « Vérification en cours… ». Si la version installée est la dernière : « Tu utilises déjà la dernière version de Lèv. » Si la vérification ne peut pas aboutir : « Vérification impossible pour le moment. » Si une version plus récente existe : « Une nouvelle version ({version}) est disponible. » et un lien « Télécharger sur GitHub » vers `https://github.com/Kozavan974/lev/releases/latest`. Quand une version plus récente a déjà été constatée, ce message et ce lien sont affichés sans nouvel appel.
 
-Dernière signature : « Lèv — levez-vous, respirez. » Sous elle, en 12,5 px et en `--texte-second` : « Propulsé par Electron {electron} et Chromium {chrome} ». `{electron}` et `{chrome}` sont lus dans `process.versions` par le preload. Aucun outil de build n'est cité.
+En bas de page, seul le bouton « Revoir l'écran de bienvenue ». Il rouvre l'accueil sans modifier `reglages.json`. Sous un filet, une ligne en 12,5 px et en `--texte-second` : « Lèv v{version} · Propulsé par Electron {electron} et Chromium {chrome} ». `{version}` est `app.getVersion()`, donc le passage à `1.1.0` se reflète tout seul. `{electron}` et `{chrome}` viennent de `process.versions`. Aucun outil de build n'est cité. La signature « Lèv — levez-vous, respirez. » n'est plus affichée.
 
 ## 11. Confidentialité et sécurité
 

@@ -106,7 +106,10 @@ describe('contenus du lot 5', () => {
       'Quelques repères simples pour ajuster ton écran, ton siège et ta posture.'
     )
     expect(textes.apropos.revoirAccueil).toBe("Revoir l'écran de bienvenue")
-    expect(textes.apropos.moteurs).toBe('Propulsé par Electron {electron} et Chromium {chrome}')
+    expect(textes.apropos.moteurs).toBe(
+      'Lèv v{version} · Propulsé par Electron {electron} et Chromium {chrome}'
+    )
+    expect(textes.apropos.ekilib.droits).toBe('Tous droits réservés, Ekilib.re')
   })
 
   it('porte les cinq étapes et la phrase de l’encadré', () => {

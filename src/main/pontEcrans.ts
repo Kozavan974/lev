@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { app, ipcMain, shell, type BrowserWindow } from 'electron'
 import textes from '../content/fr.json'
 import { formaterInstant, remplir } from '../partage/format'
+import { versionsTechniquesDepuis } from '../partage/versions'
 import {
   CANAL_ECRAN,
   estActionEcran,
@@ -59,6 +60,13 @@ export function brancherEcrans(): void {
     }
   })
   ipcMain.handle(CANAL_ECRAN.maj, () => conclureVerificationMaj())
+  ipcMain.handle(CANAL_ECRAN.versions, () =>
+    versionsTechniquesDepuis({
+      version: app.getVersion(),
+      electron: process.versions.electron,
+      chrome: process.versions.chrome
+    })
+  )
   ipcMain.on(CANAL_ECRAN.action, (_evenement, valeur: unknown) => {
     if (estActionEcran(valeur)) {
       agir(valeur)

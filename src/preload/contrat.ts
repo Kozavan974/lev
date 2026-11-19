@@ -10,6 +10,8 @@ import type {
 import { FREQUENCES } from '../partage/modeles'
 import type { VersionsTechniques } from '../partage/versions'
 
+export type { VersionsTechniques }
+
 export const CANAL_NOTIFICATION = {
   prete: 'notification:prete',
   afficher: 'notification:afficher',
@@ -77,7 +79,8 @@ export const CANAL_ECRAN = {
   fermerMenu: 'ecran:fermer-menu',
   hauteurMenu: 'ecran:hauteur-menu',
   lien: 'ecran:lien',
-  maj: 'ecran:maj'
+  maj: 'ecran:maj',
+  versions: 'ecran:versions'
 } as const
 
 export type ClefOption =
@@ -183,7 +186,7 @@ export interface ApiLev {
   agir(action: ActionEcran): void
   ouvrirLien(url: string): Promise<boolean>
   verifierMisesAJour(): Promise<EtatMaj>
-  versionsTechniques(): VersionsTechniques | null
+  versionsTechniques(): Promise<VersionsTechniques | null>
   fermerMenu(): void
   definirHauteurMenu(hauteurPx: number): void
 }

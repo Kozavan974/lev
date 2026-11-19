@@ -282,6 +282,11 @@ label.question {
   font-weight: var(--graisse-forte);
 }
 
+.signature-technique {
+  padding-top: var(--espace-10);
+  border-top: 1px solid var(--separateur);
+}
+
 .entete,
 .bloc-texte,
 .liste-textes {
