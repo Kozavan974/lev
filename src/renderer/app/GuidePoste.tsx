@@ -68,9 +68,18 @@ export function GuidePoste(): React.JSX.Element {
           {textes.poste.plusTard}
         </button>
       </div>
-      <p className="legende">
-        {guide.source} <LienExterne href={guide.lien.url}>{guide.lien.libelle}</LienExterne>
-      </p>
+      <footer className="guide-ressources">
+        <p className="legende">
+          {guide.source} <LienExterne href={guide.lien.url}>{guide.lien.libelle}</LienExterne>
+        </p>
+        <h2 className="sous-titre">{textes.poste.video.titre}</h2>
+        <p className="legende">{textes.poste.video.texte}</p>
+        <p className="corps">
+          <LienExterne href={textes.poste.video.url} ariaLabel={textes.poste.video.aria}>
+            {textes.poste.video.lien}
+          </LienExterne>
+        </p>
+      </footer>
     </main>
   )
 }

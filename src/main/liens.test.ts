@@ -10,6 +10,7 @@ const LIENS_REFERENCES = [
   textes.apropos.ekilib.maisonsUrl,
   textes.apropos.ekilib.procheUrl,
   guide.lien.url,
+  textes.poste.video.url,
   textes.apropos.ekilib.maj.url,
   'https://www.github.com/Kozavan974/lev',
   'https://ekilib.re/',
@@ -18,6 +19,13 @@ const LIENS_REFERENCES = [
 ]
 
 describe('liens externes', () => {
+  it('accepte la vidéo de l’INRS sur YouTube et youtu.be', () => {
+    expect(lienAutorise('https://www.youtube.com/watch?v=Hqb1863vYiY')).toBe(true)
+    expect(lienAutorise('https://youtube.com/watch?v=Hqb1863vYiY')).toBe(true)
+    expect(lienAutorise('https://youtu.be/Hqb1863vYiY')).toBe(true)
+    expect(textes.poste.video.url).toBe('https://www.youtube.com/watch?v=Hqb1863vYiY')
+  })
+
   it('accepte les adresses https des domaines autorisés', () => {
     for (const adresse of LIENS_REFERENCES) {
       expect(lienAutorise(adresse)).toBe(true)
@@ -47,6 +55,10 @@ describe('liens externes', () => {
       'https://gist.github.com/Kozavan974',
       'https://github.com.evil.com/',
       'http://github.com/Kozavan974/lev',
+      'http://www.youtube.com/watch?v=Hqb1863vYiY',
+      'https://youtube.com.evil.com/watch',
+      'https://www.youtube.com.evil.com/watch',
+      'https://youtu.be.evil.com/Hqb1863vYiY',
       ''
     ]
     for (const adresse of refus) {

@@ -445,7 +445,7 @@ La page se termine par « Lèv — levez-vous, respirez. »
 
 ### 7.6 Bien installer mon poste (planche du même nom)
 
-En haut, un lien discret « ← Mes rappels ». Cinq cartes à cocher, numérotées « Étape 1 sur 5 » à « Étape 5 sur 5 », dont l'état est mémorisé. Les textes sont en section 10.2. Suivent un encadré « Et surtout, change souvent de position », avec la phrase « Même bien installé, la meilleure posture reste celle dont on bouge régulièrement. », les boutons « C'est tout bon » et « Je finirai plus tard » (les deux ferment la fenêtre, ou reviennent à l'écran précédent si le guide a été ouvert depuis celui-ci), puis la mention de source.
+En haut, un lien discret « ← Mes rappels ». Cinq cartes à cocher, numérotées « Étape 1 sur 5 » à « Étape 5 sur 5 », dont l'état est mémorisé. Les textes sont en section 10.2. Suivent un encadré « Et surtout, change souvent de position », avec la phrase « Même bien installé, la meilleure posture reste celle dont on bouge régulièrement. », les boutons « C'est tout bon » et « Je finirai plus tard » (les deux ferment la fenêtre, ou reviennent à l'écran précédent si le guide a été ouvert depuis celui-ci), puis la mention de source et, dans le même bloc compact, la vidéo de l'INRS (section 10.2). La fenêtre reste de 520 × 580 px.
 
 ### 7.7 Respiration guidée (planche du même nom)
 
@@ -591,6 +591,8 @@ Encadré, sous les cinq cartes. Titre : « Et surtout, change souvent de positio
 
 Mention affichée : « D'après les recommandations de l'INRS sur le travail sur écran. », suivie du lien « Lire le dossier de l'INRS » vers https://www.inrs.fr/risques/travail-ecran/prevention-risques.html. Ces textes sont à faire relire : trois consignes (hauteur de l'écran, orientation par rapport à la fenêtre, pieds à plat et dos au dossier) proviennent de fiches d'organismes qui reprennent ces repères, pas directement du dossier de l'INRS.
 
+Sous cette mention, dans le même bloc : titre « Aller plus loin : les postures sédentaires », phrase « L'INRS résume en 3 minutes pourquoi et comment interrompre la position assise toutes les 30 minutes. », lien « Voir la vidéo de l'INRS (YouTube) » vers https://www.youtube.com/watch?v=Hqb1863vYiY. Le libellé lu est « Voir la vidéo de l'INRS (YouTube). S'ouvre dans le navigateur. » Ces trois textes sont dans `content/fr.json`.
+
 ### 10.3 Textes de référence de l'écran « À propos »
 
 | Organisme                            | Titre et lien                                                                                                                                                                                                                                                   |
@@ -667,7 +669,7 @@ Lèv ne collecte, ne transmet et ne conserve aucune donnée personnelle en dehor
 - `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true` sur toutes les fenêtres.
 - Une politique de sécurité de contenu stricte : aucun script ni style distant, aucun `eval`.
 - Le `preload` n'expose que des fonctions nommées et typées, jamais `ipcRenderer` entier.
-- Les liens externes passent par `shell.openExternal`, après vérification que l'adresse commence par `https://` et appartient à l'un de ces domaines : anses.fr, inrs.fr, who.int, santepubliquefrance.fr, mangerbouger.fr, code.travail.gouv.fr, ekilib.re, sports.gouv.fr, getwemap.com. Un sous-domaine de ces noms est accepté, par exemple `www.sports.gouv.fr` ou `livemap.getwemap.com`. `github.com` est accepté aussi, ainsi que `www.github.com`, mais pas ses autres sous-domaines : `api.github.com` sert uniquement à l'appel de la section 13 et n'est pas ouvert dans le navigateur.
+- Les liens externes passent par `shell.openExternal`, après vérification que l'adresse commence par `https://` et appartient à l'un de ces domaines : anses.fr, inrs.fr, who.int, santepubliquefrance.fr, mangerbouger.fr, code.travail.gouv.fr, ekilib.re, sports.gouv.fr, getwemap.com, youtube.com, youtu.be. Un sous-domaine de ces noms est accepté, par exemple `www.sports.gouv.fr`, `livemap.getwemap.com` ou `www.youtube.com`. `github.com` est accepté aussi, ainsi que `www.github.com`, mais pas ses autres sous-domaines : `api.github.com` sert uniquement à l'appel de la section 13 et n'est pas ouvert dans le navigateur.
 - L'unique appel spontané est un GET HTTPS vers `https://api.github.com/repos/Kozavan974/lev/releases/latest` (section 13). Cette adresse n'est pas ouverte dans le navigateur. Le lien de téléchargement, lui, passe par la liste blanche (`github.com`).
 - Toute navigation et toute ouverture de fenêtre depuis un écran sont bloquées.
 - Une seule instance de l'application à la fois (`requestSingleInstanceLock`).

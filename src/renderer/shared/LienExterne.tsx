@@ -3,10 +3,12 @@ import textes from '../../content/fr.json'
 
 export function LienExterne({
   href,
-  children
+  children,
+  ariaLabel
 }: {
   href: string
   children: string
+  ariaLabel?: string
 }): React.JSX.Element {
   const [echec, setEchec] = useState(false)
 
@@ -14,6 +16,7 @@ export function LienExterne({
     <>
       <a
         href={href}
+        aria-label={ariaLabel}
         onClick={(evenement) => {
           evenement.preventDefault()
           void window.lev.ouvrirLien(href).then((ouvert) => {

@@ -376,7 +376,14 @@
     "titre": "Bien installer mon poste",
     "etape": "Étape {numero} sur {total}",
     "toutBon": "C'est tout bon",
-    "plusTard": "Je finirai plus tard"
+    "plusTard": "Je finirai plus tard",
+    "video": {
+      "titre": "Aller plus loin : les postures sédentaires",
+      "texte": "L'INRS résume en 3 minutes pourquoi et comment interrompre la position assise toutes les 30 minutes.",
+      "lien": "Voir la vidéo de l'INRS (YouTube)",
+      "aria": "Voir la vidéo de l'INRS (YouTube). S'ouvre dans le navigateur.",
+      "url": "https://www.youtube.com/watch?v=Hqb1863vYiY"
+    }
   },
   "respiration": {
     "titre": "Un moment pour souffler",

@@ -7,7 +7,9 @@ const DOMAINES = [
   'code.travail.gouv.fr',
   'ekilib.re',
   'sports.gouv.fr',
-  'getwemap.com'
+  'getwemap.com',
+  'youtube.com',
+  'youtu.be'
 ] as const
 
 const GITHUB = 'github.com'

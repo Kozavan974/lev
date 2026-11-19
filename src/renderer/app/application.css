@@ -447,6 +447,12 @@ label.question {
   gap: var(--espace-10);
 }
 
+.guide-ressources {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-4);
+}
+
 .respiration {
   display: flex;
   flex-direction: column;
