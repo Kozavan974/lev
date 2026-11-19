@@ -1,9 +1,9 @@
 {
   "name": "lev",
   "productName": "Lèv",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Lèv — une pause, naturellement.",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "author": "Ekilib.re",
   "main": "./out/main/index.js",
   "scripts": {
@@ -17,7 +17,8 @@
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
     "start": "electron-vite preview",
-    "dist:win": "npm run build && electron-builder --win --x64"
+    "dist:win": "npm run build && electron-builder --win --x64",
+    "dist": "npm run dist:win"
   },
   "dependencies": {
     "electron-store": "^12.0.0",

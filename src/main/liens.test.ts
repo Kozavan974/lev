@@ -111,7 +111,9 @@ describe('contenus du lot 5', () => {
     expect(textes.apropos.moteurs).toBe(
       'Lèv v{version} · Propulsé par Electron {electron} et Chromium {chrome}'
     )
-    expect(textes.apropos.ekilib.droits).toBe('Tous droits réservés, Ekilib.re')
+    expect(textes.apropos.ekilib.droits).toBe(
+      'Logiciel libre sous licence MIT — Association Ekilib.re'
+    )
   })
 
   it('porte les cinq étapes et la phrase de l’encadré', () => {

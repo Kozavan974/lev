@@ -1,6 +1,6 @@
 appId: re.ekilib.lev
 productName: Lèv
-copyright: Tous droits réservés, Ekilib.re
+copyright: Association Ekilib.re — Licence MIT
 artifactName: Lev-Setup-${version}.${ext}
 npmRebuild: false
 directories:

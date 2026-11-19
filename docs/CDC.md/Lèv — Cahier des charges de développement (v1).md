@@ -440,7 +440,7 @@ Une page de lecture. En haut, un lien discret « ← Mes rappels », puis l'en-t
 2. « Philosophie de Lèv » : sept principes courts.
 3. « Les repères que suit Lèv » : se lever toutes les 30 minutes, marcher 5 minutes, quitter l'écran des yeux. Lien vers « Bien installer mon poste ».
 4. « Textes de référence » : sept liens (section 10.3), ouverts dans le navigateur par défaut.
-5. « Ekilib.re » : présentation de l'association, avec le lien sur le nom, puis « Chaque pas compte. », le lien vers les Maisons Sport-Santé, le lien vers la carte, la mention « Tous droits réservés, Ekilib.re », le lien « Découvrir l'association Ekilib.re », puis la vérification des mises à jour (section 10.5).
+5. « Ekilib.re » : présentation de l'association, avec le lien sur le nom, puis « Chaque pas compte. », le lien vers les Maisons Sport-Santé, le lien vers la carte, la mention « Logiciel libre sous licence MIT — Association Ekilib.re », le lien « Découvrir l'association Ekilib.re », puis la vérification des mises à jour (section 10.5).
 
 Sous les tiroirs, seul un bouton discret « Revoir l'écran de bienvenue » rouvre l'écran d'accueil sans modifier `reglages.json` (section 7.1).
 
@@ -650,7 +650,7 @@ Sous-titre « Chaque pas compte. » : « Les Maisons Sport-Santé sont des lieux
 
 Phrase liée, en dessous : « Trouve la Maison Sport-Santé la plus proche de chez toi. » Elle ouvre `https://livemap.getwemap.com/embed?emmid=13462&iframeEmbed=true&iframeid=9d84e72b-50f8-49e9-9ed6-c2b6b756e94e&parentOrigin=https%3A%2F%2Flivemap.getwemap.com&replaceContainer=false&token=NRAY1Q8M32GFJ8ZOVMBSO3HUZ`.
 
-Puis « Tous droits réservés, Ekilib.re » (mention provisoire, section 16). Le numéro de version n'est plus dans ce tiroir : il rejoint la ligne technique en bas de page. Sous la mention, le lien « Découvrir l'association Ekilib.re », puis un bouton discret « Vérifier les mises à jour ». Pendant l'appel : « Vérification en cours… ». Si la version installée est la dernière : « Tu utilises déjà la dernière version de Lèv. » Si la vérification ne peut pas aboutir : « Vérification impossible pour le moment. » Si une version plus récente existe : « Une nouvelle version ({version}) est disponible. » et un lien « Télécharger sur GitHub » vers `https://github.com/Kozavan974/lev/releases/latest`. Quand une version plus récente a déjà été constatée, ce message et ce lien sont affichés sans nouvel appel.
+Puis « Logiciel libre sous licence MIT — Association Ekilib.re » (licence MIT, section 16). Le numéro de version n'est plus dans ce tiroir : il rejoint la ligne technique en bas de page. Sous la mention, le lien « Découvrir l'association Ekilib.re », puis un bouton discret « Vérifier les mises à jour ». Pendant l'appel : « Vérification en cours… ». Si la version installée est la dernière : « Tu utilises déjà la dernière version de Lèv. » Si la vérification ne peut pas aboutir : « Vérification impossible pour le moment. » Si une version plus récente existe : « Une nouvelle version ({version}) est disponible. » et un lien « Télécharger sur GitHub » vers `https://github.com/Kozavan974/lev/releases/latest`. Quand une version plus récente a déjà été constatée, ce message et ce lien sont affichés sans nouvel appel.
 
 En bas de page, seul le bouton « Revoir l'écran de bienvenue ». Il rouvre l'accueil sans modifier `reglages.json`. Sous un filet, une ligne en 12,5 px et en `--texte-second` : « Lèv v{version} · Propulsé par Electron {electron} et Chromium {chrome} ». `{version}` est `app.getVersion()`, donc le passage à `1.1.0` se reflète tout seul. `{electron}` et `{chrome}` viennent de `process.versions`. Aucun outil de build n'est cité. La signature « Lèv — levez-vous, respirez. » n'est plus affichée.
 
@@ -700,7 +700,7 @@ Lèv doit être utilisable au clavier, avec un lecteur d'écran et par une perso
 Lèv est livrée sous la forme d'un installateur Windows unique, qui s'installe sans droits d'administrateur.
 
 - **Installateur** : `electron-builder`, cible NSIS, installation par utilisateur, en français. Raccourci dans le menu Démarrer, pas d'icône imposée sur le bureau.
-- **Nom affiché** : « Lèv ». Identifiant technique sans accent : `re.ekilib.lev`. Nom du fichier : `Lev-Setup-1.0.0.exe`.
+- **Nom affiché** : « Lèv ». Identifiant technique sans accent : `re.ekilib.lev`. Nom du fichier : `Lev-Setup-1.1.0.exe`.
 - **Démarrage automatique** : activé par défaut via `app.setLoginItemSettings`, désactivable dans « Autres réglages ». L'entrée de démarrage automatique lance Lèv avec l'argument --demarrage-auto : dans ce cas aucune fenêtre ne s'ouvre, seule l'icône apparaît. Un lancement à la main (menu Démarrer) ouvre « Mes rappels », ou l'accueil si c'est le premier lancement. Si Lèv tourne déjà, la relancer ouvre « Mes rappels » dans l'instance existante (événement second-instance) : sans cela, le clic semblerait sans effet.
 - **Signature du code** : sans certificat de signature, Windows affiche un avertissement « éditeur inconnu » à l'installation, ce qui décourage une partie du public. L'achat d'un certificat au nom de l'association est à décider (section 16).
 - **Distribution** : téléchargement depuis ekilib.re. Le Microsoft Store est une seconde voie possible, qui évite l'avertissement de Windows.
@@ -774,7 +774,7 @@ Les contenus définitifs des enseignants en APA (section 10.1) peuvent arriver e
 
 ## 16. Points ouverts
 
-Le son est tranché au lot 6, et l'hébergement des mises à jour l'est pour la version 1.1.0. Quatorze points restent ouverts : onze lignes du tableau et les trois qui le suivent. Chacun des points ouverts a une règle provisoire, pour que le développement ne soit pas bloqué.
+Le son est tranché au lot 6. L'hébergement des mises à jour et la licence MIT le sont pour la version 1.1.0. Treize points restent ouverts : dix lignes du tableau et les trois qui le suivent. Chacun des points ouverts a une règle provisoire, pour que le développement ne soit pas bloqué.
 
 | Point                    | À décider                                                                                        | Règle provisoire                                             | Avant le lot |
 | ------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ------------ |
@@ -787,7 +787,7 @@ Le son est tranché au lot 6, et l'hébergement des mises à jour l'est pour la 
 | Guide du poste           | Relecture des cinq consignes et de la mention de source                                          | Textes de la section 10.2                                    | 7            |
 | Son                      | Quel son, créé ou libre de droits                                                                | Tranché : deux notes douces en sinus, Web Audio, environ 300 ms, sans fichier. Option visible, décochée. Un aperçu joue au cochage. | 6            |
 | Écrans sombres           | Seuls le menu et le rappel « bouger » ont une maquette sombre                                    | Appliquer les jetons sombres de la section 9                 | 6            |
-| Licence                  | Logiciel libre ou non, et quelle licence                                                         | Mention « Tous droits réservés, Ekilib.re »                  | 7            |
+| Licence                  | Logiciel libre ou non, et quelle licence                                                         | Tranché : licence MIT, Association Ekilib.re (2026). Mention « Logiciel libre sous licence MIT — Association Ekilib.re ». | 7            |
 | Nom                      | Vérifier que « Lèv » est disponible comme marque et comme nom de domaine                         | Aucune : à vérifier avant toute communication publique       | 7            |
 | Signature du code        | Achat d'un certificat au nom de l'association                                                    | Livrer sans signature en test interne uniquement             | 7            |
 | Hébergement              | Où sont publiés l'installateur et les mises à jour                                               | Tranché pour les mises à jour : Releases publiques `Kozavan974/lev`. Vérification seule, sans téléchargement ni installation automatiques. L'installateur reste proposé sur ekilib.re. | 7            |
