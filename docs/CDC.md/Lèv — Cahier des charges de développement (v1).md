@@ -260,7 +260,7 @@ Horaires : si l'heure de fin est antérieure ou égale à l'heure de début (par
 
 Si l'option est active et que l'ordinateur ne reçoit ni frappe ni mouvement de souris pendant 3 minutes d'affilée, Lèv considère que l'utilisateur a fait une pause. Au retour, tous les rappels récurrents repartent de zéro. Le menu l'indique : « Tu t'es levé à 10h10 : j'ai décalé la marche. » Cette ligne n'apparaît que si le rappel « bouger » est actif, et disparaît à la prochaine notification « bouger » ou au bout de 30 minutes.
 
-Cette détection utilise uniquement la durée écoulée depuis la dernière action (`powerMonitor.getSystemIdleTime()`). Lèv ne lit jamais ce qui est tapé.
+Cette détection utilise uniquement la durée écoulée depuis la dernière action (`powerMonitor.getSystemIdleTime()`). Lèv ne lit jamais ce qui est tapé. Un microphone en cours d'utilisation n'est pas une pause spontanée : il ne remet pas les compteurs à zéro. Il retient seulement l'affichage, comme le plein écran (5.9).
 
 Une séquence de travail en cours n'est pas affectée par une pause spontanée : son heure de fin ne change pas. Seuls les rappels récurrents repartent de zéro.
 
@@ -327,11 +327,11 @@ Dès qu'une séquence démarre, une notification d'accompagnement s'affiche tout
 
 ### 5.9 Ne pas déranger et mise en veille
 
-- **Mise en veille manuelle**, depuis le menu : 30 minutes, 1 heure, ou jusqu'à demain (début des horaires du prochain jour travaillé). Elle sert aussi de mode réunion : c'est la seule réponse fiable pour une visioconférence en fenêtre.
-- **Plein écran et présentation**, si l'option est active : Electron n'a aucune fonction pour savoir ce que font les autres applications. `platform/win32.ts` appelle la fonction Windows `SHQueryUserNotificationState` (`shell32.dll`) au moyen d'une bibliothèque d'appel natif sans compilation, par exemple Koffi. Les états « application en plein écran » (`QUNS_BUSY`, `QUNS_RUNNING_D3D_FULL_SCREEN`) et « mode présentation » (`QUNS_PRESENTATION_MODE`) retiennent la notification, qui s'affiche à la sortie de cet état.
-- Cet appel n'est fait qu'au moment où un rappel arrive à échéance, puis toutes les 15 secondes tant qu'il est retenu. Jamais de commande PowerShell en tâche de fond.
-- **Mode « Ne pas déranger » de Windows** : il n'est pas signalé par cette fonction, et n'est lisible que par une interface non documentée de Windows, qui peut cesser de fonctionner à toute mise à jour. Il n'est pas pris en compte en v1. L'étude technique du lot 3 dit si une solution fiable existe.
-- En conséquence, l'option s'intitule « Ne pas me déranger en plein écran ou pendant une présentation ».
+- **Mise en veille manuelle**, depuis le menu : 30 minutes, 1 heure, ou jusqu'à demain (début des horaires du prochain jour travaillé).
+- **Plein écran, présentation et appel**, si l'option est active : Electron n'a aucune fonction pour savoir ce que font les autres applications. `platform/win32.ts` appelle la fonction Windows `SHQueryUserNotificationState` (`shell32.dll`) au moyen de Koffi. Les états « application en plein écran » (`QUNS_BUSY`, `QUNS_RUNNING_D3D_FULL_SCREEN`) et « mode présentation » (`QUNS_PRESENTATION_MODE`) retiennent la notification. Une visioconférence en fenêtre est retenue aussi, lorsque le microphone est en cours d'utilisation : la même bibliothèque lit, en lecture seule, `LastUsedTimeStart` et `LastUsedTimeStop` sous `HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\microphone` et son sous-dossier `NonPackaged`. Le micro est occupé si la fin vaut 0 et le début est déjà inscrit. Aucun flux audio n'est ouvert, et le nom de l'application n'est pas conservé. La notification s'affiche à la sortie de cet état. Un appel sans microphone n'est pas détecté.
+- Cet appel, plein écran comme registre, n'est fait qu'au moment où un rappel arrive à échéance, puis toutes les 15 secondes tant qu'il est retenu. Jamais de commande PowerShell en tâche de fond.
+- **Mode « Ne pas déranger » de Windows** : il n'est pas signalé par cette fonction, et n'est lisible que par une interface non documentée de Windows, qui peut cesser de fonctionner à toute mise à jour. Il n'est pas pris en compte. L'étude technique du lot 3 dit si une solution fiable existe.
+- En conséquence, l'option s'intitule « Ne pas me déranger en plein écran, en présentation ou pendant un appel ».
 
 ## 6. Icône de la zone de notification
 
@@ -425,7 +425,7 @@ Une phrase se met à jour en direct : « Lèv te rappellera « M'étirer » tout
 **Autres réglages**, bloc replié par défaut. Fermé, il fait environ 40 px de haut : pas de marge interne sur le bloc, `9 px` sur `14 px` sur le titre, en 14 px, rayon de 8 px. Ouvert, le contenu a une marge de `4 px 14 px 12 px`. Le titre a un chevron à droite qui pivote de 0° à 180° à l'ouverture, et un survol en pointeur :
 
 - Thème : « Automatique, comme mon ordinateur », « Clair », « Sombre ».
-- Huit cases, dans cet ordre : « Attendre que j'aie fini de taper pour afficher un rappel », « Tenir compte des pauses que je prends de moi-même », « Ne pas me déranger en plein écran ou pendant une présentation », « Me proposer d'espacer un rappel quand son rythme ne me convient pas », « Préférer des mouvements discrets, à faire assis », « Jouer un son doux avec chaque rappel », « Lancer Lèv au démarrage de l'ordinateur », « Vérifier automatiquement les mises à jour (1 fois par semaine) ».
+- Huit cases, dans cet ordre : « Attendre que j'aie fini de taper pour afficher un rappel », « Tenir compte des pauses que je prends de moi-même », « Ne pas me déranger en plein écran, en présentation ou pendant un appel », « Me proposer d'espacer un rappel quand son rythme ne me convient pas », « Préférer des mouvements discrets, à faire assis », « Jouer un son doux avec chaque rappel », « Lancer Lèv au démarrage de l'ordinateur », « Vérifier automatiquement les mises à jour (1 fois par semaine) ».
 
 Sous ces cases, un bouton discret « Rétablir les rappels d'origine » remet les quatre rappels de base à leurs valeurs de départ. Il agit tout de suite et affiche un bandeau « Rappels d'origine rétablis. » avec « Annuler ». Ce bouton n'est pas maquetté.
 
@@ -661,6 +661,7 @@ Lèv ne collecte, ne transmet et ne conserve aucune donnée personnelle en dehor
 - Aucune mesure d'audience, aucun rapport d'erreur automatique, aucune bibliothèque tierce qui appelle Internet.
 - Les polices et les images sont embarquées. L'application fonctionne entièrement hors connexion.
 - La détection d'activité lit uniquement le temps écoulé depuis la dernière action. Aucune frappe, aucun titre de fenêtre, aucune capture d'écran n'est lu ni enregistré.
+- Si l'option est cochée, et seulement lorsqu'un rappel arrive à échéance, Lèv lit en lecture seule deux dates du registre de l'utilisateur (`ConsentStore\microphone` et `NonPackaged`) pour savoir si le microphone est ouvert. Elle n'ouvre pas le flux audio, ne conserve pas le nom de l'application et n'enregistre pas ces dates.
 - Les seuls accès réseau admis : la vérification des mises à jour (section 13), et l'ouverture d'un lien dans le navigateur quand l'utilisateur clique dessus.
 - Désinstaller l'application supprime aussi le fichier de réglages (option deleteAppDataOnUninstall de l'installateur, à activer).
 
@@ -776,7 +777,7 @@ Le son est tranché au lot 6, et l'hébergement des mises à jour l'est pour la 
 | ------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ------------ |
 | Rappels actifs au départ | Lesquels sont cochés au premier lancement                                                        | Yeux, marcher et posture actifs ; eau proposée mais décochée | 1            |
 | Longues séquences        | Que faire quand une séquence dépasse 30 minutes assis (rythmes 50-10 et « une pause par heure ») | Une invitation discrète à se lever au milieu de la séquence  | 4            |
-| Visioconférences         | Peut-on lire de façon fiable le mode « Ne pas déranger » de Windows                              | Plein écran et mode présentation seulement (5.9)             | 3            |
+| Visioconférences         | Peut-on lire de façon fiable le mode « Ne pas déranger » de Windows                              | Plein écran, présentation, et micro en cours (5.9). Un appel sans micro, et le mode « Ne pas déranger » de Windows, restent hors détection. | 3            |
 | Logotype                 | La bulle au-dessus du L et l'accent du « è » font double emploi                                  | Garder les deux, comme sur la maquette                       | 5            |
 | Logo Ekilib.re           | Fichier du logo de l'association pour l'écran « À propos »                                       | Nom en toutes lettres, sans logo                             | 5            |
 | Idées de mouvement       | Relecture et rédaction par les enseignants en APA                                                | Les six exemples, marqués provisoires                        | 7            |

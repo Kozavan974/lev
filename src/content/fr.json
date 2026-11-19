@@ -123,7 +123,7 @@
     "options": {
       "attendreAccalmie": "Attendre que j'aie fini de taper pour afficher un rappel",
       "pausesSpontanees": "Tenir compte des pauses que je prends de moi-même",
-      "nePasDeranger": "Ne pas me déranger en plein écran ou pendant une présentation",
+      "nePasDeranger": "Ne pas me déranger en plein écran, en présentation ou pendant un appel",
       "proposerEspacer": "Me proposer d'espacer un rappel quand son rythme ne me convient pas",
       "mouvementsAssis": "Préférer des mouvements discrets, à faire assis",
       "son": "Jouer un son doux avec chaque rappel",

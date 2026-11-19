@@ -6,6 +6,7 @@ import {
   type Reglages,
   type TypeRappel
 } from '../modeles'
+import { retenirSiOccupe } from '../platform/micro'
 import {
   ACCALMIE_MAX_MS,
   ACCALMIE_SECONDES,
@@ -126,7 +127,7 @@ export interface EntreeMoteur {
   inactiviteSec: number
   sessionOuverte: boolean
   reveil: boolean
-  /** Plein écran ou mode présentation, mesuré par la plateforme. */
+  /** Plein écran, présentation ou microphone ouvert, mesuré par la plateforme. */
   pleinEcran?: boolean
 }
 
@@ -516,7 +517,7 @@ function conclure(
     )
   }
 
-  if (reglages.options.nePasDeranger && entree.pleinEcran === true) {
+  if (retenirSiOccupe(reglages.options.nePasDeranger, entree.pleinEcran === true)) {
     return finir(
       {
         ...etatRetenu,
