@@ -1,15 +1,17 @@
+import { useState } from 'react'
 import textes from '../../content/fr.json'
 import { remplir } from '../../partage/format'
+import type { EtatMaj } from '../../preload/contrat'
 import { LienExterne } from '../shared/LienExterne'
 import { RetourRappels } from '../shared/RetourRappels'
 import { useEtatEcran } from '../shared/useEtatEcran'
 import { useFocusTitre } from '../shared/focusTitre'
 
-/** Les mises à jour restent désactivées tant que l'hébergement n'est pas décidé. */
-const MISES_A_JOUR_ACTIVES = false
+type SuiviMaj = { phase: 'repos' } | { phase: 'cours' } | { phase: 'reponse'; resultat: EtatMaj }
 
 export function APropos(): React.JSX.Element {
   const etat = useEtatEcran()
+  const [suivi, setSuivi] = useState<SuiviMaj>({ phase: 'repos' })
   useFocusTitre(etat !== null)
 
   if (!etat) {
@@ -17,6 +19,23 @@ export function APropos(): React.JSX.Element {
   }
 
   const page = textes.apropos
+  const maj = page.ekilib.maj
+  let annonce = ''
+  let proposerTelechargement = false
+  if (suivi.phase === 'cours') {
+    annonce = maj.cours
+  } else if (suivi.phase === 'reponse' && suivi.resultat.statut === 'a-jour') {
+    annonce = maj.aJour
+  } else if (suivi.phase === 'reponse' && suivi.resultat.statut === 'erreur') {
+    annonce = maj.erreur
+    proposerTelechargement = etat.majDisponible !== null
+  } else if (suivi.phase === 'reponse' && suivi.resultat.statut === 'disponible') {
+    annonce = remplir(maj.disponible, { version: suivi.resultat.version })
+    proposerTelechargement = true
+  } else if (etat.majDisponible) {
+    annonce = remplir(maj.disponible, { version: etat.majDisponible })
+    proposerTelechargement = true
+  }
 
   return (
     <main className="application">
@@ -92,7 +111,32 @@ export function APropos(): React.JSX.Element {
             <LienExterne href={page.ekilib.procheUrl}>{page.ekilib.proche}</LienExterne>
           </p>
           <p className="legende">{remplir(page.ekilib.version, { version: etat.version })}</p>
-          {MISES_A_JOUR_ACTIVES ? <p className="legende">{page.ekilib.miseAJour}</p> : null}
+          <button
+            type="button"
+            className="bouton-texte"
+            disabled={suivi.phase === 'cours'}
+            onClick={() => {
+              setSuivi({ phase: 'cours' })
+              void window.lev.verifierMisesAJour().then(
+                (resultat) => {
+                  setSuivi({ phase: 'reponse', resultat })
+                },
+                () => {
+                  setSuivi({ phase: 'reponse', resultat: { statut: 'erreur' } })
+                }
+              )
+            }}
+          >
+            {maj.verifier}
+          </button>
+          <div className="liste-textes" aria-live="polite">
+            {annonce ? <p className="legende">{annonce}</p> : null}
+            {proposerTelechargement ? (
+              <p className="corps">
+                <LienExterne href={maj.url}>{maj.telecharger}</LienExterne>
+              </p>
+            ) : null}
+          </div>
         </Tiroir>
       </div>
 

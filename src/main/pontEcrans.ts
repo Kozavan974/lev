@@ -9,6 +9,7 @@ import {
   type EcranApplication,
   type EcranNavigation,
   type EtatEcran,
+  type EtatMaj,
   type EtatSequence
 } from '../preload/contrat'
 import { executerAction, type Annulation } from './actionsReglages'
@@ -24,6 +25,7 @@ import {
 } from './boucle'
 import { fermerMenu, fenetreMenu, recevoirHauteurMenu } from './menuFenetre'
 import { lienAutorise } from './liens'
+import { appliquerResultatMaj, majDisponibleDepuis, verifierMiseAJourDistante } from './misesAJour'
 import { ecranApresRelance } from './demarrage'
 import { appliquerDemarrageAutomatique } from './platform'
 import type { TypeRappel } from './modeles'
@@ -56,6 +58,7 @@ export function brancherEcrans(): void {
       return false
     }
   })
+  ipcMain.handle(CANAL_ECRAN.maj, () => conclureVerificationMaj())
   ipcMain.on(CANAL_ECRAN.action, (_evenement, valeur: unknown) => {
     if (estActionEcran(valeur)) {
       agir(valeur)
@@ -69,6 +72,16 @@ export function brancherEcrans(): void {
       recevoirHauteurMenu(evenement.sender.id, valeur)
     }
   })
+}
+
+export async function conclureVerificationMaj(): Promise<EtatMaj> {
+  const resultat = await verifierMiseAJourDistante(app.getVersion())
+  const suivant = appliquerResultatMaj(lireReglages(), resultat, new Date())
+  if (suivant) {
+    enregistrerReglages(suivant)
+    diffuser()
+  }
+  return resultat
 }
 
 function agir(action: ActionEcran): void {
@@ -242,7 +255,8 @@ function etatCourant(): EtatEcran {
     bandeau: bandeauCourant(),
     sequence: etatSequence(moteur, maintenant.getTime()),
     ecran,
-    version: app.getVersion()
+    version: app.getVersion(),
+    majDisponible: majDisponibleDepuis(reglages, app.getVersion())
   }
 }
 

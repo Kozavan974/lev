@@ -4,6 +4,7 @@ import {
   CANAL_NOTIFICATION,
   estActionEcran,
   estEtatEcran,
+  estEtatMaj,
   estReponseBouton,
   estVueMessage,
   estVueNotification,
@@ -99,6 +100,13 @@ const api: ApiLev = {
     }
     const valeur: unknown = await ipcRenderer.invoke(CANAL_ECRAN.lien, url)
     return valeur === true
+  },
+  verifierMisesAJour: async () => {
+    const valeur: unknown = await ipcRenderer.invoke(CANAL_ECRAN.maj)
+    if (!estEtatMaj(valeur)) {
+      return { statut: 'erreur' }
+    }
+    return valeur
   },
   fermerMenu: () => {
     ipcRenderer.send(CANAL_ECRAN.fermerMenu)

@@ -210,12 +210,14 @@ export function Menu(): React.JSX.Element {
           <button
             type="button"
             className="menu-lien"
+            aria-label={etat.majDisponible ? textes.menu.aproposMaj : undefined}
             onClick={() => {
               window.lev.fermerMenu()
               window.lev.agir({ type: 'ouvrirEcran', ecran: 'apropos' })
             }}
           >
-            {textes.menu.apropos}
+            <span>{textes.menu.apropos}</span>
+            {etat.majDisponible ? <span className="menu-pastille" aria-hidden="true" /> : null}
           </button>
           <button
             type="button"

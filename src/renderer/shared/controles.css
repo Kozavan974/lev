@@ -54,7 +54,8 @@
   color: var(--action-survol);
 }
 
-.bouton:disabled {
+.bouton:disabled,
+.bouton-texte:disabled {
   opacity: 0.45;
 }
 

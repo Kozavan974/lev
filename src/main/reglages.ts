@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { estVersionSemVer } from './misesAJour'
 import type {
   DureeRespiration,
   Frequence,
@@ -67,7 +68,8 @@ export function reglagesParDefaut(): Reglages {
       proposerEspacer: true,
       mouvementsAssis: false,
       son: false,
-      lancerAuDemarrage: true
+      lancerAuDemarrage: true,
+      verifierMajAuto: true
     },
     theme: 'auto',
     respiration: { inspiration: 4, pleine: 4, expiration: 4, vide: 4, minutes: 1 },
@@ -97,6 +99,8 @@ function lireReglagesValides(donnees: unknown): Reglages | null {
   const respiration = lireRespiration(donnees.respiration)
   const guidePoste = lireGuide(donnees.guidePoste)
   const veille = lireOptionnel(donnees, 'veilleJusqua', estInstant)
+  const verification = lireOptionnel(donnees, 'derniereVerificationMaj', estInstant)
+  const versionVue = lireOptionnel(donnees, 'derniereVersionVue', estVersionSemVer)
   if (
     !rappels ||
     !horaires ||
@@ -105,6 +109,8 @@ function lireReglagesValides(donnees: unknown): Reglages | null {
     !respiration ||
     !guidePoste ||
     !veille.ok ||
+    !verification.ok ||
+    !versionVue.ok ||
     !estParmi(donnees.theme, THEMES)
   ) {
     return null
@@ -122,6 +128,12 @@ function lireReglagesValides(donnees: unknown): Reglages | null {
   }
   if (veille.valeur !== undefined) {
     reglages.veilleJusqua = veille.valeur
+  }
+  if (verification.valeur !== undefined) {
+    reglages.derniereVerificationMaj = verification.valeur
+  }
+  if (versionVue.valeur !== undefined) {
+    reglages.derniereVersionVue = versionVue.valeur
   }
   return reglages
 }
@@ -265,6 +277,8 @@ function lireOptions(valeur: unknown): Reglages['options'] | null {
   const mouvementsAssis = lireBooleen(valeur.mouvementsAssis)
   const son = lireBooleen(valeur.son)
   const lancerAuDemarrage = lireBooleen(valeur.lancerAuDemarrage)
+  const verifierMajAuto =
+    valeur.verifierMajAuto === undefined ? true : lireBooleen(valeur.verifierMajAuto)
   if (
     attendreAccalmie === null ||
     pausesSpontanees === null ||
@@ -272,7 +286,8 @@ function lireOptions(valeur: unknown): Reglages['options'] | null {
     proposerEspacer === null ||
     mouvementsAssis === null ||
     son === null ||
-    lancerAuDemarrage === null
+    lancerAuDemarrage === null ||
+    verifierMajAuto === null
   ) {
     return null
   }
@@ -283,7 +298,8 @@ function lireOptions(valeur: unknown): Reglages['options'] | null {
     proposerEspacer,
     mouvementsAssis,
     son,
-    lancerAuDemarrage
+    lancerAuDemarrage,
+    verifierMajAuto
   }
 }
 

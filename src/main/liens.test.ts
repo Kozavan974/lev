@@ -10,6 +10,8 @@ const LIENS_REFERENCES = [
   textes.apropos.ekilib.maisonsUrl,
   textes.apropos.ekilib.procheUrl,
   guide.lien.url,
+  textes.apropos.ekilib.maj.url,
+  'https://www.github.com/Kozavan974/lev',
   'https://ekilib.re/',
   'https://www.ekilib.re/',
   'https://anses.fr/fr'
@@ -41,6 +43,10 @@ describe('liens externes', () => {
       'https://getwemap.com.evil.com/',
       'http://www.sports.gouv.fr/',
       'http://livemap.getwemap.com/',
+      'https://api.github.com/repos/Kozavan974/lev/releases/latest',
+      'https://gist.github.com/Kozavan974',
+      'https://github.com.evil.com/',
+      'http://github.com/Kozavan974/lev',
       ''
     ]
     for (const adresse of refus) {

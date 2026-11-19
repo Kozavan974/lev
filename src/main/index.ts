@@ -10,9 +10,11 @@ import {
 import { deciderOuverture, estDemarrageAuto } from './demarrage'
 import { installerPolitiqueContenu } from './ipc'
 import { basculerMenu, detruireMenu } from './menuFenetre'
+import { DELAI_SILENCIEUX_MS, verificationHebdomadaireDue } from './misesAJour'
 import { appliquerDemarrageAutomatique, configurerPlateforme } from './platform'
 import {
   brancherEcrans,
+  conclureVerificationMaj,
   mettreEnVeilleUneHeure,
   ouvrirDepuisRelance,
   ouvrirEcran,
@@ -61,8 +63,32 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   let retirerTheme: (() => void) | null = null
+  let minuteurMaj: ReturnType<typeof setTimeout> | null = null
+
+  function arreterVerificationSilencieuse(): void {
+    if (minuteurMaj !== null) {
+      clearTimeout(minuteurMaj)
+      minuteurMaj = null
+    }
+  }
+
+  function planifierVerificationSilencieuse(): void {
+    arreterVerificationSilencieuse()
+    minuteurMaj = setTimeout(() => {
+      minuteurMaj = null
+      const reglages = lireReglages()
+      if (!reglages.options.verifierMajAuto) {
+        return
+      }
+      if (!verificationHebdomadaireDue(reglages.derniereVerificationMaj, new Date())) {
+        return
+      }
+      void conclureVerificationMaj()
+    }, DELAI_SILENCIEUX_MS)
+  }
 
   app.on('before-quit', () => {
+    arreterVerificationSilencieuse()
     retirerTheme?.()
     retirerTheme = null
     arreterBoucle()
@@ -92,6 +118,7 @@ if (!app.requestSingleInstanceLock()) {
       brancherEcrans()
       demarrerBoucle()
       appliquerDemarrageAutomatique(lireReglages().options.lancerAuDemarrage)
+      planifierVerificationSilencieuse()
       applicationPrete = true
       ouvrirSelonLancement()
     })

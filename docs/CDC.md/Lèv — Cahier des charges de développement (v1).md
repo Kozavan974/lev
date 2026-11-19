@@ -197,6 +197,7 @@ interface Reglages {
     mouvementsAssis: boolean // false
     son: boolean // false
     lancerAuDemarrage: boolean // true
+    verifierMajAuto: boolean // true
   }
   theme: 'auto' | 'clair' | 'sombre' // 'auto'
   respiration: {
@@ -208,6 +209,8 @@ interface Reglages {
   }
   guidePoste: boolean[] // 5 cases cochées ou non
   veilleJusqua?: string // date ISO, mise en veille depuis le menu
+  derniereVerificationMaj?: string // date ISO, dernière vérification réussie
+  derniereVersionVue?: string // version SemVer plus récente déjà constatée
 }
 ```
 
@@ -230,6 +233,7 @@ Respiration : 4, 4, 4, 4 secondes, 1 minute. Dans la maquette, le rappel « Paus
 - « Rétablir les rappels d'origine » (section 7.4) remet les quatre rappels de base à leurs valeurs de départ, sans toucher aux rappels personnels.
 - La liste `Frequence` est la même partout. Le formulaire d'ajout n'en propose que cinq en raccourci, mais la liste déroulante d'une ligne les propose toutes les sept.
 - Le fichier porte un numéro de `version`. Toute évolution du format passe par une fonction de migration dans `store.ts`.
+- `verifierMajAuto` absent d'un fichier déjà écrit vaut `true`. Le numéro de `version` reste 1 : la case et les deux dates s'ajoutent sans rendre illisibles les réglages existants. Une vérification qui trouve une version plus récente l'enregistre dans `derniereVersionVue`. Une vérification réussie qui n'en trouve pas retire cette version. Une erreur réseau ne modifie ni la date ni la version retenue.
 - Un fichier absent ou illisible est remplacé par les valeurs par défaut, sans message d'erreur technique.
 - Seul `reportsDeSuite` garde une trace du comportement, et uniquement comme compteur remis à zéro. Aucun historique daté n'est conservé.
 
@@ -368,7 +372,7 @@ De haut en bas :
 3. Bouton principal « Démarrer une séquence de travail », affiché seulement si la case « Séquences de travail » est cochée dans « Mes rappels ». Sinon, « Faire une pause maintenant » devient le bouton principal. Pendant une séquence, il devient « Arrêter la séquence de travail » et la carte affiche « Séquence 2 sur 4, jusqu'à 10h45 ». Juste sous « Démarrer une séquence de travail », lorsqu'aucune séquence n'est en cours, une légende centrée en 12 px rappelle le rythme actif : « {travail} min concentré, puis {pause} min de pause ». Les boutons du menu mesurent 34 px de haut, en 13,5 px.
 4. Bouton secondaire « Faire une pause maintenant » : affiche tout de suite la notification « bouger ».
 5. « Mettre les rappels en veille », puis sur une seule ligne trois pastilles : « 30 min », « 1 heure », « Jusqu'à demain ». En veille, ce bloc est remplacé par « En veille jusqu'à 11h00 » et un bouton « Reprendre ».
-6. Liens : « Une pause par le souffle », « Bien installer mon poste », « Mes rappels », « À propos », « Quitter ». Ils mesurent 28 px de haut, en 13,5 px. Les quatre premiers ouvrent la fenêtre Application sur l'écran du même nom.
+6. Liens : « Une pause par le souffle », « Bien installer mon poste », « Mes rappels », « À propos », « Quitter ». Ils mesurent 28 px de haut, en 13,5 px. Les quatre premiers ouvrent la fenêtre Application sur l'écran du même nom. Quand une version plus récente a été constatée et que la vérification automatique est cochée, un point de 8 px (`--espace-8`) en `--action` se place à côté d'« À propos ». Le libellé lu par un lecteur d'écran devient « À propos, une mise à jour est disponible ». Le menu du clic droit ne porte pas ce point.
 
 ### 7.3 Notifications
 
@@ -421,7 +425,7 @@ Une phrase se met à jour en direct : « Lèv te rappellera « M'étirer » tout
 **Autres réglages**, bloc replié par défaut. Fermé, il fait environ 40 px de haut : pas de marge interne sur le bloc, `9 px` sur `14 px` sur le titre, en 14 px, rayon de 8 px. Ouvert, le contenu a une marge de `4 px 14 px 12 px`. Le titre a un chevron à droite qui pivote de 0° à 180° à l'ouverture, et un survol en pointeur :
 
 - Thème : « Automatique, comme mon ordinateur », « Clair », « Sombre ».
-- Sept cases, dans cet ordre : « Attendre que j'aie fini de taper pour afficher un rappel », « Tenir compte des pauses que je prends de moi-même », « Ne pas me déranger en plein écran ou pendant une présentation », « Me proposer d'espacer un rappel quand son rythme ne me convient pas », « Préférer des mouvements discrets, à faire assis », « Jouer un son doux avec chaque rappel », « Lancer Lèv au démarrage de l'ordinateur ».
+- Huit cases, dans cet ordre : « Attendre que j'aie fini de taper pour afficher un rappel », « Tenir compte des pauses que je prends de moi-même », « Ne pas me déranger en plein écran ou pendant une présentation », « Me proposer d'espacer un rappel quand son rythme ne me convient pas », « Préférer des mouvements discrets, à faire assis », « Jouer un son doux avec chaque rappel », « Lancer Lèv au démarrage de l'ordinateur », « Vérifier automatiquement les mises à jour (1 fois par semaine) ».
 
 Sous ces cases, un bouton discret « Rétablir les rappels d'origine » remet les quatre rappels de base à leurs valeurs de départ. Il agit tout de suite et affiche un bandeau « Rappels d'origine rétablis. » avec « Annuler ». Ce bouton n'est pas maquetté.
 
@@ -435,7 +439,7 @@ Une page de lecture. En haut, un lien discret « ← Mes rappels », puis l'en-t
 2. « Philosophie de l'application » : sept principes courts.
 3. « Les repères que suit l'application » : se lever toutes les 30 minutes, marcher 5 minutes, quitter l'écran des yeux. Lien vers « Bien installer mon poste ».
 4. « Textes de référence » : sept liens (section 10.3), ouverts dans le navigateur par défaut.
-5. « Ekilib.re » : présentation de l'association, avec le lien sur le nom, puis « Chaque pas compte. », le lien vers les Maisons Sport-Santé, le lien vers la carte, le numéro de version et la licence.
+5. « Ekilib.re » : présentation de l'association, avec le lien sur le nom, puis « Chaque pas compte. », le lien vers les Maisons Sport-Santé, le lien vers la carte, le numéro de version, la licence, puis la vérification des mises à jour (section 10.5).
 
 La page se termine par « Lèv — levez-vous, respirez. »
 
@@ -641,7 +645,7 @@ Sous-titre « Chaque pas compte. » : « Les Maisons Sport-Santé sont des lieux
 
 Phrase liée, en dessous : « Trouve la Maison Sport-Santé la plus proche de chez toi. » Elle ouvre `https://livemap.getwemap.com/embed?emmid=13462&iframeEmbed=true&iframeid=9d84e72b-50f8-49e9-9ed6-c2b6b756e94e&parentOrigin=https%3A%2F%2Flivemap.getwemap.com&replaceContainer=false&token=NRAY1Q8M32GFJ8ZOVMBSO3HUZ`.
 
-Puis « Version 1.0.0 · Tous droits réservés, Ekilib.re » (mention provisoire, section 16), puis la mention « Lèv vérifie une fois par jour si une mise à jour existe. C'est son seul échange avec Internet. » (absente de la maquette, à afficher seulement quand les mises à jour sont activées).
+Puis « Version 1.0.0 · Tous droits réservés, Ekilib.re » (mention provisoire, section 16). Sous la version, un bouton discret « Vérifier les mises à jour ». Pendant l'appel : « Vérification en cours… ». Si la version installée est la dernière : « Tu utilises déjà la dernière version de Lèv. » Si la vérification ne peut pas aboutir : « Vérification impossible pour le moment. » Si une version plus récente existe : « Une nouvelle version ({version}) est disponible. » et un lien « Télécharger sur GitHub » vers `https://github.com/Kozavan974/lev/releases/latest`. Quand une version plus récente a déjà été constatée, ce message et ce lien sont affichés sans nouvel appel.
 
 Dernière ligne de la page : « Lèv — levez-vous, respirez. »
 
@@ -663,7 +667,8 @@ Lèv ne collecte, ne transmet et ne conserve aucune donnée personnelle en dehor
 - `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true` sur toutes les fenêtres.
 - Une politique de sécurité de contenu stricte : aucun script ni style distant, aucun `eval`.
 - Le `preload` n'expose que des fonctions nommées et typées, jamais `ipcRenderer` entier.
-- Les liens externes passent par `shell.openExternal`, après vérification que l'adresse commence par `https://` et appartient à l'un de ces domaines : anses.fr, inrs.fr, who.int, santepubliquefrance.fr, mangerbouger.fr, code.travail.gouv.fr, ekilib.re, sports.gouv.fr, getwemap.com. Un sous-domaine de ces noms est accepté, par exemple `www.sports.gouv.fr` ou `livemap.getwemap.com`.
+- Les liens externes passent par `shell.openExternal`, après vérification que l'adresse commence par `https://` et appartient à l'un de ces domaines : anses.fr, inrs.fr, who.int, santepubliquefrance.fr, mangerbouger.fr, code.travail.gouv.fr, ekilib.re, sports.gouv.fr, getwemap.com. Un sous-domaine de ces noms est accepté, par exemple `www.sports.gouv.fr` ou `livemap.getwemap.com`. `github.com` est accepté aussi, ainsi que `www.github.com`, mais pas ses autres sous-domaines : `api.github.com` sert uniquement à l'appel de la section 13 et n'est pas ouvert dans le navigateur.
+- L'unique appel spontané est un GET HTTPS vers `https://api.github.com/repos/Kozavan974/lev/releases/latest` (section 13). Cette adresse n'est pas ouverte dans le navigateur. Le lien de téléchargement, lui, passe par la liste blanche (`github.com`).
 - Toute navigation et toute ouverture de fenêtre depuis un écran sont bloquées.
 - Une seule instance de l'application à la fois (`requestSingleInstanceLock`).
 
@@ -693,7 +698,7 @@ Lèv est livrée sous la forme d'un installateur Windows unique, qui s'installe 
 - **Démarrage automatique** : activé par défaut via `app.setLoginItemSettings`, désactivable dans « Autres réglages ». L'entrée de démarrage automatique lance Lèv avec l'argument --demarrage-auto : dans ce cas aucune fenêtre ne s'ouvre, seule l'icône apparaît. Un lancement à la main (menu Démarrer) ouvre « Mes rappels », ou l'accueil si c'est le premier lancement. Si Lèv tourne déjà, la relancer ouvre « Mes rappels » dans l'instance existante (événement second-instance) : sans cela, le clic semblerait sans effet.
 - **Signature du code** : sans certificat de signature, Windows affiche un avertissement « éditeur inconnu » à l'installation, ce qui décourage une partie du public. L'achat d'un certificat au nom de l'association est à décider (section 16).
 - **Distribution** : téléchargement depuis ekilib.re. Le Microsoft Store est une seconde voie possible, qui évite l'avertissement de Windows.
-- **Mises à jour** : `electron-updater` vérifie au démarrage, puis une fois par jour, si une version plus récente existe, la télécharge en arrière-plan et l'installe à la fermeture. Aucune fenêtre d'interruption. C'est le seul appel réseau spontané de l'application : il est mentionné dans « À propos ». L'hébergement des versions est à décider (section 16).
+- **Mises à jour** : au plus une fois par semaine, et quand on le demande dans « À propos », Lèv interroge en HTTPS `https://api.github.com/repos/Kozavan974/lev/releases/latest` (délai de 6 secondes, en-tête `User-Agent: Lev-Desktop`, aucun identifiant). Si une version SemVer plus récente existe, « À propos » le dit et propose d'ouvrir `https://github.com/Kozavan974/lev/releases/latest` dans le navigateur. Rien n'est téléchargé ni installé tout seul. Hors connexion, Lèv continue de fonctionner. La case « Vérifier automatiquement les mises à jour (1 fois par semaine) » est cochée par défaut. Une version constatée est retenue dans `derniereVersionVue` : le point à côté d'« À propos », dans le menu, reste visible aux lancements suivants tant que cette version est plus récente que celle installée et que la case reste cochée. C'est le seul appel réseau spontané de l'application.
 - **Versions** : numérotation `majeure.mineure.correctif`. Le numéro est affiché dans « À propos ».
 - **macOS et Linux** : hors v1. Le code ne doit rien contenir qui empêche de les ajouter (section 3).
 
@@ -739,6 +744,7 @@ Chaque règle de la section 5 a au moins un test. Cas obligatoires :
 - [ ] Parcours complet au clavier seul, puis avec NVDA
 - [ ] Respiration guidée : la bulle suit les temps réglés, y compris avec une pause à 0
 - [ ] Tous les liens de « À propos » s'ouvrent dans le navigateur
+- [ ] « Vérifier les mises à jour » : à jour, hors connexion, et lien GitHub si une version plus récente existe
 - [ ] Pare-feu en mode blocage : l'application fonctionne normalement hors connexion
 - [ ] Mémoire au repos inférieure à 150 Mo, processeur proche de 0 % sur dix minutes
 - [ ] Relecture de tous les textes au regard de la section 8
@@ -762,7 +768,7 @@ Les contenus définitifs des enseignants en APA (section 10.1) peuvent arriver e
 
 ## 16. Points ouverts
 
-Le son est tranché au lot 6. Quinze points restent ouverts : douze lignes du tableau et les trois qui le suivent. Chacun des points ouverts a une règle provisoire, pour que le développement ne soit pas bloqué.
+Le son est tranché au lot 6, et l'hébergement des mises à jour l'est pour la version 1.1.0. Quatorze points restent ouverts : onze lignes du tableau et les trois qui le suivent. Chacun des points ouverts a une règle provisoire, pour que le développement ne soit pas bloqué.
 
 | Point                    | À décider                                                                                        | Règle provisoire                                             | Avant le lot |
 | ------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ------------ |
@@ -778,7 +784,7 @@ Le son est tranché au lot 6. Quinze points restent ouverts : douze lignes du ta
 | Licence                  | Logiciel libre ou non, et quelle licence                                                         | Mention « Tous droits réservés, Ekilib.re »                  | 7            |
 | Nom                      | Vérifier que « Lèv » est disponible comme marque et comme nom de domaine                         | Aucune : à vérifier avant toute communication publique       | 7            |
 | Signature du code        | Achat d'un certificat au nom de l'association                                                    | Livrer sans signature en test interne uniquement             | 7            |
-| Hébergement              | Où sont publiés l'installateur et les mises à jour                                               | Mises à jour désactivées tant que ce n'est pas décidé        | 7            |
+| Hébergement              | Où sont publiés l'installateur et les mises à jour                                               | Tranché pour les mises à jour : Releases publiques `Kozavan974/lev`. Vérification seule, sans téléchargement ni installation automatiques. L'installateur reste proposé sur ekilib.re. | 7            |
 
 Trois points ajoutés à la relecture de cohérence :
 

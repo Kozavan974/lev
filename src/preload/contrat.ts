@@ -75,7 +75,8 @@ export const CANAL_ECRAN = {
   action: 'ecran:action',
   fermerMenu: 'ecran:fermer-menu',
   hauteurMenu: 'ecran:hauteur-menu',
-  lien: 'ecran:lien'
+  lien: 'ecran:lien',
+  maj: 'ecran:maj'
 } as const
 
 export type ClefOption =
@@ -86,6 +87,7 @@ export type ClefOption =
   | 'mouvementsAssis'
   | 'son'
   | 'lancerAuDemarrage'
+  | 'verifierMajAuto'
 
 export type DureeVeille = '30min' | '1h' | 'demain'
 
@@ -102,7 +104,13 @@ export interface EtatEcran {
   sequence: EtatSequence
   ecran: EcranApplication
   version: string
+  majDisponible: string | null
 }
+
+export type EtatMaj =
+  | { statut: 'disponible'; version: string; url: string }
+  | { statut: 'a-jour' }
+  | { statut: 'erreur' }
 
 export type EtatSequence =
   | null
@@ -172,6 +180,7 @@ export interface ApiLev {
   surEtat(recevoir: (etat: EtatEcran) => void): () => void
   agir(action: ActionEcran): void
   ouvrirLien(url: string): Promise<boolean>
+  verifierMisesAJour(): Promise<EtatMaj>
   fermerMenu(): void
   definirHauteurMenu(hauteurPx: number): void
 }
@@ -245,7 +254,8 @@ const CLEFS_OPTION = [
   'proposerEspacer',
   'mouvementsAssis',
   'son',
-  'lancerAuDemarrage'
+  'lancerAuDemarrage',
+  'verifierMajAuto'
 ] as const
 const DUREES_VEILLE = ['30min', '1h', 'demain'] as const
 const ACTIONS_SANS_CHARGE = [
@@ -340,7 +350,26 @@ export function estEtatEcran(valeur: unknown): valeur is EtatEcran {
   if (!estEcran(valeur.ecran) || typeof valeur.version !== 'string') {
     return false
   }
+  if (valeur.majDisponible !== null && typeof valeur.majDisponible !== 'string') {
+    return false
+  }
   return estBandeau(valeur.bandeau) && estSequence(valeur.sequence)
+}
+
+export function estEtatMaj(valeur: unknown): valeur is EtatMaj {
+  if (!estObjet(valeur)) {
+    return false
+  }
+  if (valeur.statut === 'a-jour' || valeur.statut === 'erreur') {
+    return true
+  }
+  return (
+    valeur.statut === 'disponible' &&
+    typeof valeur.version === 'string' &&
+    valeur.version.length > 0 &&
+    valeur.version.length <= 64 &&
+    typeof valeur.url === 'string'
+  )
 }
 
 function boutonsCoherents(valeur: Record<string, unknown>): boolean {

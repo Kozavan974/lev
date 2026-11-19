@@ -62,7 +62,8 @@ describe('réglages par défaut', () => {
       proposerEspacer: true,
       mouvementsAssis: false,
       son: false,
-      lancerAuDemarrage: true
+      lancerAuDemarrage: true,
+      verifierMajAuto: true
     })
     expect(reglages.theme).toBe('auto')
     expect(reglages.respiration).toEqual({
@@ -74,6 +75,8 @@ describe('réglages par défaut', () => {
     })
     expect(reglages.guidePoste).toEqual([false, false, false, false, false])
     expect(reglages.veilleJusqua).toBeUndefined()
+    expect(reglages.derniereVerificationMaj).toBeUndefined()
+    expect(reglages.derniereVersionVue).toBeUndefined()
   })
 })
 
@@ -126,6 +129,37 @@ describe('normaliser', () => {
     expect(resultat).toEqual(modifie)
     expect(resultat.rappels.map((rappel) => rappel.id)).toEqual(
       modifie.rappels.map((rappel) => rappel.id)
+    )
+  })
+
+  it('coche la vérification automatique quand l’ancienne fiche ne la connaît pas', () => {
+    const depart = reglagesParDefaut()
+    const { verifierMajAuto: retiree, ...options } = depart.options
+    expect(retiree).toBe(true)
+    const resultat = normaliser({ ...depart, options })
+    expect(resultat.options.verifierMajAuto).toBe(true)
+    expect(resultat.derniereVerificationMaj).toBeUndefined()
+    expect(resultat.derniereVersionVue).toBeUndefined()
+    expect(resultat.rappels.map((rappel) => rappel.id)).toEqual(
+      depart.rappels.map((rappel) => rappel.id)
+    )
+  })
+
+  it('retient une vérification réussie et une version déjà vue', () => {
+    const depart = reglagesParDefaut()
+    const modifie: Reglages = {
+      ...depart,
+      options: { ...depart.options, verifierMajAuto: false },
+      derniereVerificationMaj: '2026-11-01T08:00:00.000Z',
+      derniereVersionVue: '1.1.0'
+    }
+    expect(normaliser(modifie)).toEqual(modifie)
+  })
+
+  it('remplace un fichier dont la version vue est illisible', () => {
+    const depart = reglagesParDefaut()
+    expect(empreinte(normaliser({ ...depart, derniereVersionVue: 'bientot' }))).toBe(
+      empreinte(reglagesParDefaut())
     )
   })
 

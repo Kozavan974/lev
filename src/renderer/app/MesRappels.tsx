@@ -21,7 +21,8 @@ const OPTIONS = [
   'proposerEspacer',
   'mouvementsAssis',
   'son',
-  'lancerAuDemarrage'
+  'lancerAuDemarrage',
+  'verifierMajAuto'
 ] as const satisfies readonly ClefOption[]
 
 const HEURE = /^([01]\d|2[0-3]):[0-5]\d$/

@@ -52,6 +52,7 @@ export interface Reglages {
     mouvementsAssis: boolean
     son: boolean
     lancerAuDemarrage: boolean
+    verifierMajAuto: boolean
   }
   theme: Theme
   respiration: {
@@ -63,4 +64,6 @@ export interface Reglages {
   }
   guidePoste: boolean[]
   veilleJusqua?: string
+  derniereVerificationMaj?: string
+  derniereVersionVue?: string
 }

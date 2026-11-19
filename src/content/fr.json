@@ -39,6 +39,7 @@
     "poste": "Bien installer mon poste",
     "rappels": "Mes rappels",
     "apropos": "À propos",
+    "aproposMaj": "À propos, une mise à jour est disponible",
     "quitter": "Quitter"
   },
   "rappels": {
@@ -126,7 +127,8 @@
       "proposerEspacer": "Me proposer d'espacer un rappel quand son rythme ne me convient pas",
       "mouvementsAssis": "Préférer des mouvements discrets, à faire assis",
       "son": "Jouer un son doux avec chaque rappel",
-      "lancerAuDemarrage": "Lancer Lèv au démarrage de l'ordinateur"
+      "lancerAuDemarrage": "Lancer Lèv au démarrage de l'ordinateur",
+      "verifierMajAuto": "Vérifier automatiquement les mises à jour (1 fois par semaine)"
     }
   },
   "notification": {
@@ -358,7 +360,15 @@
       "proche": "Trouve la Maison Sport-Santé la plus proche de chez toi.",
       "procheUrl": "https://livemap.getwemap.com/embed?emmid=13462&iframeEmbed=true&iframeid=9d84e72b-50f8-49e9-9ed6-c2b6b756e94e&parentOrigin=https%3A%2F%2Flivemap.getwemap.com&replaceContainer=false&token=NRAY1Q8M32GFJ8ZOVMBSO3HUZ",
       "version": "Version {version} · Tous droits réservés, Ekilib.re",
-      "miseAJour": "Lèv vérifie une fois par jour si une mise à jour existe. C'est son seul échange avec Internet."
+      "maj": {
+        "verifier": "Vérifier les mises à jour",
+        "cours": "Vérification en cours…",
+        "aJour": "Tu utilises déjà la dernière version de Lèv.",
+        "erreur": "Vérification impossible pour le moment.",
+        "disponible": "Une nouvelle version ({version}) est disponible.",
+        "telecharger": "Télécharger sur GitHub",
+        "url": "https://github.com/Kozavan974/lev/releases/latest"
+      }
     },
     "signatureFin": "Lèv — levez-vous, respirez."
   },

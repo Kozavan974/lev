@@ -10,6 +10,8 @@ const DOMAINES = [
   'getwemap.com'
 ] as const
 
+const GITHUB = 'github.com'
+
 /** Vrai seulement pour https, sans identifiant, sur un domaine autorisé ou son sous-domaine. */
 export function lienAutorise(adresse: string): boolean {
   if (!adresse.startsWith('https://')) {
@@ -27,6 +29,9 @@ export function lienAutorise(adresse: string): boolean {
   const hote = url.hostname.toLowerCase()
   if (hote === '' || hote.endsWith('.')) {
     return false
+  }
+  if (hote === GITHUB || hote === `www.${GITHUB}`) {
+    return true
   }
   return DOMAINES.some((domaine) => hote === domaine || hote.endsWith(`.${domaine}`))
 }

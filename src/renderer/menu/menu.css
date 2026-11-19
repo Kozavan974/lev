@@ -93,6 +93,15 @@ html[data-route='menu'] body {
   font-size: var(--texte-menu);
   text-align: left;
   cursor: pointer;
+  gap: var(--espace-8);
+}
+
+.menu-pastille {
+  flex: none;
+  width: var(--espace-8);
+  height: var(--espace-8);
+  border-radius: var(--rayon-pilule);
+  background: var(--action);
 }
 
 .menu-lien:hover {
