@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import textes from '../../content/fr.json'
+import { ligneDecompte } from '../../partage/compteARebours'
 import { formaterHeure, remplir } from '../../partage/format'
 import type { Frequence, Jours, Rappel, Repetition, RythmeSequence } from '../../partage/modeles'
 import { FREQUENCES } from '../../partage/modeles'
@@ -100,7 +101,15 @@ export function MesRappels(): React.JSX.Element {
             </div>
             <span className="ligne-corbeille" />
           </div>
-          <p className="legende sequences-accroche">{textes.rappels.sequencesAccroche}</p>
+          <p className="legende sequences-accroche">
+            {etat.sequence && etat.sequence.phase !== 'reprise'
+              ? ligneDecompte(etat.sequence, {
+                  travail: textes.menu.decompteTravail,
+                  pause: textes.menu.decomptePause,
+                  grande: textes.menu.decompteGrande
+                })
+              : textes.rappels.sequencesAccroche}
+          </p>
           <p className="sequences-precision">{textes.rappels.sequencesPrecision}</p>
         </div>
         {reglages.sequences.rythme === 'autre' ? (

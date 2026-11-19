@@ -7,6 +7,9 @@
     "infobulle": "Lèv",
     "prochaine": "Lèv · prochaine pause à {heure}",
     "veille": "Lèv · en veille jusqu'à {heure}",
+    "sequenceTravail": "Lèv — Séquence de travail : {reste} ({rang}/{total})",
+    "sequencePause": "Lèv — Pause de séquence : {reste}",
+    "sequenceGrande": "Lèv — Grande pause : {reste}",
     "sequence": "Démarrer une séquence de travail",
     "arreterSequences": "Arrêter la séquence de travail",
     "pause": "Faire une pause maintenant",
@@ -16,6 +19,11 @@
     "aPropos": "À propos",
     "quitter": "Quitter"
   },
+  "compte": {
+    "une": "1 min restante",
+    "plusieurs": "{minutes} min restantes",
+    "moins": "moins d'une minute"
+  },
   "menu": {
     "devise": "Une pause, naturellement.",
     "pauses": "Tes prochaines pauses",
@@ -23,9 +31,9 @@
     "leve": "Tu t'es levé à {heure} : j'ai décalé la marche.",
     "sequence": "Démarrer une séquence de travail",
     "arreterSequences": "Arrêter la séquence de travail",
-    "sequenceEnCours": "Séquence {rang} sur {total}, jusqu'à {heure}",
-    "pauseSequence": "Pause, jusqu'à {heure}",
-    "grandePauseSequence": "Grande pause, jusqu'à {heure}",
+    "decompteTravail": "Séquence en cours · {reste}",
+    "decomptePause": "Pause de séquence · {reste}",
+    "decompteGrande": "Grande pause · {reste}",
     "repriseSequence": "On reprend quand tu veux.",
     "pause": "Faire une pause maintenant",
     "rythmeSequence": "{travail} min concentré, puis {pause} min de pause",
@@ -44,7 +52,7 @@
   },
   "rappels": {
     "titre": "Mes rappels",
-    "accroche": "Choisis les pauses régulières qui t'aident à bouger et reposer tes yeux.",
+    "accroche": "Personnalise tes pauses actives pour bouger et reposer tes yeux.",
     "annuler": "Annuler",
     "retirer": "Retirer « {nom} »",
     "retire": "« {nom} » est retiré.",
@@ -258,7 +266,7 @@
     "signature": "Lèv — une pause, naturellement.",
     "phrase": "Un compagnon discret pour bouger un peu plus souvent pendant le travail sur écran, et laisser ses yeux se reposer.",
     "philosophie": {
-      "titre": "Philosophie de l'application",
+      "titre": "Philosophie de Lèv",
       "principes": [
         {
           "titre": "Rester assis longtemps compte, même quand on fait du sport",
@@ -270,7 +278,7 @@
         },
         {
           "titre": "Une invitation, jamais un reproche",
-          "texte": "Tu peux reporter une pause ou la passer. L'application ne tient aucun compte de ce que tu n'as pas fait."
+          "texte": "Tu peux reporter une pause ou la passer. Lèv ne tient aucun compte de ce que tu n'as pas fait."
         },
         {
           "titre": "Le travail reste au centre",
@@ -286,12 +294,12 @@
         },
         {
           "titre": "Chez toi, pour toi",
-          "texte": "Aucun compte, aucune inscription, aucune donnée personnelle demandée. Tes réglages restent sur ton ordinateur. L'application est gratuite et ne remplace pas l'avis d'un professionnel de santé."
+          "texte": "Aucun compte, aucune inscription, aucune donnée personnelle demandée. Tes réglages restent sur ton ordinateur. Lèv est gratuite et ne remplace pas l'avis d'un professionnel de santé."
         }
       ]
     },
     "reperes": {
-      "titre": "Les repères que suit l'application",
+      "titre": "Les repères que suit Lèv",
       "items": [
         {
           "titre": "Se lever toutes les 30 minutes",
@@ -303,7 +311,7 @@
         },
         {
           "titre": "Quitter l'écran des yeux",
-          "texte": "Le Code du travail prévoit que le travail sur écran soit régulièrement interrompu par des pauses ou des changements d'activité. Le rappel toutes les 20 minutes est un choix de l'application, que tu peux modifier."
+          "texte": "Le Code du travail prévoit que le travail sur écran soit régulièrement interrompu par des pauses ou des changements d'activité. Le rappel toutes les 20 minutes est un choix de Lèv, que tu peux modifier."
         }
       ],
       "lienPoste": "Bien installer mon poste, en cinq réglages"
@@ -350,7 +358,7 @@
     },
     "ekilib": {
       "titre": "Ekilib.re",
-      "avant": "L'application est proposée gratuitement par l'association ",
+      "avant": "Lèv est proposée gratuitement par l'association ",
       "lien": "Ekilib.re",
       "url": "https://ekilib.re",
       "apres": ", Maison Sport-Santé au Tampon, à La Réunion.",

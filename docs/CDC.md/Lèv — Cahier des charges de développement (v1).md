@@ -344,7 +344,8 @@ Lèv vit dans la zone de notification de Windows, près de l'horloge, et reste s
 | Pause proposée | Tant qu'une notification est affichée | La pastille reste (même icône que « bientôt »), et la notification est visible en bas à droite                                |
 
 - **En veille** : l'icône passe en gris (#7b7f8c), L et bulle en blanc.
-- **Infobulle** au survol : « Lèv · prochaine pause à 10h40 », ou « Lèv · en veille jusqu'à 11h00 ».
+- **Séquence de travail** : pendant le temps de travail, et seulement si Lèv n'est pas en veille, l'icône habituelle laisse la place à un carré de 16 px et de 32 px. Il porte les minutes restantes (`25`, `03`, `120`) ou `<1` sous une minute. Barre des tâches claire : texte `#2e2a3f` sur `#fdf1e7`. Barre sombre : texte `#f3e9e2` sur `#1c1a2b`. Le thème se lit dans `SystemUsesLightTheme`, seulement tant que ce chiffre est affiché. Si la clé manque, on suit le thème déjà résolu de l'application. Dès la pause de la séquence, l'arrêt, la reprise ou la veille, l'icône habituelle revient. Le dessin ne change qu'avec la minute ou le thème de la barre.
+- **Infobulle** au survol, hors séquence de travail : « Lèv · prochaine pause à 10h40 », ou « Lèv · en veille jusqu'à 11h00 », sinon « Lèv ». Pendant le travail : « Lèv — Séquence de travail : 18 min restantes (2/4) ». Pendant la pause courte : « Lèv — Pause de séquence : 4 min restantes ». Pendant la grande pause : « Lèv — Grande pause : 15 min restantes ». Sous une minute, le texte dit « moins d'une minute ». La reprise (« On reprend quand tu veux. ») reprend l'infobulle habituelle.
 - **Clic gauche** : ouvre le menu (section 7.2). **Clic droit** : menu système natif, texte seul, sans icône. Dans l'ordre : si les séquences de travail sont activées, « Démarrer une séquence de travail », ou « Arrêter la séquence de travail » lorsqu'une série est en cours ; « Faire une pause maintenant » (la notification « bouger », tout de suite) ; « Mettre en veille pendant 1 heure », remplacé par « Reprendre les rappels » lorsque Lèv est déjà en veille ; un séparateur ; « Mes rappels » (fenêtre Application) ; « À propos » (écran « À propos ») ; un séparateur ; « Quitter ».
 - Les icônes sont des fichiers `.ico` contenant les tailles 16, 20, 24, 32 et 48 px. Les quatre fichiers sont déjà fournis : tray-calme.ico, tray-bientot.ico, tray-veille.ico, et lev.ico pour l'application (jusqu'à 256 px). À 16 et 24 px, on utilise le dessin simplifié du logo (section 9).
 - Aucun clignotement, aucune animation de l'icône dans la barre des tâches.
@@ -369,7 +370,7 @@ De haut en bas :
 
 1. En-tête : logo, « Lèv », « Une pause, naturellement. »
 2. Carte « Tes prochaines pauses » : les deux prochaines échéances, sous la forme « Cligner des yeux à 10h20 ». Le cas échéant, la ligne « Tu t'es levé à 10h10 : j'ai décalé la marche. »
-3. Bouton principal « Démarrer une séquence de travail », affiché seulement si la case « Séquences de travail » est cochée dans « Mes rappels ». Sinon, « Faire une pause maintenant » devient le bouton principal. Pendant une séquence, il devient « Arrêter la séquence de travail » et la carte affiche « Séquence 2 sur 4, jusqu'à 10h45 ». Juste sous « Démarrer une séquence de travail », lorsqu'aucune séquence n'est en cours, une légende centrée en 12 px rappelle le rythme actif : « {travail} min concentré, puis {pause} min de pause ». Les boutons du menu mesurent 34 px de haut, en 13,5 px.
+3. Bouton principal « Démarrer une séquence de travail », affiché seulement si la case « Séquences de travail » est cochée dans « Mes rappels ». Sinon, « Faire une pause maintenant » devient le bouton principal. Pendant une séquence, il devient « Arrêter la séquence de travail ». La carte affiche « Séquence en cours · 18 min restantes », « Pause de séquence · 4 min restantes » ou « Grande pause · 15 min restantes ». À la reprise : « On reprend quand tu veux. » Juste sous « Démarrer une séquence de travail », lorsqu'aucune séquence n'est en cours, une légende centrée en 12 px rappelle le rythme actif : « {travail} min concentré, puis {pause} min de pause ». Les boutons du menu mesurent 34 px de haut, en 13,5 px.
 4. Bouton secondaire « Faire une pause maintenant » : affiche tout de suite la notification « bouger ».
 5. « Mettre les rappels en veille », puis sur une seule ligne trois pastilles : « 30 min », « 1 heure », « Jusqu'à demain ». En veille, ce bloc est remplacé par « En veille jusqu'à 11h00 » et un bouton « Reprendre ».
 6. Liens : « Une pause par le souffle », « Bien installer mon poste », « Mes rappels », « À propos », « Quitter ». Ils mesurent 28 px de haut, en 13,5 px. Les quatre premiers ouvrent la fenêtre Application sur l'écran du même nom. Quand une version plus récente a été constatée et que la vérification automatique est cochée, un point de 8 px (`--espace-8`) en `--action` se place à côté d'« À propos ». Le libellé lu par un lecteur d'écran devient « À propos, une mise à jour est disponible ». Le menu du clic droit ne porte pas ce point.
@@ -400,7 +401,7 @@ Particularités :
 
 ### 7.4 Mes rappels (planche « Mes rappels »)
 
-L'écran de réglage unique. Le contenu occupe toute la largeur de la fenêtre. Sous le titre, une phrase en 12,5 px, couleur `--texte-second` : « Choisis les pauses régulières qui t'aident à bouger et reposer tes yeux. » Sous la carte des rappels, trois accordéons fermés, espacés de 6 px : « Mes horaires », « Ajouter un rappel », « Autres réglages ». À la taille par défaut, l'écran tient sans défilement.
+L'écran de réglage unique. Le contenu occupe toute la largeur de la fenêtre. Sous le titre, une phrase en 12,5 px, couleur `--texte-second` : « Personnalise tes pauses actives pour bouger et reposer tes yeux. » Sous la carte des rappels, trois accordéons fermés, espacés de 6 px : « Mes horaires », « Ajouter un rappel », « Autres réglages ». À la taille par défaut, l'écran tient sans défilement.
 
 **La liste.** Une ligne par rappel :
 
@@ -409,7 +410,7 @@ L'écran de réglage unique. Le contenu occupe toute la largeur de la fenêtre. 
 - pour un rappel à heure fixe, un champ d'heure et une liste (« Chaque jour », « Du lundi au vendredi », « Une seule fois ») ;
 - une corbeille, seulement pour un rappel créé par la personne (`origine` « perso »). Les quatre rappels de base, y compris « Boire un verre d'eau », n'en ont pas. Le bouton est compact, dans une colonne fixe au bord droit, pour que les listes déroulantes restent alignées entre elles. Il retire le rappel immédiatement. Un bandeau « « Nom » est retiré. » avec « Annuler » reste affiché jusqu'à l'action suivante. Aucune fenêtre de confirmation.
 
-La dernière ligne, « Séquences de travail », cochée par défaut et sans corbeille, a sa propre liste : « 25 minutes, puis 5 de pause », « 50 minutes, puis 10 de pause », « Une pause de 5 minutes par heure », « Autre rythme ». « Autre rythme » révèle deux champs en minutes (travail, pause). Dans la ligne, juste sous l'intitulé et sans trait entre les deux, une accroche en 12,5 px, couleur `--texte-second` : « Alterne des temps de concentration et des pauses courtes pour garder le cap sans t'épuiser. » Puis la précision en 13 px : « Pour travailler concentré par étapes : Lèv attend la fin de la séquence pour t'inviter à marcher, et propose une grande pause de 15 minutes toutes les 4 séquences. »
+La dernière ligne, « Séquences de travail », cochée par défaut et sans corbeille, a sa propre liste : « 25 minutes, puis 5 de pause », « 50 minutes, puis 10 de pause », « Une pause de 5 minutes par heure », « Autre rythme ». « Autre rythme » révèle deux champs en minutes (travail, pause). Dans la ligne, juste sous l'intitulé et sans trait entre les deux, une accroche en 12,5 px, couleur `--texte-second` : « Alterne des temps de concentration et des pauses courtes pour garder le cap sans t'épuiser. » Pendant un décompte, cette accroche laisse la place à la même phrase que le menu (« Séquence en cours · 18 min restantes », « Pause de séquence · 4 min restantes » ou « Grande pause · 15 min restantes »). Puis la précision en 13 px : « Pour travailler concentré par étapes : Lèv attend la fin de la séquence pour t'inviter à marcher, et propose une grande pause de 15 minutes toutes les 4 séquences. »
 
 **Mes horaires**, accordéon fermé par défaut, même gabarit que « Autres réglages ». Fermé, le titre est suivi du réglage en 12,5 px, par exemple « Mes horaires · 08:00 – 18:00 ». Ouvert : « De \[08:00\] à \[18:00\] \[du lundi au vendredi\] » (autres choix : « du lundi au samedi », « tous les jours »), puis « En dehors de ces horaires, seuls tes rappels à heure fixe s'affichent. »
 
@@ -436,8 +437,8 @@ En bas de page, un lien « À propos ».
 Une page de lecture. En haut, un lien discret « ← Mes rappels », puis l'en-tête toujours visible. Les quatre blocs suivants sont des tiroirs fermés par défaut, espacés de 6 px, avec le même chevron et le même gabarit fin que « Autres réglages ». Les textes exacts sont en section 10.5.
 
 1. En-tête : « Lèv — une pause, naturellement. » et une phrase de présentation.
-2. « Philosophie de l'application » : sept principes courts.
-3. « Les repères que suit l'application » : se lever toutes les 30 minutes, marcher 5 minutes, quitter l'écran des yeux. Lien vers « Bien installer mon poste ».
+2. « Philosophie de Lèv » : sept principes courts.
+3. « Les repères que suit Lèv » : se lever toutes les 30 minutes, marcher 5 minutes, quitter l'écran des yeux. Lien vers « Bien installer mon poste ».
 4. « Textes de référence » : sept liens (section 10.3), ouverts dans le navigateur par défaut.
 5. « Ekilib.re » : présentation de l'association, avec le lien sur le nom, puis « Chaque pas compte. », le lien vers les Maisons Sport-Santé, le lien vers la carte, la mention « Tous droits réservés, Ekilib.re », le lien « Découvrir l'association Ekilib.re », puis la vérification des mises à jour (section 10.5).
 
@@ -611,7 +612,7 @@ Seule la page de l'Anses a été ouverte et lue en entier pendant la conception.
 
 ### 10.4 Ce que l'application n'affirme pas
 
-- Aucun texte officiel consulté ne fixe de rythme pour cligner des yeux : l'écran « À propos » présente les 20 minutes comme un choix de l'application.
+- Aucun texte officiel consulté ne fixe de rythme pour cligner des yeux : l'écran « À propos » présente les 20 minutes comme un choix de Lèv.
 - La respiration guidée n'annonce aucun effet sur la santé. Les rythmes proposés n'ont pas de référence médicale vérifiée.
 - La mention « L'application ne remplace pas l'avis d'un professionnel de santé » figure dans « À propos ».
 
@@ -621,29 +622,29 @@ Ces textes sont à reprendre mot pour mot dans `content/fr.json`.
 
 **En-tête.** Titre : « À propos ». Signature : « Lèv — une pause, naturellement. » Phrase : « Un compagnon discret pour bouger un peu plus souvent pendant le travail sur écran, et laisser ses yeux se reposer. »
 
-**Philosophie de l'application**
+**Philosophie de Lèv**
 
 | Titre                                                      | Texte                                                                                                                                                                                            |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Rester assis longtemps compte, même quand on fait du sport | Une séance de sport le soir ne suffit pas à effacer une journée entière passée sur une chaise. Ce qui aide, c'est d'interrompre souvent la position assise.                                      |
 | De petits gestes, souvent                                  | Quelques pas, un étage à pied, un regard par la fenêtre. Rien à réussir, rien à mesurer : chaque petite pause compte.                                                                            |
-| Une invitation, jamais un reproche                         | Tu peux reporter une pause ou la passer. L'application ne tient aucun compte de ce que tu n'as pas fait.                                                                                         |
+| Une invitation, jamais un reproche                         | Tu peux reporter une pause ou la passer. Lèv ne tient aucun compte de ce que tu n'as pas fait.                                                                                                  |
 | Le travail reste au centre                                 | Les rappels se font discrets et se taisent quand tu présentes ou travailles en plein écran. Les séquences de travail t'aident à te concentrer, puis à vraiment t'arrêter.                        |
 | Le bon moment                                              | Lèv attend que tu aies fini de taper, tient compte des pauses que tu prends de toi-même et respecte tes horaires.                                                                                |
 | Des idées écrites par des professionnels                   | Chaque invitation à bouger propose un mouvement simple à faire au bureau, avec toujours une variante à faire assis.                                                                              |
-| Chez toi, pour toi                                         | Aucun compte, aucune inscription, aucune donnée personnelle demandée. Tes réglages restent sur ton ordinateur. L'application est gratuite et ne remplace pas l'avis d'un professionnel de santé. |
+| Chez toi, pour toi                                         | Aucun compte, aucune inscription, aucune donnée personnelle demandée. Tes réglages restent sur ton ordinateur. Lèv est gratuite et ne remplace pas l'avis d'un professionnel de santé.          |
 
-**Les repères que suit l'application**
+**Les repères que suit Lèv**
 
 | Titre                          | Texte                                                                                                                                                                                                                |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Se lever toutes les 30 minutes | L'Anses et l'INRS conseillent d'interrompre la position assise toutes les 30 minutes dans l'idéal. C'est le rythme proposé par défaut.                                                                               |
 | Marcher 5 minutes              | Pour un adulte, l'Anses conseille 5 minutes de marche, à allure tranquille ou modérée. C'est la durée de la pause active.                                                                                            |
-| Quitter l'écran des yeux       | Le Code du travail prévoit que le travail sur écran soit régulièrement interrompu par des pauses ou des changements d'activité. Le rappel toutes les 20 minutes est un choix de l'application, que tu peux modifier. |
+| Quitter l'écran des yeux       | Le Code du travail prévoit que le travail sur écran soit régulièrement interrompu par des pauses ou des changements d'activité. Le rappel toutes les 20 minutes est un choix de Lèv, que tu peux modifier. |
 
 Lien sous ce bloc : « Bien installer mon poste, en cinq réglages ».
 
-**Ekilib.re.** « L'application est proposée gratuitement par l'association Ekilib.re, Maison Sport-Santé au Tampon, à La Réunion. » Le lien `https://ekilib.re` est posé sur le mot « Ekilib.re ». Un lien séparé « Découvrir l'association Ekilib.re » pointe aussi vers `https://ekilib.re`, dans ce tiroir, juste au-dessus de la vérification des mises à jour. Le libellé lu est « Découvrir l'association Ekilib.re. S'ouvre dans le navigateur. »
+**Ekilib.re.** « Lèv est proposée gratuitement par l'association Ekilib.re, Maison Sport-Santé au Tampon, à La Réunion. » Le lien `https://ekilib.re` est posé sur le mot « Ekilib.re ». Un lien séparé « Découvrir l'association Ekilib.re » pointe aussi vers `https://ekilib.re`, dans ce tiroir, juste au-dessus de la vérification des mises à jour. Le libellé lu est « Découvrir l'association Ekilib.re. S'ouvre dans le navigateur. »
 
 Sous-titre « Chaque pas compte. » : « Les Maisons Sport-Santé sont des lieux d'accueil, d'information et d'orientation vers une activité physique adaptée à tes besoins, tes envies et ta santé. Elles proposent un accompagnement personnalisé, quel que soit ton âge ou ton niveau de départ. » Le lien `https://www.sports.gouv.fr/maisons-sport-sante` est posé sur « Maisons Sport-Santé ».
 

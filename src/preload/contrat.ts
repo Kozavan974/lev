@@ -118,8 +118,8 @@ export type EtatMaj =
 
 export type EtatSequence =
   | null
-  | { phase: 'travail'; rang: number; total: number; heure: string }
-  | { phase: 'pause'; grande: boolean; heure: string }
+  | { phase: 'travail'; rang: number; total: number; heure: string; reste: string; icone: string }
+  | { phase: 'pause'; grande: boolean; heure: string; reste: string }
   | { phase: 'reprise' }
 
 export type ActionEcran =
@@ -411,13 +411,19 @@ function estSequence(valeur: unknown): valeur is EtatSequence {
     return true
   }
   if (valeur.phase === 'pause') {
-    return typeof valeur.grande === 'boolean' && typeof valeur.heure === 'string'
+    return (
+      typeof valeur.grande === 'boolean' &&
+      typeof valeur.heure === 'string' &&
+      typeof valeur.reste === 'string'
+    )
   }
   if (valeur.phase === 'travail') {
     return (
       typeof valeur.rang === 'number' &&
       typeof valeur.total === 'number' &&
-      typeof valeur.heure === 'string'
+      typeof valeur.heure === 'string' &&
+      typeof valeur.reste === 'string' &&
+      typeof valeur.icone === 'string'
     )
   }
   return false

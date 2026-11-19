@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import textes from '../../content/fr.json'
+import { ligneDecompte } from '../../partage/compteARebours'
 import { remplir } from '../../partage/format'
 import type { EtatSequence } from '../../preload/contrat'
 import { Marque } from '../shared/Marque'
@@ -13,16 +14,12 @@ function ligneSequence(sequence: EtatSequence): React.JSX.Element | null {
   if (sequence.phase === 'reprise') {
     return <p className="menu-echeance">{textes.menu.repriseSequence}</p>
   }
-  if (sequence.phase === 'pause') {
-    const modele = sequence.grande ? textes.menu.grandePauseSequence : textes.menu.pauseSequence
-    return <p className="menu-echeance">{remplir(modele, { heure: sequence.heure })}</p>
-  }
   return (
     <p className="menu-echeance">
-      {remplir(textes.menu.sequenceEnCours, {
-        rang: String(sequence.rang),
-        total: String(sequence.total),
-        heure: sequence.heure
+      {ligneDecompte(sequence, {
+        travail: textes.menu.decompteTravail,
+        pause: textes.menu.decomptePause,
+        grande: textes.menu.decompteGrande
       })}
     </p>
   )

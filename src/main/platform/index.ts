@@ -1,6 +1,7 @@
 import {
   appliquerDemarrageWindows,
   configurerWindows,
+  lireBarreClaireWindows,
   sessionRetientNotifications as retenueWindows
 } from './win32'
 
@@ -15,6 +16,14 @@ export function appliquerDemarrageAutomatique(actif: boolean): void {
     return
   }
   appliquerDemarrageWindows(actif)
+}
+
+/** Hors Windows, le thème de la barre n'est pas lisible. */
+export function barreSystemeClaire(): boolean | null {
+  if (process.platform !== 'win32') {
+    return null
+  }
+  return lireBarreClaireWindows()
 }
 
 /** Hors Windows, rien n'est retenu : le plein écran et le micro ne sont pas lisibles. */

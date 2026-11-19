@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto'
-import { app, ipcMain, shell, type BrowserWindow } from 'electron'
+import { app, ipcMain, nativeTheme, shell, type BrowserWindow } from 'electron'
 import textes from '../content/fr.json'
-import { formaterInstant, remplir } from '../partage/format'
+import { choisirInfobulle, decrireReste } from '../partage/compteARebours'
+import { formaterInstant } from '../partage/format'
 import { versionsTechniquesDepuis } from '../partage/versions'
 import {
   CANAL_ECRAN,
@@ -28,13 +29,19 @@ import { fermerMenu, fenetreMenu, recevoirHauteurMenu } from './menuFenetre'
 import { lienAutorise } from './liens'
 import { appliquerResultatMaj, majDisponibleDepuis, verifierMiseAJourDistante } from './misesAJour'
 import { ecranApresRelance, suiteApresAccueil } from './demarrage'
-import { appliquerDemarrageAutomatique } from './platform'
+import { appliquerDemarrageAutomatique, barreSystemeClaire } from './platform'
 import type { TypeRappel } from './modeles'
 import { notificationEstVisible } from './notificationFenetre'
 import { calculerEcheances } from './scheduler/echeances'
 import { bientotPourIcone, type EtatMoteur } from './scheduler/moteur'
 import { enregistrerReglages, lireReglages } from './store'
-import { definirEtatIcone, definirInfobulle, definirMenuContextuel, type EtatIcone } from './tray'
+import {
+  definirEtatIcone,
+  definirIconeCompte,
+  definirInfobulle,
+  definirMenuContextuel,
+  type EtatIcone
+} from './tray'
 
 let annulation: Annulation | null = null
 let branche = false
@@ -293,18 +300,23 @@ function etatSequence(moteur: EtatMoteur, maintenantMs: number): EtatSequence {
   ) {
     return { phase: 'reprise' }
   }
+  const description = decrireReste(serie.finMs, maintenantMs, textes.compte)
+  const reste = description?.reste ?? textes.compte.moins
   if (serie.phase === 'pause') {
     return {
       phase: 'pause',
       grande: serie.grandePause,
-      heure: formaterInstant(new Date(serie.finMs))
+      heure: formaterInstant(new Date(serie.finMs)),
+      reste
     }
   }
   return {
     phase: 'travail',
     rang: serie.rang,
     total: serie.grandePauseApres,
-    heure: formaterInstant(new Date(serie.finMs))
+    heure: formaterInstant(new Date(serie.finMs)),
+    reste,
+    icone: description?.icone ?? '<1'
   }
 }
 
@@ -327,8 +339,21 @@ function bandeauCourant(): EtatEcran['bandeau'] {
 
 function diffuser(): void {
   const etat = etatCourant()
-  definirInfobulle(texteInfobulle(etat))
-  definirEtatIcone(iconeCourante(etat))
+  definirInfobulle(
+    choisirInfobulle(etat.sequence, etat.veilleLibelle, etat.echeances[0]?.heure ?? null, {
+      travail: textes.tray.sequenceTravail,
+      pause: textes.tray.sequencePause,
+      grande: textes.tray.sequenceGrande,
+      veille: textes.tray.veille,
+      prochaine: textes.tray.prochaine,
+      repos: textes.tray.infobulle
+    })
+  )
+  if (etat.sequence?.phase === 'travail' && etat.veilleLibelle === null) {
+    definirIconeCompte(etat.sequence.icone, themeBarre())
+  } else {
+    definirEtatIcone(iconeCourante(etat))
+  }
   definirMenuContextuel({
     enVeille: etat.veilleLibelle !== null,
     sequencesActives: etat.reglages.sequences.actif,
@@ -348,15 +373,12 @@ function iconeCourante(etat: EtatEcran): EtatIcone {
   return 'calme'
 }
 
-function texteInfobulle(etat: EtatEcran): string {
-  if (etat.veilleLibelle) {
-    return remplir(textes.tray.veille, { heure: etat.veilleLibelle })
+function themeBarre(): 'clair' | 'sombre' {
+  const claire = barreSystemeClaire()
+  if (claire !== null) {
+    return claire ? 'clair' : 'sombre'
   }
-  const prochaine = etat.echeances[0]
-  if (prochaine) {
-    return remplir(textes.tray.prochaine, { heure: prochaine.heure })
-  }
-  return textes.tray.infobulle
+  return nativeTheme.shouldUseDarkColors ? 'sombre' : 'clair'
 }
 
 function envoyer(cible: BrowserWindow | null, etat: EtatEcran): void {

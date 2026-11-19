@@ -8,6 +8,7 @@ import {
   type Rectangle
 } from 'electron'
 import textes from '../content/fr.json'
+import { dessinerCompte, type ThemeBarre } from './iconeCompte'
 import { cheminRessource } from './ressources'
 
 export type EtatIcone = 'calme' | 'bientot' | 'veille'
@@ -37,9 +38,11 @@ const FICHIERS: Record<EtatIcone, string> = {
 
 let zone: Tray | null = null
 let actionsZone: ActionsZone | null = null
-let iconeCourante: EtatIcone | null = null
+let signatureIcone: string | null = null
+let infobulleCourante: string | null = null
 let menuCourant: EtatMenuContextuel | null = null
 const images = new Map<EtatIcone, NativeImage>()
+const comptes = new Map<string, NativeImage>()
 
 const MENU_DEPART: EtatMenuContextuel = {
   enVeille: false,
@@ -50,7 +53,8 @@ const MENU_DEPART: EtatMenuContextuel = {
 export function creerZoneNotification(actions: ActionsZone): void {
   actionsZone = actions
   const barre = new Tray(imageDe('calme'))
-  iconeCourante = 'calme'
+  signatureIcone = 'calme'
+  infobulleCourante = textes.tray.infobulle
   barre.setToolTip(textes.tray.infobulle)
   barre.setIgnoreDoubleClickEvents(true)
   let ignoreClicJusqua = 0
@@ -76,18 +80,20 @@ export function lireBoundsZone(): Rectangle | null {
 }
 
 export function definirInfobulle(texte: string): void {
-  if (!zone || zone.isDestroyed()) {
+  if (!zone || zone.isDestroyed() || infobulleCourante === texte) {
     return
   }
+  infobulleCourante = texte
   zone.setToolTip(texte)
 }
 
 export function definirEtatIcone(etat: EtatIcone): void {
-  if (!zone || zone.isDestroyed() || iconeCourante === etat) {
-    return
-  }
-  iconeCourante = etat
-  zone.setImage(imageDe(etat))
+  afficherIcone(etat, () => imageDe(etat))
+}
+
+/** Chiffre du décompte. Le dessin n'est envoyé que s'il a changé. */
+export function definirIconeCompte(libelle: string, theme: ThemeBarre): void {
+  afficherIcone(`compte:${theme}:${libelle}`, () => imageCompte(libelle, theme))
 }
 
 export function definirMenuContextuel(etat: EtatMenuContextuel): void {
@@ -101,8 +107,35 @@ export function definirMenuContextuel(etat: EtatMenuContextuel): void {
 export function detruireZoneNotification(): void {
   zone?.destroy()
   zone = null
-  iconeCourante = null
+  signatureIcone = null
+  infobulleCourante = null
   menuCourant = null
+}
+
+function afficherIcone(signature: string, fournir: () => NativeImage): void {
+  if (!zone || zone.isDestroyed() || signatureIcone === signature) {
+    return
+  }
+  signatureIcone = signature
+  zone.setImage(fournir())
+}
+
+function imageCompte(libelle: string, theme: ThemeBarre): NativeImage {
+  const cle = `${theme}:${libelle}`
+  const existante = comptes.get(cle)
+  if (existante) {
+    return existante
+  }
+  const dessin = dessinerCompte(libelle, theme)
+  const image = nativeImage.createFromBitmap(dessin.petit, { width: 16, height: 16 })
+  image.addRepresentation({
+    scaleFactor: 2,
+    width: 32,
+    height: 32,
+    buffer: dessin.grand
+  })
+  comptes.set(cle, image)
+  return image
 }
 
 function menuContextuel(etat: EtatMenuContextuel): Menu {

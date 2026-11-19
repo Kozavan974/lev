@@ -94,7 +94,7 @@ describe('contenus du lot 5', () => {
 
   it('porte les phrases d’accroche des vues principales', () => {
     expect(textes.rappels.accroche).toBe(
-      "Choisis les pauses régulières qui t'aident à bouger et reposer tes yeux."
+      'Personnalise tes pauses actives pour bouger et reposer tes yeux.'
     )
     expect(textes.rappels.sequencesAccroche).toBe(
       "Alterne des temps de concentration et des pauses courtes pour garder le cap sans t'épuiser."
@@ -105,6 +105,8 @@ describe('contenus du lot 5', () => {
     expect(textes.poste.accroche).toBe(
       'Quelques repères simples pour ajuster ton écran, ton siège et ta posture.'
     )
+    expect(textes.apropos.philosophie.titre).toBe('Philosophie de Lèv')
+    expect(textes.apropos.reperes.titre).toBe('Les repères que suit Lèv')
     expect(textes.apropos.revoirAccueil).toBe("Revoir l'écran de bienvenue")
     expect(textes.apropos.moteurs).toBe(
       'Lèv v{version} · Propulsé par Electron {electron} et Chromium {chrome}'

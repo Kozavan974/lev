@@ -7,15 +7,19 @@ import { microOccupe, sessionOccupee } from './micro'
 const SUCCES = 0
 const CLE_ABSENTE = 2
 const PLUS_DE_CLES = 259
+const REG_DWORD = 4
 const REG_QWORD = 11
 const LECTURE_CLE = 0x20019
 const HKEY_UTILISATEUR = 0x80000001
 const TAILLE_NOM = 256
 const MAX_SOUS_CLES = 256
+const OCTETS_DWORD = 4
 const OCTETS_QWORD = 8
 const CHEMIN_MICRO =
   'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\microphone'
 const CONTENEUR_BUREAU = 'NonPackaged'
+const CHEMIN_PERSONNALISATION = 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize'
+const VALEUR_BARRE = 'SystemUsesLightTheme'
 
 type Interrogation = (sortie: number[]) => unknown
 
@@ -78,6 +82,30 @@ export function appliquerDemarrageWindows(actif: boolean): void {
  */
 export function sessionRetientNotifications(): boolean {
   return sessionOccupee(pleinEcranOuPresentation(), microEnCoursDUtilisation())
+}
+
+/** Vrai si la barre des tâches est claire, faux si elle est sombre, nul si la clé manque. */
+export function lireBarreClaireWindows(): boolean | null {
+  const api = obtenirRegistre()
+  if (!api) {
+    return null
+  }
+  const cle = ouvrirCle(api, HKEY_UTILISATEUR, CHEMIN_PERSONNALISATION)
+  if (cle === null) {
+    return null
+  }
+  try {
+    const valeur = lireDword(api, cle, VALEUR_BARRE)
+    if (valeur === 1) {
+      return true
+    }
+    if (valeur === 0) {
+      return false
+    }
+    return null
+  } finally {
+    fermerCle(api, cle)
+  }
 }
 
 /**
@@ -228,6 +256,17 @@ function listerSousCles(api: ApiRegistre, cle: number): string[] | null {
     noms.push(tampon.toString('utf16le', 0, caracteres * 2))
   }
   return null
+}
+
+function lireDword(api: ApiRegistre, cle: number, nom: string): number | null {
+  const type = [0]
+  const donnees = Buffer.alloc(OCTETS_DWORD)
+  const taille = [OCTETS_DWORD]
+  const code = lireNombre(api.lire(cle, nom, 0, type, donnees, taille))
+  if (code !== SUCCES || type[0] !== REG_DWORD || taille[0] !== OCTETS_DWORD) {
+    return null
+  }
+  return donnees.readUInt32LE(0)
 }
 
 function lireQword(api: ApiRegistre, cle: number, nom: string): bigint | null {
