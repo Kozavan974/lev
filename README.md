@@ -31,4 +31,4 @@ npm test
 npm run dist
 ```
 
-`npm run dev` lance Lèv en développement. `npm test` exécute la suite Vitest. `npm run dist` produit l'installateur Windows (`Lev-Setup-1.1.0.exe`).
+`npm run dev` lance Lèv en développement. `npm test` exécute la suite Vitest. `npm run dist` produit l'installateur Windows (`Lev-Setup-1.1.1.exe`).

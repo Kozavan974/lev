@@ -123,12 +123,18 @@ Fermer la fenêtre « Application » ne quitte pas Lèv : seule l'entrée « Qui
 
 Chaque fenêtre Electron lance son propre processus. Garder les trois fenêtres en mémoire ferait dépasser l'objectif de 150 Mo. Règles :
 
-- Seul le processus principal tourne en permanence.
+- Seul le processus principal tourne en permanence, avec l'icône de la zone de notification.
 - **Application** : créée à la demande, détruite (`destroy()`) dès sa fermeture.
 - **Menu** : créé au clic sur l'icône, détruit 60 secondes après sa fermeture.
-- **Notification** : créée au premier rappel, puis conservée masquée pour réapparaître sans délai.
-- La mémoire au repos est mesurée à la fin des lots 1 et 2. Si elle dépasse 150 Mo, la fenêtre de notification est elle aussi détruite après chaque usage.
+- **Notification** : créée au moment du rappel, détruite (`destroy()`) dès qu'elle a disparu. Elle n'est pas conservée masquée entre deux rappels : son processus de rendu est libéré.
 - Une fenêtre unique partagée n'est pas retenue : le menu et une notification peuvent être visibles en même temps.
+
+Deux réglages du processus principal, posés avant `app.whenReady()`, limitent l'empreinte sur tous les postes Windows, y compris à plusieurs écrans ou avec une carte graphique dédiée :
+
+- `app.disableHardwareAcceleration()` : Lèv n'affiche que des interfaces en deux dimensions. Le processus GPU de Chromium n'est pas lancé.
+- `app.commandLine.appendSwitch('js-flags', '--max-old-space-size=64')` : le tas mémoire de V8 est plafonné à 64 Mo, pour éviter une dérive sur plusieurs jours sans redémarrage.
+
+La mémoire au repos reste à mesurer (section 14) : moins de 150 Mo, processeur proche de 0 % entre deux rappels.
 
 ### Précisions propres à Windows
 
@@ -358,8 +364,14 @@ L'application compte sept écrans ou familles d'écrans. Chacun correspond à un
 
 Affiché dans la fenêtre « Application », au premier lancement, puis à la demande depuis « À propos » (section 7.5). Le fichier de réglages n'est écrit qu'au premier passage.
 
-- Le contenu tient dans une carte centrée dans la fenêtre (460 px au plus, fond `--carte`, bordure `--lisere`, rayon 12 px, marge interne 14 px sur 18 px, ombre douce). Logo de 52 px, puis le texte exact : « Bienvenue dans Lèv. » en 22 px, « Je te rappellerai doucement de bouger et de reposer tes yeux. » et « Tu choisis le rythme — et tu peux changer d'avis à tout moment. » en 14 px.
-- Bouton principal « Commencer », largeur contenue (au moins 200 px, 42 px de haut). Au premier lancement, il ferme la fenêtre, enregistre `premierLancementFait`, et Lèv démarre avec les rappels par défaut. Quand l'écran a été rouvert, il ramène à « Mes rappels » sans réécrire `reglages.json`.
+- Le contenu tient dans une carte centrée dans la fenêtre (460 px au plus, fond `--carte`, bordure `--lisere`, rayon 12 px, marge interne 14 px sur 18 px, ombre douce). Logo de 44 px. L'animation ne démarre qu'une fois la fenêtre visible, puis attend 250 ms. Le L se redresse et le point doré s'élève avec un léger rebond, une seule fois, sur 1,8 s. Un clic sur le logo rejoue ce geste. Si les animations sont réduites, il reste immobile. Puis le texte exact : « Bienvenue dans Lèv. » en 22 px, « Je te rappellerai doucement de bouger et de reposer tes yeux. » et « Tu choisis le rythme — et tu peux changer d'avis à tout moment. » en 14 px.
+- Entre cette dernière phrase et le bouton « Commencer », une grille de deux colonnes présente quatre micro-cartes, dans cet ordre, de même hauteur sur chaque ligne (`grid-auto-rows: 1fr`, `align-items: stretch`). Chaque micro-carte a un fond `--surface-douce`, une bordure fine `--separateur`, un rayon de 12 px et une marge interne de 8 px sur 10 px. L'écart de la grille est de 8 px. L'icône SVG, en trait fin et en `--action`, est centrée dans une pastille ronde de 28 px au fond `color-mix(in srgb, var(--action) 12%, transparent)`, avec un fin liseré intérieur `color-mix(in srgb, var(--action) 32%, transparent)` pour qu'elle reste lisible sur `--surface-douce` ; le dessin mesure 16 px. Le titre est en 13 px, la phrase en 12,5 px (interligne 1,35, couleur `--texte-second`), sur deux lignes au plus :
+  1. « Pauses actives » : « Rappels doux pour bouger, boire et reposer tes yeux. »
+  2. « Séquences de travail » : « Alterne concentration et pauses régulières à ton rythme. »
+  3. « Respiration guidée » : « Exercices simples pour relâcher la pression en pause. »
+  4. « Installation et confort » : « Repères pour bien régler ton poste de travail »
+- La scène centre la carte dans une colonne avec `justify-content: safe center`. La hauteur du contenu, mentions comprises, reste inférieure à 510 px : dans la fenêtre de 520 × 580 px, en thème clair comme en thème sombre, et avec une mise à l'échelle Windows à 125 %, aucun texte n'est coupé et aucune barre de défilement n'apparaît.
+- Bouton principal « Commencer », largeur contenue (au moins 200 px, 38 px de haut). Au premier lancement, il ferme la fenêtre, enregistre `premierLancementFait`, et Lèv démarre avec les rappels par défaut. Quand l'écran a été rouvert, il ramène à « Mes rappels » sans réécrire `reglages.json`.
 - Lien discret « Choisir mon rythme », juste sous le bouton : ouvre « Mes rappels ». Au premier lancement, ce lien enregistre aussi `premierLancementFait`. Quand l'écran a été rouvert, il n'écrit rien.
 - En bas de la carte, séparées par un trait fin, trois mentions cochées en 13 px : « Aucun compte », « Aucune inscription », « Aucune donnée personnelle ».
 - Aucun tutoriel, aucune étape suivante.
@@ -381,7 +393,7 @@ Toutes partagent le même gabarit : une carte en bas à droite, un pictogramme d
 
 | Notification                 | Titre                        | Phrase                                                                                                                           | Boutons                                                                            |
 | ---------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Yeux                         | Tes yeux méritent une pause. | Cligne doucement une dizaine de fois, puis regarde au loin, par la fenêtre si tu peux.                                           | Les trois réponses                                                                 |
+| Yeux                         | Tes yeux méritent une pause. | Cligne lentement et complètement des yeux plusieurs fois, puis ferme-les doucement quelques secondes. Regarde un point au loin (par la fenêtre ou à environ 6 m) pendant 20 secondes. | Les trois réponses                                                                 |
 | Bouger                       | Envie d'un petit mouvement ? | Quelques pas suffisent, à ton rythme.                                                                                            | Les trois réponses                                                                 |
 | Bouger, variante assise      | Un moment pour te détendre ? | Quelques gestes discrets, à ta place.                                                                                            | Les trois réponses                                                                 |
 | Posture                      | Un petit point posture ?     | Relâche les épaules, pose les pieds à plat et laisse ton dos retrouver le dossier.                                               | Les trois réponses + lien « Bien installer mon poste »                             |
@@ -436,11 +448,11 @@ En bas de page, un lien « À propos ».
 
 Une page de lecture. En haut, un lien discret « ← Mes rappels », puis l'en-tête toujours visible. Les quatre blocs suivants sont des tiroirs fermés par défaut, espacés de 6 px, avec le même chevron et le même gabarit fin que « Autres réglages ». Les textes exacts sont en section 10.5.
 
-1. En-tête : « Lèv — une pause, naturellement. » et une phrase de présentation.
-2. « Philosophie de Lèv » : sept principes courts.
-3. « Les repères que suit Lèv » : se lever toutes les 30 minutes, marcher 5 minutes, quitter l'écran des yeux. Lien vers « Bien installer mon poste ».
+1. En-tête : « Lèv — une pause, naturellement. » en `--signature`, et une phrase de présentation. En thème clair, `--signature` est le rose du cœur approfondi (`#9a524e`) pour rester lisible sur le fond pêche. En thème sombre, c'est `--coeur` (`#c98480`).
+2. « Philosophie » : sept principes courts.
+3. « Les repères » : se lever toutes les 30 minutes, marcher 5 minutes, quitter l'écran des yeux. Lien vers « Bien installer mon poste ».
 4. « Textes de référence » : sept liens (section 10.3), ouverts dans le navigateur par défaut.
-5. « Ekilib.re » : présentation de l'association, avec le lien sur le nom, puis « Chaque pas compte. », le lien vers les Maisons Sport-Santé, le lien vers la carte, la mention « Logiciel libre sous licence MIT — Association Ekilib.re », le lien « Découvrir l'association Ekilib.re », puis la vérification des mises à jour (section 10.5).
+5. « Fait avec cœur à La Réunion par Ekilib.re » : le résumé aligne « Fait avec », un cœur plein de 15 px en `--coeur` (`#c98480`), puis « à La Réunion par Ekilib.re ». Le cœur est ignoré par les lecteurs d'écran ; l'intitulé lu est la phrase complète, avec le mot « cœur ». Il tient sur une ligne dans la fenêtre de 520 px et passe à la ligne sans couvrir le chevron si la largeur baisse. Le tiroir ouvert est une seule carte, fond `--carte` et bordure `--lisere`, du résumé jusqu'au bas du contenu. Trois pastilles : « 100 % gratuit », « Open source (licence MIT) », « Association Ekilib.re ». Puis « Lèv est développée bénévolement par Ekilib.re, Maison Sport-Santé au Tampon, à La Réunion. Chaque pas compte. ». Un encart `--surface-douce` explique le rôle des Maisons Sport-Santé et porte le lien vers la carte. Une rangée aligne « Découvrir Ekilib.re » et « Code source sur GitHub », puis le bouton centré « Vérifier les mises à jour » (section 10.5).
 
 Sous les tiroirs, seul un bouton discret « Revoir l'écran de bienvenue » rouvre l'écran d'accueil sans modifier `reglages.json` (section 7.1).
 
@@ -511,6 +523,8 @@ L'ambiance visée est celle d'un lever de soleil : fluide, respirante, douce. Le
 | `--fond-picto`    | `#fde3d2`                                                 | `#3a2f3f`                                                 | Fond des pictogrammes                                                                 |
 | `--surface-douce` | `rgba(45,106,99,0.06)`                                    | `rgba(95,207,198,0.12)`                                   | Encart de conseil de la respiration                                                   |
 | `--soleil`        | `#f1be5a`                                                 | `#f1be5a`                                                 | Bulle du logo, pastille « bientôt », grande pause. Jamais de texte dans cette couleur |
+| `--coeur`         | `#c98480`                                                 | `#c98480`                                                 | Cœur du résumé « Fait avec … à La Réunion » (section 7.5). Rose doux tiré du fond. Jamais de texte dans cette couleur |
+| `--signature`     | `#9a524e`                                                 | `#c98480` (`--coeur`)                                     | Signature « Lèv — une pause, naturellement. » Même rose que le cœur, approfondi en thème clair |
 | `--trace`         | `#f0d9cc`                                                 | `#3a3650`                                                 | Partie non parcourue d'une ligne de parcours                                          |
 
 Le turquoise `--action` et le jaune `--soleil` viennent du logotype Ekilib.re. Le thème « automatique » suit le réglage clair ou sombre de Windows et change sans redémarrage.
@@ -524,7 +538,7 @@ Le turquoise `--action` et le jaune `--soleil` viennent du logotype Ekilib.re. L
 ### Formes et espaces
 
 - Cartes, accueil et séance de respiration : rayon de 12 px. Les accordéons ont un rayon de 8 px. Boutons, champs et pastilles : rayon complet (forme de pilule).
-- Boutons, champs et listes mesurent au moins 38 px de haut, avec un padding horizontal de 14 px. Les pastilles de suggestion et de fréquence mesurent 34 px, comme les boutons du menu. Les lignes de liens du menu mesurent 28 px. Le bouton « Commencer » de l'accueil mesure 42 px. Les boutons − et + de la respiration mesurent 30 px.
+- Boutons, champs et listes mesurent au moins 38 px de haut, avec un padding horizontal de 14 px. Les pastilles de suggestion et de fréquence mesurent 34 px, comme les boutons du menu. Les lignes de liens du menu mesurent 28 px. Le bouton « Commencer » de l'accueil mesure 38 px. Les boutons − et + de la respiration mesurent 30 px.
 - Espacements : 4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 32 px. Dans la fenêtre Application, une seule marge de page de 12 px sur 14 px, sans marge cumulée sur `html`, `body` ou `#racine`. L'espace vertical entre les blocs, et entre le lien de retour, le titre et l'introduction, est de 6 px. Marge interne d'une carte : 14 px sur 18 px. La carte de la séance de respiration fait exception : 10 px sur 14 px, et 6 px entre le titre, la bulle, la consigne, les étiquettes et le bouton. Le cadre de la bulle mesure 116 px. L'encart de conseil a une marge interne de 8 px sur 12 px. Marge interne d'une notification : 20 px.
 - Ombre sous les notifications, le menu et la carte d'accueil : `0 6px 24px rgba(46,42,63,0.10)`. La bulle de respiration a un halo `0 0 28px rgba(233,196,106,0.35)`.
 - Trois niveaux de bouton : principal (fond `--action`), secondaire (bordure `--action`, fond `--carte`), discret (texte `--texte-second`, sans bordure).
@@ -556,7 +570,7 @@ Un L arrondi qui se redresse, surmonté d'une bulle qui évoque l'accent, la tê
 ### Mouvement
 
 - Une notification apparaît et disparaît en fondu de 200 ms, sans glissement.
-- Chaque notification porte un petit logo Lèv dans son coin supérieur droit. À l'apparition, sa bulle monte doucement une seule fois, sur 3,2 secondes. C'est la seule animation décorative : l'icône de la zone de notification, elle, ne bouge jamais. Ce petit logo n'est pas maquetté (section 16).
+- Chaque notification porte un petit logo Lèv dans son coin supérieur droit. À l'apparition, sa bulle monte doucement une seule fois, sur 3,2 secondes. Sur l'écran de bienvenue, une fois la fenêtre visible et après 250 ms, le L du logo de 44 px se redresse et le point doré s'élève avec un léger rebond, une seule fois sur 1,8 s. Un clic rejoue le geste (section 7.1). L'icône de la zone de notification, elle, ne bouge jamais. Ce petit logo n'est pas maquetté (section 16).
 - Dans la respiration guidée, la bulle change de taille entre 55 % et 100 %, sur la durée exacte du temps en cours.
 - Si Windows est réglé pour limiter les animations, tout est figé : la bulle de respiration change de taille sans transition.
 - Aucun compte à rebours, aucun défilement automatique.
@@ -584,7 +598,7 @@ Les six idées ci-dessous sont des exemples provisoires. Elles doivent être rel
 
 | Étape | Titre                       | Texte                                                                                                                                                          |
 | ----- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1     | L'écran                     | Place-le bien en face de toi, le haut de l'écran à la hauteur de tes yeux. Tourne-le de côté par rapport à la fenêtre pour éviter les reflets.                 |
+| 1     | L'écran                     | Place-le bien en face de toi, entre 50 et 70 cm, le bord supérieur au niveau des yeux ou légèrement en dessous : cela limite aussi l'assèchement des yeux. Tourne-le de côté par rapport à la fenêtre pour éviter les reflets, et écarte un souffle direct (climatisation, ventilateur) du visage. |
 | 2     | Le siège                    | Assieds-toi au fond du siège, le dos en contact avec le dossier. Tes pieds reposent à plat sur le sol, ou sur un repose-pieds.                                 |
 | 3     | Le clavier et la souris     | Laisse 10 à 15 cm entre le bord du bureau et le clavier pour poser tes avant-bras. Garde la souris tout près du clavier, sans appuyer les poignets en continu. |
 | 4     | La lumière                  | Évite une fenêtre ou une lampe juste devant ou derrière l'écran. Règle les stores et l'éclairage selon le moment de la journée.                                |
@@ -620,9 +634,9 @@ Seule la page de l'Anses a été ouverte et lue en entier pendant la conception.
 
 Ces textes sont à reprendre mot pour mot dans `content/fr.json`.
 
-**En-tête.** Titre : « À propos ». Signature : « Lèv — une pause, naturellement. » Phrase : « Un compagnon discret pour bouger un peu plus souvent pendant le travail sur écran, et laisser ses yeux se reposer. »
+**En-tête.** Titre : « À propos ». Signature : « Lèv — une pause, naturellement. », couleur `--signature`. Phrase : « Un compagnon discret pour bouger un peu plus souvent pendant le travail sur écran, et laisser ses yeux se reposer. »
 
-**Philosophie de Lèv**
+**Philosophie**
 
 | Titre                                                      | Texte                                                                                                                                                                                            |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -634,7 +648,7 @@ Ces textes sont à reprendre mot pour mot dans `content/fr.json`.
 | Des idées écrites par des professionnels                   | Chaque invitation à bouger propose un mouvement simple à faire au bureau, avec toujours une variante à faire assis.                                                                              |
 | Chez toi, pour toi                                         | Aucun compte, aucune inscription, aucune donnée personnelle demandée. Tes réglages restent sur ton ordinateur. Lèv est gratuite et ne remplace pas l'avis d'un professionnel de santé.          |
 
-**Les repères que suit Lèv**
+**Les repères**
 
 | Titre                          | Texte                                                                                                                                                                                                                |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -644,15 +658,15 @@ Ces textes sont à reprendre mot pour mot dans `content/fr.json`.
 
 Lien sous ce bloc : « Bien installer mon poste, en cinq réglages ».
 
-**Ekilib.re.** « Lèv est proposée gratuitement par l'association Ekilib.re, Maison Sport-Santé au Tampon, à La Réunion. » Le lien `https://ekilib.re` est posé sur le mot « Ekilib.re ». Un lien séparé « Découvrir l'association Ekilib.re » pointe aussi vers `https://ekilib.re`, dans ce tiroir, juste au-dessus de la vérification des mises à jour. Le libellé lu est « Découvrir l'association Ekilib.re. S'ouvre dans le navigateur. »
+**Ekilib.re.** Le résumé du tiroir est « Fait avec », un cœur plein de 15 px coloré `--coeur` (`#c98480`), puis « à La Réunion par Ekilib.re ». Le cœur porte `aria-hidden`. L'intitulé lu est « Fait avec cœur à La Réunion par Ekilib.re ». Dans la fenêtre de 520 px, cette ligne ne couvre pas le chevron. Le tiroir ouvert est une seule carte, fond `--carte`, bordure `--lisere`. Le résumé et tout le contenu ouvert partagent ce fond : rien ne reste sur le fond de page. L'écart vertical entre les blocs est de 10 px.
 
-Sous-titre « Chaque pas compte. » : « Les Maisons Sport-Santé sont des lieux d'accueil, d'information et d'orientation vers une activité physique adaptée à tes besoins, tes envies et ta santé. Elles proposent un accompagnement personnalisé, quel que soit ton âge ou ton niveau de départ. » Le lien `https://www.sports.gouv.fr/maisons-sport-sante` est posé sur « Maisons Sport-Santé ».
+En haut, trois pastilles sur une ligne : « 100 % gratuit », « Open source (licence MIT) », « Association Ekilib.re ». Elles portent la mention de licence (section 16). Puis : « Lèv est développée bénévolement par Ekilib.re, Maison Sport-Santé au Tampon, à La Réunion. Chaque pas compte. » Le lien `https://ekilib.re` est posé sur « Ekilib.re ». « Chaque pas compte. » est en graisse forte.
 
-Phrase liée, en dessous : « Trouve la Maison Sport-Santé la plus proche de chez toi. » Elle ouvre `https://livemap.getwemap.com/embed?emmid=13462&iframeEmbed=true&iframeid=9d84e72b-50f8-49e9-9ed6-c2b6b756e94e&parentOrigin=https%3A%2F%2Flivemap.getwemap.com&replaceContainer=false&token=NRAY1Q8M32GFJ8ZOVMBSO3HUZ`.
+Un encart au fond `--surface-douce` explique : « Les Maisons Sport-Santé sont des lieux d'accueil, d'information et d'orientation vers une activité physique adaptée à tes besoins, tes envies et ta santé. Elles proposent un accompagnement personnalisé, quel que soit ton âge ou ton niveau de départ. » Le lien `https://www.sports.gouv.fr/maisons-sport-sante` est posé sur « Maisons Sport-Santé ». Dans le même encart : « Trouve la Maison Sport-Santé la plus proche de chez toi. » Elle ouvre `https://livemap.getwemap.com/embed?emmid=13462&iframeEmbed=true&iframeid=9d84e72b-50f8-49e9-9ed6-c2b6b756e94e&parentOrigin=https%3A%2F%2Flivemap.getwemap.com&replaceContainer=false&token=NRAY1Q8M32GFJ8ZOVMBSO3HUZ`.
 
-Puis « Logiciel libre sous licence MIT — Association Ekilib.re » (licence MIT, section 16). Le numéro de version n'est plus dans ce tiroir : il rejoint la ligne technique en bas de page. Sous la mention, le lien « Découvrir l'association Ekilib.re », puis un bouton discret « Vérifier les mises à jour ». Pendant l'appel : « Vérification en cours… ». Si la version installée est la dernière : « Tu utilises déjà la dernière version de Lèv. » Si la vérification ne peut pas aboutir : « Vérification impossible pour le moment. » Si une version plus récente existe : « Une nouvelle version ({version}) est disponible. » et un lien « Télécharger sur GitHub » vers `https://github.com/Kozavan974/lev/releases/latest`. Quand une version plus récente a déjà été constatée, ce message et ce lien sont affichés sans nouvel appel.
+Sous l'encart, une rangée centrée : « Découvrir Ekilib.re » vers `https://ekilib.re`, libellé lu « Découvrir Ekilib.re. S'ouvre dans le navigateur. », et « Code source sur GitHub » vers `https://github.com/Kozavan974/lev`, libellé lu « Code source sur GitHub. S'ouvre dans le navigateur. ». Puis un bouton discret centré « Vérifier les mises à jour ». Le numéro de version n'est pas dans ce tiroir : il rejoint la ligne technique en bas de page. Pendant l'appel : « Vérification en cours… ». Si la version installée est la dernière : « Tu utilises déjà la dernière version de Lèv. » Si la vérification ne peut pas aboutir : « Vérification impossible pour le moment. » Si une version plus récente existe : « Une nouvelle version ({version}) est disponible. » et un lien « Télécharger sur GitHub » vers `https://github.com/Kozavan974/lev/releases/latest`. Quand une version plus récente a déjà été constatée, ce message et ce lien sont affichés sans nouvel appel. Ces messages restent dans la carte.
 
-En bas de page, seul le bouton « Revoir l'écran de bienvenue ». Il rouvre l'accueil sans modifier `reglages.json`. Sous un filet, une ligne en 12,5 px et en `--texte-second` : « Lèv v{version} · Propulsé par Electron {electron} et Chromium {chrome} ». `{version}` est `app.getVersion()`, donc le passage à `1.1.0` se reflète tout seul. `{electron}` et `{chrome}` viennent de `process.versions`. Aucun outil de build n'est cité. La signature « Lèv — levez-vous, respirez. » n'est plus affichée.
+En bas de page, seul le bouton « Revoir l'écran de bienvenue ». Il rouvre l'accueil sans modifier `reglages.json`. Sous un filet, une ligne en 12,5 px et en `--texte-second` : « Lèv v{version} · Propulsé par Electron {electron} et Chromium {chrome} ». `{version}` est `app.getVersion()`, donc le passage à `1.1.1` se reflète tout seul. `{electron}` et `{chrome}` viennent de `process.versions`. Aucun outil de build n'est cité. La signature « Lèv — levez-vous, respirez. » n'est plus affichée.
 
 ## 11. Confidentialité et sécurité
 
@@ -673,7 +687,7 @@ Lèv ne collecte, ne transmet et ne conserve aucune donnée personnelle en dehor
 - `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true` sur toutes les fenêtres.
 - Une politique de sécurité de contenu stricte : aucun script ni style distant, aucun `eval`.
 - Le `preload` n'expose que des fonctions nommées et typées, jamais `ipcRenderer` entier.
-- Les liens externes passent par `shell.openExternal`, après vérification que l'adresse commence par `https://` et appartient à l'un de ces domaines : anses.fr, inrs.fr, who.int, santepubliquefrance.fr, mangerbouger.fr, code.travail.gouv.fr, ekilib.re, sports.gouv.fr, getwemap.com, youtube.com, youtu.be. Un sous-domaine de ces noms est accepté, par exemple `www.sports.gouv.fr`, `livemap.getwemap.com`, `www.youtube.com` ou `www.ekilib.re`. Le lien « Découvrir l'association Ekilib.re » ouvre `https://ekilib.re` par cette liste. `github.com` est accepté aussi, ainsi que `www.github.com`, mais pas ses autres sous-domaines : `api.github.com` sert uniquement à l'appel de la section 13 et n'est pas ouvert dans le navigateur.
+- Les liens externes passent par `shell.openExternal`, après vérification que l'adresse commence par `https://` et appartient à l'un de ces domaines : anses.fr, inrs.fr, who.int, santepubliquefrance.fr, mangerbouger.fr, code.travail.gouv.fr, ekilib.re, sports.gouv.fr, getwemap.com, youtube.com, youtu.be. Un sous-domaine de ces noms est accepté, par exemple `www.sports.gouv.fr`, `livemap.getwemap.com`, `www.youtube.com` ou `www.ekilib.re`. Le lien « Découvrir Ekilib.re » ouvre `https://ekilib.re` par cette liste. « Code source sur GitHub » ouvre `https://github.com/Kozavan974/lev`. `github.com` est accepté aussi, ainsi que `www.github.com`, mais pas ses autres sous-domaines : `api.github.com` sert uniquement à l'appel de la section 13 et n'est pas ouvert dans le navigateur.
 - L'unique appel spontané est un GET HTTPS vers `https://api.github.com/repos/Kozavan974/lev/releases/latest` (section 13). Cette adresse n'est pas ouverte dans le navigateur. Le lien de téléchargement, lui, passe par la liste blanche (`github.com`).
 - Toute navigation et toute ouverture de fenêtre depuis un écran sont bloquées.
 - Une seule instance de l'application à la fois (`requestSingleInstanceLock`).
@@ -700,12 +714,13 @@ Lèv doit être utilisable au clavier, avec un lecteur d'écran et par une perso
 Lèv est livrée sous la forme d'un installateur Windows unique, qui s'installe sans droits d'administrateur.
 
 - **Installateur** : `electron-builder`, cible NSIS, installation par utilisateur, en français. Raccourci dans le menu Démarrer, pas d'icône imposée sur le bureau.
-- **Nom affiché** : « Lèv ». Identifiant technique sans accent : `re.ekilib.lev`. Nom du fichier : `Lev-Setup-1.1.0.exe`.
+- **Nom affiché** : « Lèv ». Identifiant technique sans accent : `re.ekilib.lev`. Nom du fichier : `Lev-Setup-1.1.1.exe`.
 - **Démarrage automatique** : activé par défaut via `app.setLoginItemSettings`, désactivable dans « Autres réglages ». L'entrée de démarrage automatique lance Lèv avec l'argument --demarrage-auto : dans ce cas aucune fenêtre ne s'ouvre, seule l'icône apparaît. Un lancement à la main (menu Démarrer) ouvre « Mes rappels », ou l'accueil si c'est le premier lancement. Si Lèv tourne déjà, la relancer ouvre « Mes rappels » dans l'instance existante (événement second-instance) : sans cela, le clic semblerait sans effet.
 - **Signature du code** : sans certificat de signature, Windows affiche un avertissement « éditeur inconnu » à l'installation, ce qui décourage une partie du public. L'achat d'un certificat au nom de l'association est à décider (section 16).
 - **Distribution** : téléchargement depuis ekilib.re. Le Microsoft Store est une seconde voie possible, qui évite l'avertissement de Windows.
 - **Mises à jour** : au plus une fois par semaine, et quand on le demande dans « À propos », Lèv interroge en HTTPS `https://api.github.com/repos/Kozavan974/lev/releases/latest` (délai de 6 secondes, en-tête `User-Agent: Lev-Desktop`, aucun identifiant). Si une version SemVer plus récente existe, « À propos » le dit et propose d'ouvrir `https://github.com/Kozavan974/lev/releases/latest` dans le navigateur. Rien n'est téléchargé ni installé tout seul. Hors connexion, Lèv continue de fonctionner. La case « Vérifier automatiquement les mises à jour (1 fois par semaine) » est cochée par défaut. Une version constatée est retenue dans `derniereVersionVue` : le point à côté d'« À propos », dans le menu, reste visible aux lancements suivants tant que cette version est plus récente que celle installée et que la case reste cochée. C'est le seul appel réseau spontané de l'application.
 - **Versions** : numérotation `majeure.mineure.correctif`. Le numéro est affiché dans « À propos ».
+- **Empreinte au repos** : une seule instance (section 11). Accélération matérielle désactivée, tas V8 plafonné à 64 Mo, fenêtre de rappel détruite dès sa disparition (section 3). Entre deux rappels, aucun processus de rendu ne reste ouvert.
 - **macOS et Linux** : hors v1. Le code ne doit rien contenir qui empêche de les ajouter (section 3).
 
 ## 14. Tests et critères d'acceptation
@@ -787,7 +802,7 @@ Le son est tranché au lot 6. L'hébergement des mises à jour et la licence MIT
 | Guide du poste           | Relecture des cinq consignes et de la mention de source                                          | Textes de la section 10.2                                    | 7            |
 | Son                      | Quel son, créé ou libre de droits                                                                | Tranché : deux notes douces en sinus, Web Audio, environ 300 ms, sans fichier. Option visible, décochée. Un aperçu joue au cochage. | 6            |
 | Écrans sombres           | Seuls le menu et le rappel « bouger » ont une maquette sombre                                    | Appliquer les jetons sombres de la section 9                 | 6            |
-| Licence                  | Logiciel libre ou non, et quelle licence                                                         | Tranché : licence MIT, Association Ekilib.re (2026). Mention « Logiciel libre sous licence MIT — Association Ekilib.re ». | 7            |
+| Licence                  | Logiciel libre ou non, et quelle licence                                                         | Tranché : licence MIT, Association Ekilib.re (2026). Pastilles « Open source (licence MIT) » et « Association Ekilib.re » (section 10.5). | 7            |
 | Nom                      | Vérifier que « Lèv » est disponible comme marque et comme nom de domaine                         | Aucune : à vérifier avant toute communication publique       | 7            |
 | Signature du code        | Achat d'un certificat au nom de l'association                                                    | Livrer sans signature en test interne uniquement             | 7            |
 | Hébergement              | Où sont publiés l'installateur et les mises à jour                                               | Tranché pour les mises à jour : Releases publiques `Kozavan974/lev`. Vérification seule, sans téléchargement ni installation automatiques. L'installateur reste proposé sur ekilib.re. | 7            |
@@ -797,6 +812,8 @@ Trois points ajoutés à la relecture de cohérence :
 - **Seuil de pause spontanée.** Trois minutes sans clavier ni souris comptent comme une pause (5.2). Or lire un long document ou suivre une réunion sans toucher à rien produit le même signal, alors que la personne est restée assise. Règle provisoire : garder 3 minutes. À revoir après les premiers essais réels, avant le lot 3.
 - **Petit logo animé dans la notification.** Il a été ajouté pour donner une place à l'animation de la bulle (section 9), puisque l'icône de la zone de notification ne s'anime pas. Il n'est pas maquetté. Règle provisoire : logo de 24 px en haut à droite de la carte. Avant le lot 6.
 - **Case « Séquences de travail ».** Elle est cochée par défaut dans ce document, décochée sur la maquette. Règle provisoire : cochée. Avant le lot 4.
+
+L'empreinte mémoire est tranchée (section 3). L'accélération matérielle est désactivée, le tas V8 est plafonné à 64 Mo, et la fenêtre de notification est détruite dès sa disparition. L'ancienne règle provisoire — la conserver masquée, et ne la détruire qu'en cas de dépassement de 150 Mo — est close. L'objectif de mesure reste celui de la section 14.
 
 Reste aussi la relecture juridique évoquée en section 11, à faire avant la diffusion publique.
 

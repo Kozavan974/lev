@@ -112,54 +112,76 @@ export function APropos(): React.JSX.Element {
           </ul>
         </Tiroir>
 
-        <Tiroir titre={page.ekilib.titre}>
-          <PhraseLien
-            avant={page.ekilib.avant}
-            lien={page.ekilib.lien}
-            url={page.ekilib.url}
-            apres={page.ekilib.apres}
-          />
-          <h3 className="sous-titre">{page.ekilib.suiteTitre}</h3>
-          <PhraseLien
-            avant={page.ekilib.maisonsAvant}
-            lien={page.ekilib.maisonsLien}
-            url={page.ekilib.maisonsUrl}
-            apres={page.ekilib.maisonsApres}
-          />
-          <p className="corps">
-            <LienExterne href={page.ekilib.procheUrl}>{page.ekilib.proche}</LienExterne>
-          </p>
-          <p className="legende">{page.ekilib.droits}</p>
-          <p className="corps">
-            <LienExterne href={page.decouvrir.url} ariaLabel={page.decouvrir.aria}>
-              {page.decouvrir.lien}
-            </LienExterne>
-          </p>
-          <button
-            type="button"
-            className="bouton-texte"
-            disabled={suivi.phase === 'cours'}
-            onClick={() => {
-              setSuivi({ phase: 'cours' })
-              void window.lev.verifierMisesAJour().then(
-                (resultat) => {
-                  setSuivi({ phase: 'reponse', resultat })
-                },
-                () => {
-                  setSuivi({ phase: 'reponse', resultat: { statut: 'erreur' } })
-                }
-              )
-            }}
-          >
-            {maj.verifier}
-          </button>
-          <div className="liste-textes" aria-live="polite">
-            {annonce ? <p className="legende">{annonce}</p> : null}
-            {proposerTelechargement ? (
+        <Tiroir
+          titre={page.ekilib.titre}
+          classe="repli-ekilib"
+          resume={
+            <>
+              {page.ekilib.titreAvant}
+              <Coeur />
+              {page.ekilib.titreApres}
+            </>
+          }
+        >
+          <div className="ekilib">
+            <ul className="ekilib-badges">
+              {page.ekilib.badges.map((badge) => (
+                <li key={badge}>{badge}</li>
+              ))}
+            </ul>
+            <p className="corps ekilib-origine">
+              {page.ekilib.avant}
+              <LienExterne href={page.ekilib.url}>{page.ekilib.lien}</LienExterne>
+              {page.ekilib.apres}
+              <strong>{page.ekilib.chaquePas}</strong>
+            </p>
+            <div className="ekilib-encart">
+              <PhraseLien
+                avant={page.ekilib.maisonsAvant}
+                lien={page.ekilib.maisonsLien}
+                url={page.ekilib.maisonsUrl}
+                apres={page.ekilib.maisonsApres}
+              />
               <p className="corps">
-                <LienExterne href={maj.url}>{maj.telecharger}</LienExterne>
+                <LienExterne href={page.ekilib.procheUrl}>{page.ekilib.proche}</LienExterne>
               </p>
-            ) : null}
+            </div>
+            <div className="ekilib-liens">
+              <LienExterne href={page.decouvrir.url} ariaLabel={page.decouvrir.aria}>
+                {page.decouvrir.lien}
+              </LienExterne>
+              <LienExterne href={page.code.url} ariaLabel={page.code.aria}>
+                {page.code.lien}
+              </LienExterne>
+            </div>
+            <div className="ekilib-maj">
+              <button
+                type="button"
+                className="bouton-texte"
+                disabled={suivi.phase === 'cours'}
+                onClick={() => {
+                  setSuivi({ phase: 'cours' })
+                  void window.lev.verifierMisesAJour().then(
+                    (resultat) => {
+                      setSuivi({ phase: 'reponse', resultat })
+                    },
+                    () => {
+                      setSuivi({ phase: 'reponse', resultat: { statut: 'erreur' } })
+                    }
+                  )
+                }}
+              >
+                {maj.verifier}
+              </button>
+              <div className="liste-textes" aria-live="polite">
+                {annonce ? <p className="legende">{annonce}</p> : null}
+                {proposerTelechargement ? (
+                  <p className="corps">
+                    <LienExterne href={maj.url}>{maj.telecharger}</LienExterne>
+                  </p>
+                ) : null}
+              </div>
+            </div>
           </div>
         </Tiroir>
       </div>
@@ -210,19 +232,35 @@ function PhraseLien({
 
 function Tiroir({
   titre,
+  classe,
+  resume,
   children
 }: {
   titre: string
+  classe?: string
+  resume?: React.ReactNode
   children: React.ReactNode
 }): React.JSX.Element {
+  const classes = classe ? `carte repli ${classe}` : 'carte repli'
   return (
-    <details className="carte repli">
-      <summary>
-        <span>{titre}</span>
+    <details className={classes}>
+      <summary aria-label={resume ? titre : undefined}>
+        <span className={resume ? 'repli-titre' : undefined}>{resume ?? titre}</span>
         <Chevron />
       </summary>
       <div className="corps-repli">{children}</div>
     </details>
+  )
+}
+
+function Coeur(): React.JSX.Element {
+  return (
+    <svg className="ekilib-coeur" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 20.2c-.3 0-6.8-4.1-8.8-7.7-1.4-2.5-.6-5.4 2.1-6.4 1.8-.7 3.5-.1 4.6 1.4L12 10.2l2.1-2.7c1.1-1.5 2.8-2.1 4.6-1.4 2.7 1 3.5 3.9 2.1 6.4-2 3.6-8.5 7.7-8.8 7.7Z"
+      />
+    </svg>
   )
 }
 

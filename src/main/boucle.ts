@@ -11,7 +11,6 @@ import type { Reglages } from './modeles'
 import {
   detruireNotification,
   definirFermetureForcee,
-  masquerNotification,
   publierMessage,
   publierNotification,
   publierRetrait,
@@ -153,7 +152,7 @@ export function demarrerBoucle(): void {
     }
   })
   ipcMain.on(CANAL_NOTIFICATION.masquee, () => {
-    masquerNotification()
+    detruireNotification()
     apresEvaluation?.()
   })
 
@@ -296,7 +295,7 @@ function fermerParLeSysteme(): void {
     recevoirReponse('plusTard')
     return
   }
-  masquerNotification()
+  detruireNotification()
 }
 
 function preparerIdee(courant: EtatMoteur, reglages: Reglages): EtatMoteur {

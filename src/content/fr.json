@@ -144,7 +144,7 @@
   "notification": {
     "yeux": {
       "titre": "Tes yeux méritent une pause.",
-      "phrase": "Cligne doucement une dizaine de fois, puis regarde au loin, par la fenêtre si tu peux."
+      "phrase": "Cligne lentement et complètement des yeux plusieurs fois, puis ferme-les doucement quelques secondes. Regarde un point au loin (par la fenêtre ou à environ 6 m) pendant 20 secondes."
     },
     "bouger": {
       "titre": "Envie d'un petit mouvement ?",
@@ -259,6 +259,29 @@
     "choix": "Tu choisis le rythme — et tu peux changer d'avis à tout moment.",
     "commencer": "Commencer",
     "rythme": "Choisir mon rythme",
+    "rejouerLogo": "Revoir le mouvement du logo",
+    "fonctions": [
+      {
+        "id": "pauses",
+        "titre": "Pauses actives",
+        "texte": "Rappels doux pour bouger, boire et reposer tes yeux."
+      },
+      {
+        "id": "sequences",
+        "titre": "Séquences de travail",
+        "texte": "Alterne concentration et pauses régulières à ton rythme."
+      },
+      {
+        "id": "respiration",
+        "titre": "Respiration guidée",
+        "texte": "Exercices simples pour relâcher la pression en pause."
+      },
+      {
+        "id": "poste",
+        "titre": "Installation et confort",
+        "texte": "Repères pour bien régler ton poste de travail"
+      }
+    ],
     "mentions": ["Aucun compte", "Aucune inscription", "Aucune donnée personnelle"]
   },
   "apropos": {
@@ -266,7 +289,7 @@
     "signature": "Lèv — une pause, naturellement.",
     "phrase": "Un compagnon discret pour bouger un peu plus souvent pendant le travail sur écran, et laisser ses yeux se reposer.",
     "philosophie": {
-      "titre": "Philosophie de Lèv",
+      "titre": "Philosophie",
       "principes": [
         {
           "titre": "Rester assis longtemps compte, même quand on fait du sport",
@@ -299,7 +322,7 @@
       ]
     },
     "reperes": {
-      "titre": "Les repères que suit Lèv",
+      "titre": "Les repères",
       "items": [
         {
           "titre": "Se lever toutes les 30 minutes",
@@ -357,19 +380,21 @@
       ]
     },
     "ekilib": {
-      "titre": "Ekilib.re",
-      "avant": "Lèv est proposée gratuitement par l'association ",
+      "titre": "Fait avec cœur à La Réunion par Ekilib.re",
+      "titreAvant": "Fait avec ",
+      "titreApres": " à La Réunion par Ekilib.re",
+      "badges": ["100 % gratuit", "Open source (licence MIT)", "Association Ekilib.re"],
+      "avant": "Lèv est développée bénévolement par ",
       "lien": "Ekilib.re",
       "url": "https://ekilib.re",
-      "apres": ", Maison Sport-Santé au Tampon, à La Réunion.",
-      "suiteTitre": "Chaque pas compte.",
+      "apres": ", Maison Sport-Santé au Tampon, à La Réunion. ",
+      "chaquePas": "Chaque pas compte.",
       "maisonsAvant": "Les ",
       "maisonsLien": "Maisons Sport-Santé",
       "maisonsUrl": "https://www.sports.gouv.fr/maisons-sport-sante",
       "maisonsApres": " sont des lieux d'accueil, d'information et d'orientation vers une activité physique adaptée à tes besoins, tes envies et ta santé. Elles proposent un accompagnement personnalisé, quel que soit ton âge ou ton niveau de départ.",
       "proche": "Trouve la Maison Sport-Santé la plus proche de chez toi.",
       "procheUrl": "https://livemap.getwemap.com/embed?emmid=13462&iframeEmbed=true&iframeid=9d84e72b-50f8-49e9-9ed6-c2b6b756e94e&parentOrigin=https%3A%2F%2Flivemap.getwemap.com&replaceContainer=false&token=NRAY1Q8M32GFJ8ZOVMBSO3HUZ",
-      "droits": "Logiciel libre sous licence MIT — Association Ekilib.re",
       "maj": {
         "verifier": "Vérifier les mises à jour",
         "cours": "Vérification en cours…",
@@ -382,9 +407,14 @@
     },
     "revoirAccueil": "Revoir l'écran de bienvenue",
     "decouvrir": {
-      "lien": "Découvrir l'association Ekilib.re",
+      "lien": "Découvrir Ekilib.re",
       "url": "https://ekilib.re",
-      "aria": "Découvrir l'association Ekilib.re. S'ouvre dans le navigateur."
+      "aria": "Découvrir Ekilib.re. S'ouvre dans le navigateur."
+    },
+    "code": {
+      "lien": "Code source sur GitHub",
+      "url": "https://github.com/Kozavan974/lev",
+      "aria": "Code source sur GitHub. S'ouvre dans le navigateur."
     },
     "moteurs": "Lèv v{version} · Propulsé par Electron {electron} et Chromium {chrome}"
   },

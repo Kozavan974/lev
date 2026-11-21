@@ -50,16 +50,6 @@ export function notificationEstVisible(): boolean {
   return fenetre !== null && !fenetre.isDestroyed() && fenetre.isVisible()
 }
 
-export function masquerNotification(): void {
-  if (!fenetre || fenetre.isDestroyed()) {
-    return
-  }
-  if (fenetre.isVisible()) {
-    fenetre.hide()
-  }
-  retirerRaccourci()
-}
-
 export function autoriserFermetureNotification(): void {
   quitter = true
 }

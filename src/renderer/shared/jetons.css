@@ -27,6 +27,8 @@
   --fond-picto: #fde3d2;
   --surface-douce: rgba(45, 106, 99, 0.06);
   --soleil: #f1be5a;
+  --coeur: #c98480;
+  --signature: #9a524e;
   --trace: #f0d9cc;
 
   --titre-accueil: 22px;
@@ -108,6 +110,8 @@
   --fond-picto: #3a2f3f;
   --surface-douce: rgba(95, 207, 198, 0.12);
   --soleil: #f1be5a;
+  --coeur: #c98480;
+  --signature: var(--coeur);
   --trace: #3a3650;
   color-scheme: dark;
 }

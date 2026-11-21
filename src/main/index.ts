@@ -27,6 +27,8 @@ import { creerZoneNotification, detruireZoneNotification } from './tray'
 
 app.setName('Lèv')
 configurerPlateforme()
+app.disableHardwareAcceleration()
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=64')
 
 if (!app.requestSingleInstanceLock()) {
   app.quit()

@@ -13,6 +13,7 @@ const LIENS_REFERENCES = [
   guide.lien.url,
   textes.poste.video.url,
   textes.apropos.ekilib.maj.url,
+  textes.apropos.code.url,
   'https://www.github.com/Kozavan974/lev',
   'https://ekilib.re/',
   'https://www.ekilib.re/',
@@ -21,11 +22,17 @@ const LIENS_REFERENCES = [
 
 describe('liens externes', () => {
   it('accepte le lien vers Ekilib.re et ses sous-domaines', () => {
-    expect(textes.apropos.decouvrir.lien).toBe("Découvrir l'association Ekilib.re")
+    expect(textes.apropos.decouvrir.lien).toBe('Découvrir Ekilib.re')
     expect(textes.apropos.decouvrir.url).toBe('https://ekilib.re')
     expect(textes.apropos.decouvrir.aria).toBe(
-      "Découvrir l'association Ekilib.re. S'ouvre dans le navigateur."
+      "Découvrir Ekilib.re. S'ouvre dans le navigateur."
     )
+    expect(textes.apropos.code.lien).toBe('Code source sur GitHub')
+    expect(textes.apropos.code.url).toBe('https://github.com/Kozavan974/lev')
+    expect(textes.apropos.code.aria).toBe(
+      "Code source sur GitHub. S'ouvre dans le navigateur."
+    )
+    expect(lienAutorise(textes.apropos.code.url)).toBe(true)
     expect(lienAutorise(textes.apropos.decouvrir.url)).toBe(true)
     expect(lienAutorise('https://www.ekilib.re/')).toBe(true)
     expect(lienAutorise('https://asso.ekilib.re/page')).toBe(true)
@@ -81,11 +88,28 @@ describe('liens externes', () => {
   })
 })
 
+describe('écran de bienvenue', () => {
+  it('présente les quatre fonctions dans l’ordre', () => {
+    expect(textes.accueil.fonctions.map((fonction) => fonction.titre)).toEqual([
+      'Pauses actives',
+      'Séquences de travail',
+      'Respiration guidée',
+      'Installation et confort'
+    ])
+    expect(textes.accueil.fonctions.map((fonction) => fonction.texte)).toEqual([
+      'Rappels doux pour bouger, boire et reposer tes yeux.',
+      'Alterne concentration et pauses régulières à ton rythme.',
+      'Exercices simples pour relâcher la pression en pause.',
+      'Repères pour bien régler ton poste de travail'
+    ])
+  })
+})
+
 describe('contenus du lot 5', () => {
-  it('propose 15 idées provisoires d’au plus 160 caractères', () => {
+  it('propose 15 idées debout et 16 idées assises, d’au plus 160 caractères', () => {
     expect(idees.provisoire).toBe(true)
     expect(idees.debout).toHaveLength(15)
-    expect(idees.assis).toHaveLength(15)
+    expect(idees.assis).toHaveLength(16)
     for (const idee of [...idees.debout, ...idees.assis]) {
       expect(idee.length).toBeGreaterThan(0)
       expect(idee.length).toBeLessThanOrEqual(160)
@@ -105,15 +129,27 @@ describe('contenus du lot 5', () => {
     expect(textes.poste.accroche).toBe(
       'Quelques repères simples pour ajuster ton écran, ton siège et ta posture.'
     )
-    expect(textes.apropos.philosophie.titre).toBe('Philosophie de Lèv')
-    expect(textes.apropos.reperes.titre).toBe('Les repères que suit Lèv')
+    expect(textes.apropos.philosophie.titre).toBe('Philosophie')
+    expect(textes.apropos.reperes.titre).toBe('Les repères')
     expect(textes.apropos.revoirAccueil).toBe("Revoir l'écran de bienvenue")
     expect(textes.apropos.moteurs).toBe(
       'Lèv v{version} · Propulsé par Electron {electron} et Chromium {chrome}'
     )
-    expect(textes.apropos.ekilib.droits).toBe(
-      'Logiciel libre sous licence MIT — Association Ekilib.re'
+    expect(textes.apropos.ekilib.badges).toEqual([
+      '100 % gratuit',
+      'Open source (licence MIT)',
+      'Association Ekilib.re'
+    ])
+    expect(textes.apropos.ekilib.titre).toBe(
+      'Fait avec cœur à La Réunion par Ekilib.re'
     )
+    expect(textes.apropos.ekilib.titreAvant).toBe('Fait avec ')
+    expect(textes.apropos.ekilib.titreApres).toBe(' à La Réunion par Ekilib.re')
+    expect(textes.apropos.ekilib.avant).toBe('Lèv est développée bénévolement par ')
+    expect(textes.apropos.ekilib.lien).toBe('Ekilib.re')
+    expect(textes.apropos.ekilib.url).toBe('https://ekilib.re')
+    expect(textes.apropos.ekilib.apres).toBe(', Maison Sport-Santé au Tampon, à La Réunion. ')
+    expect(textes.apropos.ekilib.chaquePas).toBe('Chaque pas compte.')
   })
 
   it('porte les cinq étapes et la phrase de l’encadré', () => {
