@@ -63,7 +63,8 @@ describe('réglages par défaut', () => {
       mouvementsAssis: false,
       son: false,
       lancerAuDemarrage: true,
-      verifierMajAuto: true
+      verifierMajAuto: true,
+      suspendreInactivite: true
     })
     expect(reglages.theme).toBe('auto')
     expect(reglages.respiration).toEqual({
@@ -75,6 +76,7 @@ describe('réglages par défaut', () => {
     })
     expect(reglages.guidePoste).toEqual([false, false, false, false, false])
     expect(reglages.veilleJusqua).toBeUndefined()
+    expect(reglages.veilleMotif).toBeUndefined()
     expect(reglages.derniereVerificationMaj).toBeUndefined()
     expect(reglages.derniereVersionVue).toBeUndefined()
   })
@@ -130,6 +132,39 @@ describe('normaliser', () => {
     expect(resultat.rappels.map((rappel) => rappel.id)).toEqual(
       modifie.rappels.map((rappel) => rappel.id)
     )
+  })
+
+  it('coche la suspension d’inactivité quand l’ancienne fiche ne la connaît pas', () => {
+    const depart = reglagesParDefaut()
+    const { suspendreInactivite: retiree, ...options } = depart.options
+    expect(retiree).toBe(true)
+    const resultat = normaliser({ ...depart, options })
+    expect(resultat.version).toBe(1)
+    expect(resultat.options.suspendreInactivite).toBe(true)
+    expect(resultat.veilleMotif).toBeUndefined()
+    expect(resultat.rappels.map((rappel) => rappel.id)).toEqual(
+      depart.rappels.map((rappel) => rappel.id)
+    )
+  })
+
+  it('reprend une réunion déjà écrite dans l’unique suspension', () => {
+    const depart = reglagesParDefaut()
+    const resultat = normaliser({
+      ...depart,
+      reunionJusqua: '2026-11-16T10:00:00.000Z'
+    })
+    expect(resultat.version).toBe(1)
+    expect(resultat.veilleJusqua).toBe('2026-11-16T10:00:00.000Z')
+    expect(resultat.veilleMotif).toBe('reunion')
+    expect(Object.hasOwn(resultat, 'reunionJusqua')).toBe(false)
+
+    const plusTard = normaliser({
+      ...depart,
+      veilleJusqua: '2026-11-17T08:00:00.000Z',
+      reunionJusqua: '2026-11-16T10:00:00.000Z'
+    })
+    expect(plusTard.veilleJusqua).toBe('2026-11-17T08:00:00.000Z')
+    expect(plusTard.veilleMotif).toBeUndefined()
   })
 
   it('coche la vérification automatique quand l’ancienne fiche ne la connaît pas', () => {

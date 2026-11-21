@@ -15,10 +15,12 @@ import { appliquerDemarrageAutomatique, configurerPlateforme } from './platform'
 import {
   brancherEcrans,
   conclureVerificationMaj,
-  mettreEnVeilleUneHeure,
+  mettreEnReunion,
+  mettreEnVeille,
   ouvrirDepuisRelance,
   ouvrirEcran,
   ouvrirSiPremierLancement,
+  reprendreReunion,
   reprendreRappels
 } from './pontEcrans'
 import { initialiserStore, lireReglages } from './store'
@@ -110,7 +112,10 @@ if (!app.requestSingleInstanceLock()) {
       creerZoneNotification({
         clicGauche: basculerMenu,
         pauseMaintenant: demanderPauseMaintenant,
-        veilleUneHeure: mettreEnVeilleUneHeure,
+        demarrerReunion: mettreEnReunion,
+        reprendreReunion,
+        veille30: () => mettreEnVeille('30min'),
+        veilleDemain: () => mettreEnVeille('demain'),
         reprendre: reprendreRappels,
         ouvrirRappels: () => ouvrirEcran('rappels'),
         ouvrirAPropos: () => ouvrirEcran('apropos'),

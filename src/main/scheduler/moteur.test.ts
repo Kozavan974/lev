@@ -11,6 +11,7 @@ import {
   AFFICHAGE_NOTIFICATION_YEUX_MS,
   FENETRE_PRIORITE_MS,
   FIN_PAUSE_SANS_REPONSE_MS,
+  INACTIVITE_SUSPENSION_SEC,
   LIGNE_PAUSE_SPONTANEE_MS,
   MESSAGE_REPONSE_MS,
   PAUSE_BOUGER_MS,
@@ -500,7 +501,10 @@ describe('rappels à heure fixe', () => {
   })
 
   it('ne remet pas les récurrents à zéro si les pauses spontanées sont coupées', () => {
-    const reglages = avecOptions(seulement(['yeux']), { pausesSpontanees: false })
+    const reglages = avecOptions(seulement(['yeux']), {
+      pausesSpontanees: false,
+      suspendreInactivite: false
+    })
     const yeux = parType(reglages, 'yeux')
     let etat = amorcer(reglages, au(16, 8, 0))
     etat = evaluer(etat, reglages, entree(au(16, 8, 10), true, false, false, 0)).etat
@@ -1343,6 +1347,164 @@ describe('le rappel qui s’adapte', () => {
     reglages = appliquerAdaptation(reglages, fait.effet)
     expect(parType(reglages, 'bouger').reportsDeSuite).toBe(0)
     expect(parType(reglages, 'bouger').neRienProposerAvant).toBe(silence)
+  })
+})
+
+describe('suspension après 5 minutes d’inactivité', () => {
+  it('fige le décompte à partir de 5 minutes et repart de zéro sans rappel au retour', () => {
+    const reglages = seulement(['yeux'])
+    const yeux = parType(reglages, 'yeux')
+    const etat = amorcer(reglages, au(16, 8, 0))
+    const avant = evaluer(
+      etat,
+      reglages,
+      entree(au(16, 8, 19), true, false, false, INACTIVITE_SUSPENSION_SEC - 1)
+    )
+    expect(avant.afficher).toBeNull()
+    expect(avant.etat.compteursMs[yeux.id]).toBe(19 * MINUTE)
+    expect(avant.etat.inactiviteSuspendue).toBe(false)
+
+    const figee = evaluer(
+      avant.etat,
+      reglages,
+      entree(au(16, 8, 24), true, false, false, INACTIVITE_SUSPENSION_SEC)
+    )
+    expect(figee.afficher).toBeNull()
+    expect(figee.etat.compteursMs[yeux.id]).toBe(19 * MINUTE)
+    expect(figee.etat.inactiviteSuspendue).toBe(true)
+
+    const encore = evaluer(
+      figee.etat,
+      reglages,
+      entree(au(16, 8, 30), true, false, false, INACTIVITE_SUSPENSION_SEC)
+    )
+    expect(encore.afficher).toBeNull()
+    expect(encore.etat.compteursMs[yeux.id]).toBe(19 * MINUTE)
+
+    const retour = evaluer(encore.etat, reglages, entree(au(16, 8, 31), true, false, false, 0))
+    expect(retour.afficher).toBeNull()
+    expect(retour.etat.compteursMs[yeux.id] ?? 0).toBe(0)
+    expect(retour.etat.inactiviteSuspendue).toBe(false)
+  })
+
+  it('laisse le temps compter et peut afficher un rappel si la détection est coupée', () => {
+    const reglages = avecOptions(seulement(['yeux']), {
+      suspendreInactivite: false,
+      pausesSpontanees: false
+    })
+    const yeux = parType(reglages, 'yeux')
+    const etat = amorcer(reglages, au(16, 8, 0))
+    const loin = evaluer(
+      etat,
+      reglages,
+      entree(au(16, 8, 20), true, false, false, INACTIVITE_SUSPENSION_SEC)
+    )
+    expect(loin.etat.compteursMs[yeux.id]).toBe(20 * MINUTE)
+    expect(loin.afficher?.rappelId).toBe(yeux.id)
+    expect(loin.etat.inactiviteSuspendue).toBe(false)
+  })
+
+  it('abandonne un rappel à heure fixe tombé pendant l’absence', () => {
+    const { reglages, id } = heureFixe('15:00', 'jour')
+    const etat = amorcer(reglages, au(16, 14, 50))
+    const parti = evaluer(
+      etat,
+      reglages,
+      entree(au(16, 14, 55), true, false, false, INACTIVITE_SUSPENSION_SEC)
+    )
+    expect(parti.afficher).toBeNull()
+    const pendant = evaluer(
+      parti.etat,
+      reglages,
+      entree(au(16, 15, 2), true, false, false, INACTIVITE_SUSPENSION_SEC)
+    )
+    expect(pendant.afficher).toBeNull()
+    expect(pendant.effets).toEqual([])
+
+    const retour = evaluer(pendant.etat, reglages, entree(au(16, 15, 3), true, false, false, 0))
+    expect(retour.afficher).toBeNull()
+    expect(retour.effets.some((effet) => effet.rappelId === id && !effet.desactiver)).toBe(true)
+
+    const suivi = appliquerEffets(reglages, retour.effets)
+    const apres = evaluer(retour.etat, suivi, entree(au(16, 15, 4)))
+    expect(apres.afficher).toBeNull()
+  })
+
+  it('ne change pas l’heure de fin d’une séquence, et n’en montre qu’une au retour', () => {
+    const reglages = seulement(['yeux', 'bouger'])
+    const finMs = au(16, 8, 25).getTime()
+    let etat = lancer(reglages, au(16, 8, 0))
+    etat = evaluer(etat, reglages, entree(au(16, 8, 10), true, false, false, 0)).etat
+    etat = evaluer(
+      etat,
+      reglages,
+      entree(au(16, 8, 16), true, false, false, INACTIVITE_SUSPENSION_SEC)
+    ).etat
+    expect(etat.serie?.finMs).toBe(finMs)
+    expect(etat.notification).toBeNull()
+
+    const absente = evaluer(
+      etat,
+      reglages,
+      entree(au(16, 8, 30), true, false, false, INACTIVITE_SUSPENSION_SEC)
+    )
+    expect(absente.afficher).toBeNull()
+    expect(absente.etat.serie?.finMs).toBe(finMs)
+
+    const retour = evaluer(
+      absente.etat,
+      reglages,
+      entree(au(16, 8, 31), true, false, false, ACCALMIE_SECONDES)
+    )
+    expect(retour.etat.serie?.finMs).toBe(finMs)
+    expect(retour.etat.notification?.genre).toBe('finSequence')
+    expect(retour.afficher?.rappelId).toBe(retour.etat.notification?.rappelId)
+  })
+})
+
+describe('mode en réunion', () => {
+  it('suspend une heure par la même veille, puis repart de zéro sans carte immédiate', () => {
+    const base = seulement(['yeux'])
+    const yeux = parType(base, 'yeux')
+    const fin = au(16, 9, 0)
+    const reglages: Reglages = {
+      ...base,
+      veilleJusqua: fin.toISOString(),
+      veilleMotif: 'reunion'
+    }
+    const etat = amorcer(reglages, au(16, 8, 0))
+    const pendant = evaluer(etat, reglages, entree(au(16, 8, 59)))
+    expect(pendant.afficher).toBeNull()
+    expect(pendant.etat.compteursMs[yeux.id] ?? 0).toBe(0)
+    expect(pendant.etat.veilleActive).toBe(true)
+
+    const sansSuspension: Reglages = { ...base }
+    const reprise = evaluer(pendant.etat, sansSuspension, entree(fin))
+    expect(reprise.afficher).toBeNull()
+    expect(reprise.etat.veilleActive).toBe(false)
+    expect(reprise.etat.compteursMs[yeux.id] ?? 0).toBe(0)
+    const tropTot = evaluer(reprise.etat, sansSuspension, entree(au(16, 9, 19)))
+    expect(tropTot.afficher).toBeNull()
+    const montre = evaluer(tropTot.etat, sansSuspension, entree(au(16, 9, 20)))
+    expect(montre.afficher?.rappelId).toBe(yeux.id)
+  })
+
+  it('reprendre retire l’unique suspension', () => {
+    const base = seulement(['yeux'])
+    const yeux = parType(base, 'yeux')
+    const enReunion: Reglages = {
+      ...base,
+      veilleJusqua: au(16, 9, 0).toISOString(),
+      veilleMotif: 'reunion'
+    }
+    let etat = amorcer(enReunion, au(16, 8, 0))
+    etat = evaluer(etat, enReunion, entree(au(16, 8, 10))).etat
+    expect(etat.veilleActive).toBe(true)
+
+    const reprise = evaluer(etat, base, entree(au(16, 8, 10)))
+    expect(reprise.afficher).toBeNull()
+    expect(reprise.etat.compteursMs[yeux.id] ?? 0).toBe(0)
+    expect(reprise.etat.veilleActive).toBe(false)
   })
 })
 

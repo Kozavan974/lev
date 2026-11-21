@@ -30,7 +30,7 @@ import { lienAutorise } from './liens'
 import { appliquerResultatMaj, majDisponibleDepuis, verifierMiseAJourDistante } from './misesAJour'
 import { ecranApresRelance, suiteApresAccueil } from './demarrage'
 import { appliquerDemarrageAutomatique, barreSystemeClaire } from './platform'
-import type { TypeRappel } from './modeles'
+import type { Reglages, TypeRappel } from './modeles'
 import { notificationEstVisible } from './notificationFenetre'
 import { calculerEcheances } from './scheduler/echeances'
 import { bientotPourIcone, type EtatMoteur } from './scheduler/moteur'
@@ -161,12 +161,20 @@ function agir(action: ActionEcran): void {
   reevaluer()
 }
 
-export function mettreEnVeilleUneHeure(): void {
-  agir({ type: 'veille', duree: '1h' })
+export function mettreEnVeille(duree: '30min' | 'demain'): void {
+  agir({ type: 'veille', duree })
+}
+
+export function mettreEnReunion(): void {
+  agir({ type: 'reunion' })
 }
 
 export function reprendreRappels(): void {
   agir({ type: 'reprendre' })
+}
+
+export function reprendreReunion(): void {
+  agir({ type: 'reprendreReunion' })
 }
 
 export function ouvrirEcran(cible: EcranNavigation): void {
@@ -271,15 +279,10 @@ function etatCourant(): EtatEcran {
   const reglages = lireReglages()
   const maintenant = new Date()
   const moteur = lireEtatMoteur()
-  const finVeille = reglages.veilleJusqua ? new Date(reglages.veilleJusqua).getTime() : Number.NaN
-  const veilleActive = Number.isFinite(finVeille) && finVeille > maintenant.getTime()
   return {
     reglages,
     echeances: calculerEcheances(moteur, reglages, maintenant),
-    veilleLibelle:
-      veilleActive && reglages.veilleJusqua
-        ? formaterInstant(new Date(reglages.veilleJusqua))
-        : null,
+    ...libellesSuspension(reglages, maintenant),
     pauseSpontanee: libellePause(moteur),
     bandeau: bandeauCourant(),
     sequence: etatSequence(moteur, maintenant.getTime()),
@@ -320,6 +323,28 @@ function etatSequence(moteur: EtatMoteur, maintenantMs: number): EtatSequence {
   }
 }
 
+function libellesSuspension(
+  reglages: Reglages,
+  maintenant: Date
+): { veilleLibelle: string | null; reunionLibelle: string | null } {
+  const heure = libelleJusqua(reglages.veilleJusqua, maintenant)
+  if (heure && reglages.veilleMotif === 'reunion') {
+    return { veilleLibelle: null, reunionLibelle: heure }
+  }
+  return { veilleLibelle: heure, reunionLibelle: null }
+}
+
+function libelleJusqua(iso: string | undefined, maintenant: Date): string | null {
+  if (!iso) {
+    return null
+  }
+  const fin = new Date(iso).getTime()
+  if (!Number.isFinite(fin) || fin <= maintenant.getTime()) {
+    return null
+  }
+  return formaterInstant(new Date(iso))
+}
+
 function libellePause(moteur: EtatMoteur): { heure: string } | null {
   if (!moteur.lignePause) {
     return null
@@ -340,22 +365,32 @@ function bandeauCourant(): EtatEcran['bandeau'] {
 function diffuser(): void {
   const etat = etatCourant()
   definirInfobulle(
-    choisirInfobulle(etat.sequence, etat.veilleLibelle, etat.echeances[0]?.heure ?? null, {
-      travail: textes.tray.sequenceTravail,
-      pause: textes.tray.sequencePause,
-      grande: textes.tray.sequenceGrande,
-      veille: textes.tray.veille,
-      prochaine: textes.tray.prochaine,
-      repos: textes.tray.infobulle
-    })
+    choisirInfobulle(
+      etat.sequence,
+      etat.reunionLibelle,
+      etat.veilleLibelle,
+      etat.echeances[0]?.heure ?? null,
+      {
+        travail: textes.tray.sequenceTravail,
+        pause: textes.tray.sequencePause,
+        grande: textes.tray.sequenceGrande,
+        reunion: textes.tray.reunionInfobulle,
+        veille: textes.tray.veille,
+        prochaine: textes.tray.prochaine,
+        repos: textes.tray.infobulle
+      }
+    )
   )
-  if (etat.sequence?.phase === 'travail' && etat.veilleLibelle === null) {
+  const suspendu = etat.veilleLibelle !== null || etat.reunionLibelle !== null
+  if (etat.sequence?.phase === 'travail' && !suspendu) {
     definirIconeCompte(etat.sequence.icone, themeBarre())
   } else {
     definirEtatIcone(iconeCourante(etat))
   }
   definirMenuContextuel({
     enVeille: etat.veilleLibelle !== null,
+    enReunion: etat.reunionLibelle !== null,
+    reunionHeure: etat.reunionLibelle,
     sequencesActives: etat.reglages.sequences.actif,
     sequenceEnCours: etat.sequence !== null
   })
@@ -364,7 +399,7 @@ function diffuser(): void {
 }
 
 function iconeCourante(etat: EtatEcran): EtatIcone {
-  if (etat.veilleLibelle) {
+  if (etat.veilleLibelle || etat.reunionLibelle) {
     return 'veille'
   }
   if (notificationEstVisible() || bientotPourIcone(lireEtatMoteur(), etat.reglages, new Date())) {

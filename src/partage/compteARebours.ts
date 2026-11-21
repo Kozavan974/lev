@@ -18,6 +18,7 @@ export interface ModeleInfobulle {
   travail: string
   pause: string
   grande: string
+  reunion: string
   veille: string
   prochaine: string
   repos: string
@@ -50,15 +51,20 @@ export function decrireReste(
 }
 
 /**
- * Le décompte de séquence passe devant la veille et la prochaine pause.
+ * La réunion passe devant le décompte de séquence, la veille et la prochaine pause.
+ * Hors réunion, le décompte de séquence passe devant la veille.
  * Hors travail, pause courte ou grande pause, l'infobulle habituelle reste.
  */
 export function choisirInfobulle(
   sequence: SequenceInfobulle,
+  reunion: string | null,
   veille: string | null,
   prochaine: string | null,
   modeles: ModeleInfobulle
 ): string {
+  if (reunion) {
+    return remplir(modeles.reunion, { heure: reunion })
+  }
   if (sequence?.phase === 'travail') {
     return remplir(modeles.travail, {
       reste: sequence.reste,

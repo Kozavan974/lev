@@ -8,6 +8,7 @@ import {
   type Rectangle
 } from 'electron'
 import textes from '../content/fr.json'
+import { remplir } from '../partage/format'
 import { dessinerCompte, type ThemeBarre } from './iconeCompte'
 import { cheminRessource } from './ressources'
 
@@ -16,7 +17,10 @@ export type EtatIcone = 'calme' | 'bientot' | 'veille'
 export interface ActionsZone {
   clicGauche: () => void
   pauseMaintenant: () => void
-  veilleUneHeure: () => void
+  demarrerReunion: () => void
+  reprendreReunion: () => void
+  veille30: () => void
+  veilleDemain: () => void
   reprendre: () => void
   ouvrirRappels: () => void
   ouvrirAPropos: () => void
@@ -26,6 +30,8 @@ export interface ActionsZone {
 
 export interface EtatMenuContextuel {
   enVeille: boolean
+  enReunion: boolean
+  reunionHeure: string | null
   sequencesActives: boolean
   sequenceEnCours: boolean
 }
@@ -46,6 +52,8 @@ const comptes = new Map<string, NativeImage>()
 
 const MENU_DEPART: EtatMenuContextuel = {
   enVeille: false,
+  enReunion: false,
+  reunionHeure: null,
   sequencesActives: false,
   sequenceEnCours: false
 }
@@ -138,39 +146,148 @@ function imageCompte(libelle: string, theme: ThemeBarre): NativeImage {
   return image
 }
 
-function menuContextuel(etat: EtatMenuContextuel): Menu {
-  const actions = actionsZone
-  const lignes: MenuItemConstructorOptions[] = []
+export type ActionMenuContextuel =
+  | 'sequence'
+  | 'arreterSequences'
+  | 'pause'
+  | 'reunion'
+  | 'reprendreReunion'
+  | 'reprendre'
+  | 'rappels'
+  | 'apropos'
+  | 'quitter'
+
+export interface EntreeMenuContextuel {
+  label: string
+  action: ActionMenuContextuel | null
+  sousMenu: readonly { label: string; action: 'veille30' | 'veilleDemain' }[] | null
+}
+
+/** Libellés du clic droit, sans Electron, pour les tests. */
+export function entreesMenuContextuel(etat: EtatMenuContextuel): EntreeMenuContextuel[] {
+  const lignes: EntreeMenuContextuel[] = []
   if (etat.sequencesActives) {
     lignes.push({
       label: etat.sequenceEnCours ? textes.tray.arreterSequences : textes.tray.sequence,
-      click: () => {
-        if (etat.sequenceEnCours) {
-          actions?.arreterSequences()
-        } else {
-          actions?.demarrerSequence()
-        }
-      }
+      action: etat.sequenceEnCours ? 'arreterSequences' : 'sequence',
+      sousMenu: null
     })
   }
   lignes.push(
-    { label: textes.tray.pause, click: () => actions?.pauseMaintenant() },
+    { label: textes.tray.pause, action: 'pause', sousMenu: null },
     {
-      label: etat.enVeille ? textes.tray.reprendre : textes.tray.veille1h,
-      click: () => (etat.enVeille ? actions?.reprendre() : actions?.veilleUneHeure())
-    },
-    { type: 'separator' },
-    { label: textes.tray.mesRappels, click: () => actions?.ouvrirRappels() },
-    { label: textes.tray.aPropos, click: () => actions?.ouvrirAPropos() },
-    { type: 'separator' },
-    { label: textes.tray.quitter, click: () => app.quit() }
+      label: etat.enReunion
+        ? remplir(textes.tray.reunionEnCours, { heure: etat.reunionHeure ?? '' })
+        : textes.tray.reunion,
+      action: etat.enReunion ? 'reprendreReunion' : 'reunion',
+      sousMenu: null
+    }
   )
-  return Menu.buildFromTemplate(lignes)
+  if (etat.enVeille) {
+    lignes.push({ label: textes.tray.reprendre, action: 'reprendre', sousMenu: null })
+  } else {
+    lignes.push({
+      label: textes.tray.veilleMenu,
+      action: null,
+      sousMenu: [
+        { label: textes.tray.veille30, action: 'veille30' },
+        { label: textes.tray.veilleDemain, action: 'veilleDemain' }
+      ]
+    })
+  }
+  lignes.push(
+    { label: textes.tray.mesRappels, action: 'rappels', sousMenu: null },
+    { label: textes.tray.aPropos, action: 'apropos', sousMenu: null },
+    { label: textes.tray.quitter, action: 'quitter', sousMenu: null }
+  )
+  return lignes
+}
+
+function menuContextuel(etat: EtatMenuContextuel): Menu {
+  const actions = actionsZone
+  const lignes = entreesMenuContextuel(etat).map((entree) => ligneExecutable(entree, actions))
+  const avecSeparateurs: MenuItemConstructorOptions[] = []
+  for (const ligne of lignes) {
+    if (ligne.label === textes.tray.mesRappels || ligne.label === textes.tray.quitter) {
+      avecSeparateurs.push({ type: 'separator' })
+    }
+    avecSeparateurs.push(ligne)
+  }
+  return Menu.buildFromTemplate(avecSeparateurs)
+}
+
+function ligneExecutable(
+  entree: EntreeMenuContextuel,
+  actions: ActionsZone | null
+): MenuItemConstructorOptions {
+  if (entree.sousMenu) {
+    return {
+      label: entree.label,
+      submenu: entree.sousMenu.map((ligne) => ({
+        label: ligne.label,
+        click: () => executerAction(ligne.action, actions)
+      }))
+    }
+  }
+  return {
+    label: entree.label,
+    click: () => {
+      if (entree.action) {
+        executerAction(entree.action, actions)
+      }
+    }
+  }
+}
+
+function executerAction(
+  action: ActionMenuContextuel | 'veille30' | 'veilleDemain',
+  actions: ActionsZone | null
+): void {
+  if (!actions) {
+    return
+  }
+  switch (action) {
+    case 'sequence':
+      actions.demarrerSequence()
+      return
+    case 'arreterSequences':
+      actions.arreterSequences()
+      return
+    case 'pause':
+      actions.pauseMaintenant()
+      return
+    case 'reunion':
+      actions.demarrerReunion()
+      return
+    case 'reprendreReunion':
+      actions.reprendreReunion()
+      return
+    case 'veille30':
+      actions.veille30()
+      return
+    case 'veilleDemain':
+      actions.veilleDemain()
+      return
+    case 'reprendre':
+      actions.reprendre()
+      return
+    case 'rappels':
+      actions.ouvrirRappels()
+      return
+    case 'apropos':
+      actions.ouvrirAPropos()
+      return
+    case 'quitter':
+      app.quit()
+      return
+  }
 }
 
 function memeMenu(gauche: EtatMenuContextuel, droite: EtatMenuContextuel): boolean {
   return (
     gauche.enVeille === droite.enVeille &&
+    gauche.enReunion === droite.enReunion &&
+    gauche.reunionHeure === droite.reunionHeure &&
     gauche.sequencesActives === droite.sequencesActives &&
     gauche.sequenceEnCours === droite.sequenceEnCours
   )

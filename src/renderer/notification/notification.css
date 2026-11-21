@@ -79,6 +79,10 @@ html[data-route='notification'] #racine {
   .notification-logo.logo-anime .logo-bulle {
     animation: none !important;
   }
+
+  .anneau-progression {
+    transition: none;
+  }
 }
 
 .notification-entete {
@@ -160,6 +164,48 @@ html[data-route='notification'] #racine {
 
 .notification-idee-actions {
   margin-top: var(--espace-16);
+}
+
+.notification-anneau {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espace-6);
+  margin-bottom: var(--espace-12);
+}
+
+.notification-anneau-dessin {
+  width: var(--cible-min);
+  height: var(--cible-min);
+}
+
+.anneau-piste,
+.anneau-progression {
+  fill: none;
+  stroke-width: 2.5;
+}
+
+.anneau-piste {
+  stroke: var(--trace);
+}
+
+.anneau-progression {
+  stroke: var(--action);
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: stroke-dashoffset var(--duree-pause-guidee, 0ms) linear;
+}
+
+.anneau-reste {
+  margin: 0;
+  color: var(--texte-second);
+  font-size: var(--texte-compact);
+}
+
+.notification-guide {
+  flex-basis: 100%;
 }
 
 .notification-actions {

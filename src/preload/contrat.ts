@@ -22,7 +22,8 @@ export const CANAL_NOTIFICATION = {
   autreIdee: 'notification:autre-idee',
   variante: 'notification:variante',
   masquee: 'notification:masquee',
-  retirer: 'notification:retirer'
+  retirer: 'notification:retirer',
+  pauseGuidee: 'notification:pause-guidee'
 } as const
 
 export type ReponseBouton =
@@ -92,8 +93,9 @@ export type ClefOption =
   | 'son'
   | 'lancerAuDemarrage'
   | 'verifierMajAuto'
+  | 'suspendreInactivite'
 
-export type DureeVeille = '30min' | '1h' | 'demain'
+export type DureeVeille = '30min' | 'demain'
 
 export const ECRANS_NAVIGATION = ['rappels', 'apropos', 'poste', 'respiration'] as const
 export type EcranNavigation = (typeof ECRANS_NAVIGATION)[number]
@@ -103,6 +105,7 @@ export interface EtatEcran {
   reglages: Reglages
   echeances: { nom: string; heure: string }[]
   veilleLibelle: string | null
+  reunionLibelle: string | null
   pauseSpontanee: { heure: string } | null
   bandeau: { genre: 'retrait'; nom: string } | { genre: 'restauration' } | null
   sequence: EtatSequence
@@ -149,6 +152,8 @@ export type ActionEcran =
   | { type: 'theme'; theme: Theme }
   | { type: 'veille'; duree: DureeVeille }
   | { type: 'reprendre' }
+  | { type: 'reunion' }
+  | { type: 'reprendreReunion' }
   | { type: 'pause' }
   | { type: 'demarrerSequence' }
   | { type: 'arreterSequences' }
@@ -180,6 +185,7 @@ export interface ApiLev {
   autreIdee(): void
   definirVariante(assis: boolean): void
   masquageTermine(): void
+  pauseGuidee(): void
   surRetrait(recevoir: () => void): () => void
   lireEtat(): Promise<EtatEcran>
   surEtat(recevoir: (etat: EtatEcran) => void): () => void
@@ -261,12 +267,15 @@ const CLEFS_OPTION = [
   'mouvementsAssis',
   'son',
   'lancerAuDemarrage',
-  'verifierMajAuto'
+  'verifierMajAuto',
+  'suspendreInactivite'
 ] as const
-const DUREES_VEILLE = ['30min', '1h', 'demain'] as const
+const DUREES_VEILLE = ['30min', 'demain'] as const
 const ACTIONS_SANS_CHARGE = [
   'annuler',
   'reprendre',
+  'reunion',
+  'reprendreReunion',
   'pause',
   'ouvrirRappels',
   'quitter',
@@ -349,6 +358,9 @@ export function estEtatEcran(valeur: unknown): valeur is EtatEcran {
     return false
   }
   if (valeur.veilleLibelle !== null && typeof valeur.veilleLibelle !== 'string') {
+    return false
+  }
+  if (valeur.reunionLibelle !== null && typeof valeur.reunionLibelle !== 'string') {
     return false
   }
   if (!estPauseSpontanee(valeur.pauseSpontanee)) {

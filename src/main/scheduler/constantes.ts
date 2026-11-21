@@ -25,6 +25,12 @@ export const PAUSE_BOUGER_MS = 5 * 60 * 1000
 /** Inactivité, en secondes, qui compte comme une pause spontanée. */
 export const PAUSE_SPONTANEE_SEC = 3 * 60
 
+/** Inactivité, en secondes, à partir de laquelle le décompte se suspend. */
+export const INACTIVITE_SUSPENSION_SEC = 5 * 60
+
+/** Durée exacte du mode « En réunion ». */
+export const REUNION_MS = 60 * 60 * 1000
+
 /** Durée d'affichage de la ligne qui signale une pause spontanée. */
 export const LIGNE_PAUSE_SPONTANEE_MS = 30 * 60 * 1000
 

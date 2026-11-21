@@ -20,6 +20,7 @@ import {
   LIGNE_PAUSE_SPONTANEE_MS,
   FIN_PAUSE_SANS_REPONSE_MS,
   MESSAGE_REPONSE_MS,
+  INACTIVITE_SUSPENSION_SEC,
   PAUSE_BOUGER_MS,
   PAUSE_SPONTANEE_SEC,
   REPORT_CINQ_MIN_MS,
@@ -107,7 +108,10 @@ export interface EtatMoteur {
   compteursMs: Readonly<Record<string, number>>
   dernierInstantMs: number | null
   etaitDansHoraires: boolean | null
+  /** Suspension active au passage précédent : veille ou réunion. */
   veilleActive: boolean
+  /** Inactivité d'au moins 5 minutes, en attente du retour. */
+  inactiviteSuspendue: boolean
   verrouilleDepuisMs: number | null
   notification: NotificationEnCours | null
   bloqueJusquaMs: number | null
@@ -202,6 +206,7 @@ export function creerEtat(): EtatMoteur {
     dernierInstantMs: null,
     etaitDansHoraires: null,
     veilleActive: false,
+    inactiviteSuspendue: false,
     verrouilleDepuisMs: null,
     notification: null,
     bloqueJusquaMs: null,
@@ -231,6 +236,11 @@ export function evaluer(
   let courant = cloner(etat)
   const dansHoraires = estDansHoraires(entree.maintenant, reglages.horaires)
   const enVeille = estVeilleActive(reglages, maintenantMs)
+  const suspendue = inactiviteLongue(reglages, entree)
+  const cloturerInactivite =
+    courant.inactiviteSuspendue &&
+    !suspendue &&
+    (entree.sessionOuverte || !reglages.options.suspendreInactivite)
 
   const vientDeDeverrouiller = entree.sessionOuverte && courant.verrouilleDepuisMs !== null
   let reset = entree.reveil
@@ -256,6 +266,8 @@ export function evaluer(
   const peutCrediter =
     !reset &&
     !vientDeDeverrouiller &&
+    !suspendue &&
+    !cloturerInactivite &&
     courant.dernierInstantMs !== null &&
     entree.sessionOuverte &&
     dansHoraires &&
@@ -276,11 +288,25 @@ export function evaluer(
     courant = { ...courant, bloqueJusquaMs: null }
   }
 
+  if (cloturerInactivite) {
+    courant = cloturerApresInactivite(courant, reglages, maintenantMs)
+  }
+
   courant = {
     ...courant,
     dernierInstantMs: maintenantMs,
     etaitDansHoraires: dansHoraires,
-    veilleActive: enVeille
+    veilleActive: enVeille,
+    inactiviteSuspendue: suspendue
+      ? true
+      : cloturerInactivite
+        ? false
+        : courant.inactiviteSuspendue &&
+          !entree.sessionOuverte &&
+          reglages.options.suspendreInactivite
+  }
+  if (suspendue && courant.attente) {
+    courant = { ...courant, attente: null }
   }
   courant = traiterPauseSpontanee(courant, reglages, entree, maintenantMs)
 
@@ -300,12 +326,37 @@ export function evaluer(
     )
   }
 
-  const sequence = montrerSequence(courant, reglages, entree, enVeille)
+  const retenuAffichage = enVeille || suspendue
+  const sequence = montrerSequence(
+    courant,
+    reglages,
+    entree,
+    retenuAffichage,
+    cloturerInactivite
+  )
   if (sequence) {
     return sequence
   }
 
-  const resolution = resoudreHeureFixe(courant, reglages, entree, enVeille)
+  const resolution = resoudreHeureFixe(
+    courant,
+    reglages,
+    entree,
+    retenuAffichage,
+    cloturerInactivite
+  )
+
+  if (suspendue) {
+    return finir(
+      resolution.etat,
+      null,
+      resolution.effets,
+      'normale',
+      false,
+      reglages,
+      entree.maintenant
+    )
+  }
 
   if (resolution.afficher) {
     return conclure(
@@ -935,11 +986,39 @@ function compareRappel(a: Rappel, b: Rappel): number {
 }
 
 function estVeilleActive(reglages: Reglages, maintenantMs: number): boolean {
-  if (!reglages.veilleJusqua) {
+  return instantFutur(reglages.veilleJusqua, maintenantMs)
+}
+
+function instantFutur(iso: string | undefined, maintenantMs: number): boolean {
+  if (!iso) {
     return false
   }
-  const fin = new Date(reglages.veilleJusqua).getTime()
+  const fin = new Date(iso).getTime()
   return Number.isFinite(fin) && fin > maintenantMs
+}
+
+function inactiviteLongue(reglages: Reglages, entree: EntreeMoteur): boolean {
+  return (
+    reglages.options.suspendreInactivite &&
+    entree.sessionOuverte &&
+    entree.inactiviteSec >= INACTIVITE_SUSPENSION_SEC
+  )
+}
+
+/** Au retour : récurrents à zéro, report échu oublié, sans ligne de menu. */
+function cloturerApresInactivite(
+  etat: EtatMoteur,
+  reglages: Reglages,
+  maintenantMs: number
+): EtatMoteur {
+  const report = etat.report && etat.report.jusquaMs <= maintenantMs ? null : etat.report
+  return {
+    ...remettreRecurrentsAZero(etat, reglages),
+    attente: null,
+    report,
+    heureFixeDifferee: null,
+    inactiviteSuspendue: false
+  }
 }
 
 function cloner(etat: EtatMoteur): EtatMoteur {
@@ -981,7 +1060,8 @@ function resoudreHeureFixe(
   etat: EtatMoteur,
   reglages: Reglages,
   entree: EntreeMoteur,
-  enVeille: boolean
+  enVeille: boolean,
+  abandonnerEchues = false
 ): ResolutionHeure {
   const maintenantMs = entree.maintenant.getTime()
   const retenu = !entree.sessionOuverte || enVeille
@@ -1014,6 +1094,17 @@ function resoudreHeureFixe(
   }
 
   dedans.sort((a, b) => a.prevuMs - b.prevuMs)
+  if (abandonnerEchues) {
+    return resolutionFermee({
+      etat: { ...etat, heureFixeDifferee: null },
+      effets: [
+        ...effets,
+        ...dedans.map((occurrence) => effetDe(occurrence.rappel, occurrence.cle))
+      ],
+      afficher: null,
+      bloqueRecurrents: false
+    })
+  }
   const principal = dedans[0]
   const proche =
     avant.some((occurrence) => occurrence.prevuMs - maintenantMs <= FENETRE_PRIORITE_MS) ||
@@ -1198,7 +1289,8 @@ function montrerSequence(
   etat: EtatMoteur,
   reglages: Reglages,
   entree: EntreeMoteur,
-  enVeille: boolean
+  enVeille: boolean,
+  abandonnerEchues = false
 ): DecisionMoteur | null {
   const maintenantMs = entree.maintenant.getTime()
   const serie = etat.serie
@@ -1215,7 +1307,13 @@ function montrerSequence(
   }
 
   const notification = notificationDeSequence(serie, maintenantMs)
-  const resolution = resoudreHeureFixe({ ...etat, notification }, reglages, entree, enVeille)
+  const resolution = resoudreHeureFixe(
+    { ...etat, notification },
+    reglages,
+    entree,
+    enVeille,
+    abandonnerEchues
+  )
   const etatAffiche = ecarterDejaDus(
     {
       ...resolution.etat,

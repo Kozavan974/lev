@@ -63,6 +63,9 @@ const api: ApiLev = {
   masquageTermine: () => {
     ipcRenderer.send(CANAL_NOTIFICATION.masquee)
   },
+  pauseGuidee: () => {
+    ipcRenderer.send(CANAL_NOTIFICATION.pauseGuidee)
+  },
   surRetrait: (recevoir) => {
     const ecouter = (): void => {
       recevoir()

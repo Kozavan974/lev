@@ -46,7 +46,7 @@ function instantRappel(
     return null
   }
   if (rappel.mode === 'heure') {
-    return instantHeureFixe(rappel, maintenant, finVeilleMs(reglages, maintenant))
+    return instantHeureFixe(rappel, maintenant, finSuspensionMs(reglages, maintenant))
   }
   return instantRecurrent(rappel, etat, reglages, maintenant)
 }
@@ -63,7 +63,7 @@ function instantRecurrent(
   const periode = rappel.frequenceMin * 60 * 1000
   let depart = new Date(maintenant)
   let restant = Math.max(0, periode - (etat.compteursMs[rappel.id] ?? 0))
-  const veille = finVeilleMs(reglages, maintenant)
+  const veille = finSuspensionMs(reglages, maintenant)
   if (veille !== null && veille > depart.getTime()) {
     depart = new Date(veille)
     restant = periode
@@ -110,11 +110,15 @@ function instantHeureFixe(rappel: Rappel, maintenant: Date, veilleFin: number | 
   return null
 }
 
-function finVeilleMs(reglages: Reglages, maintenant: Date): number | null {
-  if (!reglages.veilleJusqua) {
+function finSuspensionMs(reglages: Reglages, maintenant: Date): number | null {
+  return finSiFuture(reglages.veilleJusqua, maintenant)
+}
+
+function finSiFuture(iso: string | undefined, maintenant: Date): number | null {
+  if (!iso) {
     return null
   }
-  const fin = new Date(reglages.veilleJusqua).getTime()
+  const fin = new Date(iso).getTime()
   if (!Number.isFinite(fin) || fin <= maintenant.getTime()) {
     return null
   }

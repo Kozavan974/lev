@@ -69,7 +69,8 @@ export function reglagesParDefaut(): Reglages {
       mouvementsAssis: false,
       son: false,
       lancerAuDemarrage: true,
-      verifierMajAuto: true
+      verifierMajAuto: true,
+      suspendreInactivite: true
     },
     theme: 'auto',
     respiration: { inspiration: 4, pleine: 4, expiration: 4, vide: 4, minutes: 1 },
@@ -99,6 +100,7 @@ function lireReglagesValides(donnees: unknown): Reglages | null {
   const respiration = lireRespiration(donnees.respiration)
   const guidePoste = lireGuide(donnees.guidePoste)
   const veille = lireOptionnel(donnees, 'veilleJusqua', estInstant)
+  const reunion = lireOptionnel(donnees, 'reunionJusqua', estInstant)
   const verification = lireOptionnel(donnees, 'derniereVerificationMaj', estInstant)
   const versionVue = lireOptionnel(donnees, 'derniereVersionVue', estVersionSemVer)
   if (
@@ -109,6 +111,7 @@ function lireReglagesValides(donnees: unknown): Reglages | null {
     !respiration ||
     !guidePoste ||
     !veille.ok ||
+    !reunion.ok ||
     !verification.ok ||
     !versionVue.ok ||
     !estParmi(donnees.theme, THEMES)
@@ -126,8 +129,16 @@ function lireReglagesValides(donnees: unknown): Reglages | null {
     respiration,
     guidePoste
   }
-  if (veille.valeur !== undefined) {
-    reglages.veilleJusqua = veille.valeur
+  const suspension = retenirSuspension(
+    veille.valeur,
+    reunion.valeur,
+    donnees.veilleMotif === 'reunion'
+  )
+  if (suspension.veilleJusqua !== undefined) {
+    reglages.veilleJusqua = suspension.veilleJusqua
+  }
+  if (suspension.veilleMotif !== undefined) {
+    reglages.veilleMotif = suspension.veilleMotif
   }
   if (verification.valeur !== undefined) {
     reglages.derniereVerificationMaj = verification.valeur
@@ -266,6 +277,26 @@ function lireSequences(valeur: unknown): Reglages['sequences'] | null {
   }
 }
 
+/** Une seule suspension. Une réunion déjà écrite dans `reunionJusqua` y est reprise. */
+function retenirSuspension(
+  veille: string | undefined,
+  reunion: string | undefined,
+  motifReunion: boolean
+): { veilleJusqua?: string; veilleMotif?: 'reunion' } {
+  if (reunion !== undefined && (veille === undefined || instantMs(reunion) >= instantMs(veille))) {
+    return { veilleJusqua: reunion, veilleMotif: 'reunion' }
+  }
+  if (veille === undefined) {
+    return {}
+  }
+  return motifReunion ? { veilleJusqua: veille, veilleMotif: 'reunion' } : { veilleJusqua: veille }
+}
+
+function instantMs(iso: string): number {
+  const fin = new Date(iso).getTime()
+  return Number.isFinite(fin) ? fin : 0
+}
+
 function lireOptions(valeur: unknown): Reglages['options'] | null {
   if (!estEnregistrement(valeur)) {
     return null
@@ -279,6 +310,8 @@ function lireOptions(valeur: unknown): Reglages['options'] | null {
   const lancerAuDemarrage = lireBooleen(valeur.lancerAuDemarrage)
   const verifierMajAuto =
     valeur.verifierMajAuto === undefined ? true : lireBooleen(valeur.verifierMajAuto)
+  const suspendreInactivite =
+    valeur.suspendreInactivite === undefined ? true : lireBooleen(valeur.suspendreInactivite)
   if (
     attendreAccalmie === null ||
     pausesSpontanees === null ||
@@ -287,7 +320,8 @@ function lireOptions(valeur: unknown): Reglages['options'] | null {
     mouvementsAssis === null ||
     son === null ||
     lancerAuDemarrage === null ||
-    verifierMajAuto === null
+    verifierMajAuto === null ||
+    suspendreInactivite === null
   ) {
     return null
   }
@@ -299,7 +333,8 @@ function lireOptions(valeur: unknown): Reglages['options'] | null {
     mouvementsAssis,
     son,
     lancerAuDemarrage,
-    verifierMajAuto
+    verifierMajAuto,
+    suspendreInactivite
   }
 }
 

@@ -19,6 +19,7 @@ const INFOBULLE: ModeleInfobulle = {
   travail: textes.tray.sequenceTravail,
   pause: textes.tray.sequencePause,
   grande: textes.tray.sequenceGrande,
+  reunion: textes.tray.reunionInfobulle,
   veille: textes.tray.veille,
   prochaine: textes.tray.prochaine,
   repos: textes.tray.infobulle
@@ -65,6 +66,7 @@ describe('compte à rebours', () => {
     expect(
       choisirInfobulle(
         { phase: 'travail', reste: '18 min restantes', rang: 2, total: 4 },
+        null,
         '11h00',
         '10h40',
         INFOBULLE
@@ -73,6 +75,7 @@ describe('compte à rebours', () => {
     expect(
       choisirInfobulle(
         { phase: 'pause', grande: false, reste: '4 min restantes' },
+        null,
         null,
         '10h40',
         INFOBULLE
@@ -83,19 +86,23 @@ describe('compte à rebours', () => {
         { phase: 'pause', grande: true, reste: '15 min restantes' },
         null,
         null,
+        null,
         INFOBULLE
       )
     ).toBe('Lèv — Grande pause : 15 min restantes')
   })
 
   it('hors séquence, garde la prochaine pause, la veille, ou le nom', () => {
-    expect(choisirInfobulle(null, null, '10h40', INFOBULLE)).toBe(
+    expect(choisirInfobulle(null, null, null, '10h40', INFOBULLE)).toBe(
       remplir(textes.tray.prochaine, { heure: '10h40' })
     )
-    expect(choisirInfobulle({ phase: 'reprise' }, '11h00', '10h40', INFOBULLE)).toBe(
+    expect(choisirInfobulle({ phase: 'reprise' }, null, '11h00', '10h40', INFOBULLE)).toBe(
       remplir(textes.tray.veille, { heure: '11h00' })
     )
-    expect(choisirInfobulle(null, null, null, INFOBULLE)).toBe('Lèv')
+    expect(choisirInfobulle(null, '15h40', '11h00', '10h40', INFOBULLE)).toBe(
+      remplir(textes.tray.reunionInfobulle, { heure: '15h40' })
+    )
+    expect(choisirInfobulle(null, null, null, null, INFOBULLE)).toBe('Lèv')
   })
 
   it('aligne le menu et la ligne des séquences sur le même décompte', () => {

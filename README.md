@@ -10,7 +10,8 @@ L'installateur Windows est publié sur les [Releases GitHub](https://github.com/
 
 ## Ce que Lèv propose
 
-- **Pauses actives.** Des invitations pour les yeux, pour bouger, pour boire, pour la posture. Chaque mouvement a une variante à faire assis.
+- **Pauses actives.** Des invitations pour les yeux, pour bouger, pour boire, pour la posture. Chaque mouvement a une variante à faire assis. Sur un rappel pour bouger, « Faire la pause (30 s) » guide le geste, puis la fenêtre se ferme.
+- **Absence et réunion.** Si tu t'absentes au moins 5 minutes, les rappels se suspendent et repartent à ton retour, sans rattrapage. Tu peux décocher cette détection. « En réunion (1 h) » met les rappels en pause pour une heure, et indique l'heure de reprise.
 - **Séquence de travail.** Un temps de concentration, une courte pause, puis une grande pause. L'icône indique le temps qui reste.
 - **Respiration guidée.** Un rythme à suivre, le temps d'un cycle, puis l'écran se ferme.
 - **Ergonomie du poste.** Cinq réglages simples pour l'écran, le siège et la posture.
@@ -31,4 +32,4 @@ npm test
 npm run dist
 ```
 
-`npm run dev` lance Lèv en développement. `npm test` exécute la suite Vitest. `npm run dist` produit l'installateur Windows (`Lev-Setup-1.1.1.exe`).
+`npm run dev` lance Lèv en développement. `npm test` exécute la suite Vitest. `npm run dist` produit l'installateur Windows (`Lev-Setup-1.2.0.exe`).

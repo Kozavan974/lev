@@ -4,6 +4,7 @@ import type { ReponseBouton, VueMessage, VueNotification } from '../../preload/c
 import { Logo } from '../shared/Logo'
 import { jouerPourCycle } from '../shared/son'
 import { PictoBouger, PictoLibre, PictoPosture, PictoYeux } from '../shared/Pictogrammes'
+import { AnneauPause } from './AnneauPause'
 import { Parcours } from './Parcours'
 import './notification.css'
 
@@ -11,6 +12,7 @@ export function Notification(): React.JSX.Element {
   const [vue, setVue] = useState<VueNotification | null>(null)
   const [message, setMessage] = useState<VueMessage | null>(null)
   const [sortie, setSortie] = useState(false)
+  const [guide, setGuide] = useState(false)
   const carteRef = useRef<HTMLElement>(null)
   const vueRef = useRef(vue)
   const messageRef = useRef(message)
@@ -21,6 +23,7 @@ export function Notification(): React.JSX.Element {
   const echeance = useRef(0)
   const minuteur = useRef<number | null>(null)
   const ignoreExpiration = useRef(false)
+  const guideRef = useRef(false)
   const generation = useRef(0)
   const repondreRef = useRef<(reponse: ReponseBouton) => void>(() => undefined)
   const expirerRef = useRef<() => void>(() => undefined)
@@ -40,7 +43,8 @@ export function Notification(): React.JSX.Element {
       vueRef.current !== null &&
       messageRef.current === null &&
       !sortieRef.current &&
-      !ignoreExpiration.current,
+      !ignoreExpiration.current &&
+      !guideRef.current,
     []
   )
 
@@ -85,6 +89,28 @@ export function Notification(): React.JSX.Element {
     [arreterDisparition, lancerDisparition, peutCompter]
   )
 
+  const demarrerGuide = useCallback((): void => {
+    if (!vueRef.current || messageRef.current || ignoreExpiration.current || guideRef.current) {
+      return
+    }
+    if (!vueRef.current.idee) {
+      return
+    }
+    guideRef.current = true
+    setGuide(true)
+    arreterDisparition()
+  }, [arreterDisparition])
+
+  const terminerGuide = useCallback((): void => {
+    if (!vueRef.current || ignoreExpiration.current) {
+      return
+    }
+    ignoreExpiration.current = true
+    guideRef.current = false
+    arreterDisparition()
+    window.lev.pauseGuidee()
+  }, [arreterDisparition])
+
   const repondre = useCallback(
     (reponse: ReponseBouton): void => {
       if (!vueRef.current || messageRef.current || ignoreExpiration.current) {
@@ -118,8 +144,10 @@ export function Notification(): React.JSX.Element {
     const retirerVue = window.lev.surAffichage((recue) => {
       generation.current += 1
       ignoreExpiration.current = false
+      guideRef.current = false
       survol.current = false
       setSortie(false)
+      setGuide(false)
       setMessage(null)
       setVue(recue)
       jouerPourCycle(recue.cycle, recue.son)
@@ -208,7 +236,7 @@ export function Notification(): React.JSX.Element {
     return () => {
       observateur.disconnect()
     }
-  }, [vue, message, sortie])
+  }, [vue, message, sortie, guide])
 
   useEffect(() => {
     const gagner = (): void => {
@@ -292,23 +320,28 @@ export function Notification(): React.JSX.Element {
               </header>
               {vue.idee ? (
                 <div className="notification-idee">
+                  {guide ? <AnneauPause onTerminer={terminerGuide} /> : null}
                   <p className="notification-idee-texte">{vue.idee}</p>
-                  <div className="notification-idee-actions">
-                    <button
-                      type="button"
-                      className="bouton bouton-secondaire"
-                      onClick={() => window.lev.autreIdee()}
-                    >
-                      {textes.notification.idee.autre}
-                    </button>
-                    <button
-                      type="button"
-                      className="bouton bouton-secondaire"
-                      onClick={() => window.lev.definirVariante(!vue.assis)}
-                    >
-                      {vue.assis ? textes.notification.idee.debout : textes.notification.idee.assis}
-                    </button>
-                  </div>
+                  {guide ? null : (
+                    <div className="notification-idee-actions">
+                      <button
+                        type="button"
+                        className="bouton bouton-secondaire"
+                        onClick={() => window.lev.autreIdee()}
+                      >
+                        {textes.notification.idee.autre}
+                      </button>
+                      <button
+                        type="button"
+                        className="bouton bouton-secondaire"
+                        onClick={() => window.lev.definirVariante(!vue.assis)}
+                      >
+                        {vue.assis
+                          ? textes.notification.idee.debout
+                          : textes.notification.idee.assis}
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : null}
               {vue.parcours ? (
@@ -353,8 +386,17 @@ export function Notification(): React.JSX.Element {
                   </button>
                 </div>
               ) : null}
-              {vue.boutons === 'trois' ? (
+              {vue.boutons === 'trois' && !guide ? (
                 <div className="notification-actions">
+                  {vue.idee ? (
+                    <button
+                      type="button"
+                      className="bouton bouton-secondaire notification-guide"
+                      onClick={demarrerGuide}
+                    >
+                      {textes.notification.pauseGuidee.bouton}
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     className="bouton bouton-principal"

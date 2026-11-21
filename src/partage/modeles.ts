@@ -53,6 +53,7 @@ export interface Reglages {
     son: boolean
     lancerAuDemarrage: boolean
     verifierMajAuto: boolean
+    suspendreInactivite: boolean
   }
   theme: Theme
   respiration: {
@@ -64,6 +65,8 @@ export interface Reglages {
   }
   guidePoste: boolean[]
   veilleJusqua?: string
+  /** Présent seulement quand la suspension d'une heure vient de « En réunion ». */
+  veilleMotif?: 'reunion'
   derniereVerificationMaj?: string
   derniereVersionVue?: string
 }

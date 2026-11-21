@@ -121,6 +121,17 @@ export function Menu(): React.JSX.Element {
           >
             {textes.menu.pause}
           </button>
+          <button
+            type="button"
+            className="bouton bouton-secondaire"
+            onClick={() => {
+              window.lev.agir({ type: etat.reunionLibelle ? 'reprendreReunion' : 'reunion' })
+            }}
+          >
+            {etat.reunionLibelle
+              ? remplir(textes.menu.reunionEnCours, { heure: etat.reunionLibelle })
+              : textes.menu.reunion}
+          </button>
         </div>
         <div className="menu-separateur" />
         {etat.veilleLibelle ? (
@@ -150,15 +161,6 @@ export function Menu(): React.JSX.Element {
                 }}
               >
                 {textes.menu.veille30}
-              </button>
-              <button
-                type="button"
-                className="menu-veille"
-                onClick={() => {
-                  window.lev.agir({ type: 'veille', duree: '1h' })
-                }}
-              >
-                {textes.menu.veille1h}
               </button>
               <button
                 type="button"

@@ -204,6 +204,7 @@ interface Reglages {
     son: boolean // false
     lancerAuDemarrage: boolean // true
     verifierMajAuto: boolean // true
+    suspendreInactivite: boolean // true
   }
   theme: 'auto' | 'clair' | 'sombre' // 'auto'
   respiration: {
@@ -214,7 +215,8 @@ interface Reglages {
     minutes: 1 | 3 | 5
   }
   guidePoste: boolean[] // 5 cases cochées ou non
-  veilleJusqua?: string // date ISO, mise en veille depuis le menu
+  veilleJusqua?: string // date ISO, veille manuelle ou réunion
+  veilleMotif?: 'reunion' // présent seulement pour « En réunion (1 h) »
   derniereVerificationMaj?: string // date ISO, dernière vérification réussie
   derniereVersionVue?: string // version SemVer plus récente déjà constatée
 }
@@ -239,7 +241,7 @@ Respiration : 4, 4, 4, 4 secondes, 1 minute. Dans la maquette, le rappel « Paus
 - « Rétablir les rappels d'origine » (section 7.4) remet les quatre rappels de base à leurs valeurs de départ, sans toucher aux rappels personnels.
 - La liste `Frequence` est la même partout. Le formulaire d'ajout n'en propose que cinq en raccourci, mais la liste déroulante d'une ligne les propose toutes les sept.
 - Le fichier porte un numéro de `version`. Toute évolution du format passe par une fonction de migration dans `store.ts`.
-- `verifierMajAuto` absent d'un fichier déjà écrit vaut `true`. Le numéro de `version` reste 1 : la case et les deux dates s'ajoutent sans rendre illisibles les réglages existants. Une vérification qui trouve une version plus récente l'enregistre dans `derniereVersionVue`. Une vérification réussie qui n'en trouve pas retire cette version. Une erreur réseau ne modifie ni la date ni la version retenue.
+- `verifierMajAuto` absent d'un fichier déjà écrit vaut `true`. `suspendreInactivite` absent vaut `true`. `veilleMotif` absent signifie que la suspension, s'il y en a une, est une veille manuelle. Une ancienne `reunionJusqua` est reprise dans `veilleJusqua` avec le motif `reunion`, sans changer le numéro de `version`. Le numéro de `version` reste 1 : ces champs s'ajoutent sans rendre illisibles les réglages existants. Une vérification qui trouve une version plus récente l'enregistre dans `derniereVersionVue`. Une vérification réussie qui n'en trouve pas retire cette version. Une erreur réseau ne modifie ni la date ni la version retenue.
 - Un fichier absent ou illisible est remplacé par les valeurs par défaut, sans message d'erreur technique.
 - Seul `reportsDeSuite` garde une trace du comportement, et uniquement comme compteur remis à zéro. Aucun historique daté n'est conservé.
 
@@ -333,11 +335,20 @@ Dès qu'une séquence démarre, une notification d'accompagnement s'affiche tout
 
 ### 5.9 Ne pas déranger et mise en veille
 
-- **Mise en veille manuelle**, depuis le menu : 30 minutes, 1 heure, ou jusqu'à demain (début des horaires du prochain jour travaillé).
+- **Mise en veille manuelle**, depuis le menu ou le clic droit : 30 minutes, ou jusqu'à demain (début des horaires du prochain jour travaillé).
 - **Plein écran, présentation et appel**, si l'option est active : Electron n'a aucune fonction pour savoir ce que font les autres applications. `platform/win32.ts` appelle la fonction Windows `SHQueryUserNotificationState` (`shell32.dll`) au moyen de Koffi. Les états « application en plein écran » (`QUNS_BUSY`, `QUNS_RUNNING_D3D_FULL_SCREEN`) et « mode présentation » (`QUNS_PRESENTATION_MODE`) retiennent la notification. Une visioconférence en fenêtre est retenue aussi, lorsque le microphone est en cours d'utilisation : la même bibliothèque lit, en lecture seule, `LastUsedTimeStart` et `LastUsedTimeStop` sous `HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\microphone` et son sous-dossier `NonPackaged`. Le micro est occupé si la fin vaut 0 et le début est déjà inscrit. Aucun flux audio n'est ouvert, et le nom de l'application n'est pas conservé. La notification s'affiche à la sortie de cet état. Un appel sans microphone n'est pas détecté.
 - Cet appel, plein écran comme registre, n'est fait qu'au moment où un rappel arrive à échéance, puis toutes les 15 secondes tant qu'il est retenu. Jamais de commande PowerShell en tâche de fond.
 - **Mode « Ne pas déranger » de Windows** : il n'est pas signalé par cette fonction, et n'est lisible que par une interface non documentée de Windows, qui peut cesser de fonctionner à toute mise à jour. Il n'est pas pris en compte. L'étude technique du lot 3 dit si une solution fiable existe.
 - En conséquence, l'option s'intitule « Ne pas me déranger en plein écran, en présentation ou pendant un appel ».
+- **Mode « En réunion (1 h) »**, depuis le menu ou le clic droit : les rappels sont suspendus pendant une heure exacte. C'est la même suspension que la veille manuelle (`veilleJusqua`), avec `veilleMotif: 'reunion'` pour garder le libellé « En réunion jusqu'à 15h40 ». Une veille de 30 minutes ou jusqu'à demain remplace la réunion. Reprendre retire cette suspension, qu'elle vienne de la réunion ou de la veille. À la fin, ou dès que l'on reprend, les compteurs repartent de zéro : aucune carte accumulée ne s'affiche. L'icône est celle de la veille. L'infobulle dit « Lèv · en réunion jusqu'à 15h40 ».
+
+### 5.10 Absence de 5 minutes
+
+Si l'option est active (elle l'est par défaut) et que la session est ouverte, une inactivité d'au moins 5 minutes suspend le décompte des rappels récurrents. Aucune carte ne s'ouvre pendant cette absence : ni rappel récurrent, ni fin de séquence. Un rappel à heure fixe déjà dans sa fenêtre de 10 minutes est retenu.
+
+Au premier retour sous ce seuil, les compteurs récurrents repartent de zéro, l'attente d'accalmie est oubliée, un report « Dans 5 min » échu pendant l'absence est abandonné, et un rappel à heure fixe tombé pendant l'absence est marqué pour la journée, sans s'afficher. L'heure de fin d'une séquence ne change pas. Si elle est échue au retour, une seule carte de séquence peut s'afficher.
+
+Cette règle ne remplace pas le verrouillage de session (5.1), qui reste toujours actif, ni la pause spontanée de 3 minutes (5.2). La case se nomme « Suspendre les rappels quand je suis absent depuis 5 minutes ». La détection continue d'utiliser `powerMonitor.getSystemIdleTime()`, au passage habituel du moteur, sans sondage supplémentaire.
 
 ## 6. Icône de la zone de notification
 
@@ -351,8 +362,8 @@ Lèv vit dans la zone de notification de Windows, près de l'horloge, et reste s
 
 - **En veille** : l'icône passe en gris (#7b7f8c), L et bulle en blanc.
 - **Séquence de travail** : pendant le temps de travail, et seulement si Lèv n'est pas en veille, l'icône habituelle laisse la place à un carré de 16 px et de 32 px. Il porte les minutes restantes (`25`, `03`, `120`) ou `<1` sous une minute. Barre des tâches claire : texte `#2e2a3f` sur `#fdf1e7`. Barre sombre : texte `#f3e9e2` sur `#1c1a2b`. Le thème se lit dans `SystemUsesLightTheme`, seulement tant que ce chiffre est affiché. Si la clé manque, on suit le thème déjà résolu de l'application. Dès la pause de la séquence, l'arrêt, la reprise ou la veille, l'icône habituelle revient. Le dessin ne change qu'avec la minute ou le thème de la barre.
-- **Infobulle** au survol, hors séquence de travail : « Lèv · prochaine pause à 10h40 », ou « Lèv · en veille jusqu'à 11h00 », sinon « Lèv ». Pendant le travail : « Lèv — Séquence de travail : 18 min restantes (2/4) ». Pendant la pause courte : « Lèv — Pause de séquence : 4 min restantes ». Pendant la grande pause : « Lèv — Grande pause : 15 min restantes ». Sous une minute, le texte dit « moins d'une minute ». La reprise (« On reprend quand tu veux. ») reprend l'infobulle habituelle.
-- **Clic gauche** : ouvre le menu (section 7.2). **Clic droit** : menu système natif, texte seul, sans icône. Dans l'ordre : si les séquences de travail sont activées, « Démarrer une séquence de travail », ou « Arrêter la séquence de travail » lorsqu'une série est en cours ; « Faire une pause maintenant » (la notification « bouger », tout de suite) ; « Mettre en veille pendant 1 heure », remplacé par « Reprendre les rappels » lorsque Lèv est déjà en veille ; un séparateur ; « Mes rappels » (fenêtre Application) ; « À propos » (écran « À propos ») ; un séparateur ; « Quitter ».
+- **Infobulle** au survol, hors séquence de travail : « Lèv · prochaine pause à 10h40 », ou « Lèv · en veille jusqu'à 11h00 », sinon « Lèv ». Pendant une réunion, et devant les autres textes : « Lèv · en réunion jusqu'à 15h40 ». Pendant le travail : « Lèv — Séquence de travail : 18 min restantes (2/4) ». Pendant la pause courte : « Lèv — Pause de séquence : 4 min restantes ». Pendant la grande pause : « Lèv — Grande pause : 15 min restantes ». Sous une minute, le texte dit « moins d'une minute ». La reprise (« On reprend quand tu veux. ») reprend l'infobulle habituelle.
+- **Clic gauche** : ouvre le menu (section 7.2). **Clic droit** : menu système natif, texte seul, sans icône. Dans l'ordre : si les séquences de travail sont activées, « Démarrer une séquence de travail », ou « Arrêter la séquence de travail » lorsqu'une série est en cours ; « Faire une pause maintenant » (la notification « bouger », tout de suite) ; « En réunion (1 h) », remplacé par « Reprendre · en réunion jusqu'à 15h40 » lorsqu'une réunion est en cours ; « Mettre en veille », avec le sous-menu « 30 min » et « Jusqu'à demain », remplacé par « Reprendre les rappels » lorsqu'une veille manuelle est en cours ; pendant une réunion, ce sous-menu reste disponible et remplace la réunion ; un séparateur ; « Mes rappels » (fenêtre Application) ; « À propos » (écran « À propos ») ; un séparateur ; « Quitter ».
 - Les icônes sont des fichiers `.ico` contenant les tailles 16, 20, 24, 32 et 48 px. Les quatre fichiers sont déjà fournis : tray-calme.ico, tray-bientot.ico, tray-veille.ico, et lev.ico pour l'application (jusqu'à 256 px). À 16 et 24 px, on utilise le dessin simplifié du logo (section 9).
 - Aucun clignotement, aucune animation de l'icône dans la barre des tâches.
 
@@ -384,8 +395,9 @@ De haut en bas :
 2. Carte « Tes prochaines pauses » : les deux prochaines échéances, sous la forme « Cligner des yeux à 10h20 ». Le cas échéant, la ligne « Tu t'es levé à 10h10 : j'ai décalé la marche. »
 3. Bouton principal « Démarrer une séquence de travail », affiché seulement si la case « Séquences de travail » est cochée dans « Mes rappels ». Sinon, « Faire une pause maintenant » devient le bouton principal. Pendant une séquence, il devient « Arrêter la séquence de travail ». La carte affiche « Séquence en cours · 18 min restantes », « Pause de séquence · 4 min restantes » ou « Grande pause · 15 min restantes ». À la reprise : « On reprend quand tu veux. » Juste sous « Démarrer une séquence de travail », lorsqu'aucune séquence n'est en cours, une légende centrée en 12 px rappelle le rythme actif : « {travail} min concentré, puis {pause} min de pause ». Les boutons du menu mesurent 34 px de haut, en 13,5 px.
 4. Bouton secondaire « Faire une pause maintenant » : affiche tout de suite la notification « bouger ».
-5. « Mettre les rappels en veille », puis sur une seule ligne trois pastilles : « 30 min », « 1 heure », « Jusqu'à demain ». En veille, ce bloc est remplacé par « En veille jusqu'à 11h00 » et un bouton « Reprendre ».
-6. Liens : « Une pause par le souffle », « Bien installer mon poste », « Mes rappels », « À propos », « Quitter ». Ils mesurent 28 px de haut, en 13,5 px. Les quatre premiers ouvrent la fenêtre Application sur l'écran du même nom. Quand une version plus récente a été constatée et que la vérification automatique est cochée, un point de 8 px (`--espace-8`) en `--action` se place à côté d'« À propos ». Le libellé lu par un lecteur d'écran devient « À propos, une mise à jour est disponible ». Le menu du clic droit ne porte pas ce point.
+5. Bouton secondaire « En réunion (1 h) ». Pendant la réunion, le même bouton devient « Reprendre · en réunion jusqu'à 15h40 ».
+6. « Mettre les rappels en veille », puis sur une seule ligne deux pastilles : « 30 min », « Jusqu'à demain ». En veille manuelle, ce bloc est remplacé par « En veille jusqu'à 11h00 » et un bouton « Reprendre ». Pendant une réunion, les deux pastilles restent : elles remplacent la réunion.
+7. Liens : « Une pause par le souffle », « Bien installer mon poste », « Mes rappels », « À propos », « Quitter ». Ils mesurent 28 px de haut, en 13,5 px. Les quatre premiers ouvrent la fenêtre Application sur l'écran du même nom. Quand une version plus récente a été constatée et que la vérification automatique est cochée, un point de 8 px (`--espace-8`) en `--action` se place à côté d'« À propos ». Le libellé lu par un lecteur d'écran devient « À propos, une mise à jour est disponible ». Le menu du clic droit ne porte pas ce point.
 
 ### 7.3 Notifications
 
@@ -405,7 +417,7 @@ Toutes partagent le même gabarit : une carte en bas à droite, un pictogramme d
 
 Particularités :
 
-- **Bouger** contient un encadré avec une idée tirée au hasard, affichée directement, un bouton « Une autre idée » et un bouton « Je reste assis » (qui devient « Finalement, je me lève »). Si l'option « mouvements assis » est cochée, la variante assise s'affiche d'emblée. Une même idée ne revient pas deux fois de suite.
+- **Bouger** contient un encadré avec une idée tirée au hasard, affichée directement, un bouton « Une autre idée » et un bouton « Je reste assis » (qui devient « Finalement, je me lève »). Si l'option « mouvements assis » est cochée, la variante assise s'affiche d'emblée. Une même idée ne revient pas deux fois de suite. Un bouton secondaire « Faire la pause (30 s) » se place au-dessus des trois réponses. Il gèle l'effacement automatique, retire les boutons du conseil et les trois réponses, et affiche un anneau SVG au-dessus du conseil. L'anneau et le texte « 30 s », puis « 29 s », durent 30 secondes. Le trait avance en continu. Si les animations sont réduites, le trait et le texte sautent chaque seconde, sans transition. À zéro, l'effet est celui de « Je le fais », sans le message de 3 secondes, puis la carte disparaît en fondu et la fenêtre est détruite. Échap pendant le guide vaut « Plus tard ».
 - **Début de séquence** reprend le gabarit, sans boutons, avec le pictogramme de la marche. Les trois lignes sont espacées de 4 px ; la troisième, en `--texte-second`, est un peu plus détachée. Le nombre de minutes est celui du travail réglé (25 dans l'exemple du tableau). Le survol ou le focus fige les 8 secondes, comme pour les autres notifications.
 - **Fin de séquence** affiche la ligne de parcours : un tracé courbe avec un point par séquence, les séquences faites en turquoise, la grande pause en jaune.
 - Après une réponse, la carte affiche le message de la section 5.5 pendant 3 secondes, puis disparaît en fondu.
@@ -438,7 +450,7 @@ Une phrase se met à jour en direct : « Lèv te rappellera « M'étirer » tout
 **Autres réglages**, bloc replié par défaut. Fermé, il fait environ 40 px de haut : pas de marge interne sur le bloc, `9 px` sur `14 px` sur le titre, en 14 px, rayon de 8 px. Ouvert, le contenu a une marge de `4 px 14 px 12 px`. Le titre a un chevron à droite qui pivote de 0° à 180° à l'ouverture, et un survol en pointeur :
 
 - Thème : « Automatique, comme mon ordinateur », « Clair », « Sombre ».
-- Huit cases, dans cet ordre : « Attendre que j'aie fini de taper pour afficher un rappel », « Tenir compte des pauses que je prends de moi-même », « Ne pas me déranger en plein écran, en présentation ou pendant un appel », « Me proposer d'espacer un rappel quand son rythme ne me convient pas », « Préférer des mouvements discrets, à faire assis », « Jouer un son doux avec chaque rappel », « Lancer Lèv au démarrage de l'ordinateur », « Vérifier automatiquement les mises à jour (1 fois par semaine) ».
+- Neuf cases, dans cet ordre : « Attendre que j'aie fini de taper pour afficher un rappel », « Tenir compte des pauses que je prends de moi-même », « Ne pas me déranger en plein écran, en présentation ou pendant un appel », « Me proposer d'espacer un rappel quand son rythme ne me convient pas », « Préférer des mouvements discrets, à faire assis », « Jouer un son doux avec chaque rappel », « Lancer Lèv au démarrage de l'ordinateur », « Vérifier automatiquement les mises à jour (1 fois par semaine) », « Suspendre les rappels quand je suis absent depuis 5 minutes ».
 
 Sous ces cases, un bouton discret « Rétablir les rappels d'origine » remet les quatre rappels de base à leurs valeurs de départ. Il agit tout de suite et affiche un bandeau « Rappels d'origine rétablis. » avec « Annuler ». Ce bouton n'est pas maquetté.
 
@@ -481,7 +493,7 @@ Lèv parle comme un compagnon bienveillant, jamais comme un coach exigeant. Cett
 1. Tutoiement partout. Phrases courtes, mots simples.
 2. Une invitation ou une question, jamais un ordre ni une alerte.
 3. Aucun libellé ne constate un manque, un retard ou un échec. Aucun chiffre sur ce qui n'a pas été fait.
-4. Le bouton principal d'une proposition de pause est toujours « Je le fais ». Les mots « OK », « Ignorer », « Fermer », « Annuler la pause » sont interdits sur une notification.
+4. Le bouton principal d'une proposition de pause est toujours « Je le fais ». Sur le rappel « bouger », un second bouton « Faire la pause (30 s) » peut lancer le guide de la section 7.3. Les mots « OK », « Ignorer », « Fermer », « Annuler la pause » sont interdits sur une notification.
 5. Les heures s'écrivent « 10h40 ». Les durées s'écrivent en chiffres (« 5 minutes »), et en abrégé sur les boutons (« Dans 5 min »).
 6. Un message d'erreur dit ce qui s'est passé et quoi faire, sans code ni terme technique.
 7. Aucun titre en majuscules, aucun point d'exclamation, aucun émoji.
@@ -572,8 +584,8 @@ Un L arrondi qui se redresse, surmonté d'une bulle qui évoque l'accent, la tê
 - Une notification apparaît et disparaît en fondu de 200 ms, sans glissement.
 - Chaque notification porte un petit logo Lèv dans son coin supérieur droit. À l'apparition, sa bulle monte doucement une seule fois, sur 3,2 secondes. Sur l'écran de bienvenue, une fois la fenêtre visible et après 250 ms, le L du logo de 44 px se redresse et le point doré s'élève avec un léger rebond, une seule fois sur 1,8 s. Un clic rejoue le geste (section 7.1). L'icône de la zone de notification, elle, ne bouge jamais. Ce petit logo n'est pas maquetté (section 16).
 - Dans la respiration guidée, la bulle change de taille entre 55 % et 100 %, sur la durée exacte du temps en cours.
-- Si Windows est réglé pour limiter les animations, tout est figé : la bulle de respiration change de taille sans transition.
-- Aucun compte à rebours, aucun défilement automatique.
+- Si Windows est réglé pour limiter les animations, tout est figé : la bulle de respiration change de taille sans transition. L'anneau de 30 secondes (section 7.3) avance alors par paliers d'une seconde, sans transition.
+- Aucun défilement automatique. Le seul compte à rebours est cet anneau.
 
 ## 10. Contenus
 
@@ -714,7 +726,7 @@ Lèv doit être utilisable au clavier, avec un lecteur d'écran et par une perso
 Lèv est livrée sous la forme d'un installateur Windows unique, qui s'installe sans droits d'administrateur.
 
 - **Installateur** : `electron-builder`, cible NSIS, installation par utilisateur, en français. Raccourci dans le menu Démarrer, pas d'icône imposée sur le bureau.
-- **Nom affiché** : « Lèv ». Identifiant technique sans accent : `re.ekilib.lev`. Nom du fichier : `Lev-Setup-1.1.1.exe`.
+- **Nom affiché** : « Lèv ». Identifiant technique sans accent : `re.ekilib.lev`. Nom du fichier : `Lev-Setup-1.2.0.exe`.
 - **Démarrage automatique** : activé par défaut via `app.setLoginItemSettings`, désactivable dans « Autres réglages ». L'entrée de démarrage automatique lance Lèv avec l'argument --demarrage-auto : dans ce cas aucune fenêtre ne s'ouvre, seule l'icône apparaît. Un lancement à la main (menu Démarrer) ouvre « Mes rappels », ou l'accueil si c'est le premier lancement. Si Lèv tourne déjà, la relancer ouvre « Mes rappels » dans l'instance existante (événement second-instance) : sans cela, le clic semblerait sans effet.
 - **Signature du code** : sans certificat de signature, Windows affiche un avertissement « éditeur inconnu » à l'installation, ce qui décourage une partie du public. L'achat d'un certificat au nom de l'association est à décider (section 16).
 - **Distribution** : téléchargement depuis ekilib.re. Le Microsoft Store est une seconde voie possible, qui évite l'avertissement de Windows.
@@ -751,6 +763,12 @@ Chaque règle de la section 5 a au moins un test. Cas obligatoires :
 17) « Rétablir les rappels d'origine » restaure les quatre rappels de base et conserve les rappels personnels.
 
 18. Sur une journée simulée de 8h00 à 18h00 où l'utilisateur ne répond à rien, chaque rappel actif s'affiche au moins une fois toutes les deux périodes : aucun n'est écarté indéfiniment.
+19. Avec la détection d'absence active, le décompte avance encore à 4 minutes 59 secondes d'inactivité, se fige à partir de 5 minutes, et repart de zéro au retour sans afficher de carte, même si la période était échue pendant l'absence.
+20. Si la détection est coupée, ce même temps inactif compte, et un rappel dû peut s'afficher.
+21. Un rappel à heure fixe tombé pendant une absence de 5 minutes ne s'affiche pas au retour.
+22. Une absence de 5 minutes ne change pas l'heure de fin d'une séquence. Si elle est échue au retour, une seule carte de séquence s'affiche.
+23. Une réunion d'une heure est l'unique suspension : les rappels restent tus jusqu'à l'heure exacte, puis les compteurs repartent de zéro sans carte immédiate. Reprendre retire cette suspension. Une veille de 30 minutes la remplace et retire le motif réunion.
+24. Un fichier sans `suspendreInactivite` reste en version 1 et la case vaut vrai. Une ancienne `reunionJusqua` devient `veilleJusqua` avec le motif `reunion`.
 
 ### Contrôle manuel avant version
 
@@ -768,6 +786,7 @@ Chaque règle de la section 5 a au moins un test. Cas obligatoires :
 - [ ] « Vérifier les mises à jour » : à jour, hors connexion, et lien GitHub si une version plus récente existe
 - [ ] Pare-feu en mode blocage : l'application fonctionne normalement hors connexion
 - [ ] Mémoire au repos inférieure à 150 Mo, processeur proche de 0 % sur dix minutes
+- [ ] Anneau de 30 secondes lisible en thème clair et en thème sombre, immobile si les animations sont réduites, fenêtre absente après la fin du guide
 - [ ] Relecture de tous les textes au regard de la section 8
 
 ## 15. Plan de développement

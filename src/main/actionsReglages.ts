@@ -1,7 +1,7 @@
 import { jourDeRepetition, jourLocal } from '../partage/format'
 import type { ActionEcran } from '../preload/contrat'
 import type { Rappel, Reglages, TypeRappel } from './modeles'
-import { HEURE_FIXE_RETARD_MAX_MS } from './scheduler/constantes'
+import { HEURE_FIXE_RETARD_MAX_MS, REUNION_MS } from './scheduler/constantes'
 import { finVeilleDemain } from './scheduler/horaires'
 import { reglagesParDefaut } from './reglages'
 
@@ -133,9 +133,20 @@ function appliquer(
     case 'theme':
       return { ...reglages, theme: action.theme }
     case 'veille':
-      return { ...reglages, veilleJusqua: finVeille(reglages, action.duree, contexte.maintenant) }
+      return poserSuspension(
+        reglages,
+        finVeille(reglages, action.duree, contexte.maintenant),
+        false
+      )
     case 'reprendre':
+    case 'reprendreReunion':
       return reprendre(reglages)
+    case 'reunion':
+      return poserSuspension(
+        reglages,
+        new Date(contexte.maintenant.getTime() + REUNION_MS).toISOString(),
+        true
+      )
     case 'retablir':
       return retablir(reglages, contexte.identifiantsBase)
     case 'premierLancement':
@@ -296,19 +307,27 @@ function respiration(
   return { ...reglages, respiration: suivant }
 }
 
-function finVeille(reglages: Reglages, duree: '30min' | '1h' | 'demain', maintenant: Date): string {
+function finVeille(reglages: Reglages, duree: '30min' | 'demain', maintenant: Date): string {
   if (duree === '30min') {
     return new Date(maintenant.getTime() + 30 * 60 * 1000).toISOString()
   }
-  if (duree === '1h') {
-    return new Date(maintenant.getTime() + 60 * 60 * 1000).toISOString()
-  }
   return finVeilleDemain(maintenant, reglages.horaires).toISOString()
+}
+
+function poserSuspension(reglages: Reglages, fin: string, reunion: boolean): Reglages {
+  const copie: Reglages = { ...reglages, veilleJusqua: fin }
+  if (reunion) {
+    copie.veilleMotif = 'reunion'
+  } else {
+    delete copie.veilleMotif
+  }
+  return copie
 }
 
 function reprendre(reglages: Reglages): Reglages {
   const copie: Reglages = { ...reglages }
   delete copie.veilleJusqua
+  delete copie.veilleMotif
   return copie
 }
 

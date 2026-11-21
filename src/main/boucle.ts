@@ -155,6 +155,9 @@ export function demarrerBoucle(): void {
     detruireNotification()
     apresEvaluation?.()
   })
+  ipcMain.on(CANAL_NOTIFICATION.pauseGuidee, () => {
+    recevoirPauseGuidee()
+  })
 
   powerMonitor.on('lock-screen', verrouiller)
   powerMonitor.on('unlock-screen', deverrouiller)
@@ -243,6 +246,15 @@ function recevoirReponse(reponse: ReponseBouton): void {
   ) {
     publierRetrait()
   }
+  apresEvaluation?.()
+}
+
+function recevoirPauseGuidee(): void {
+  if (!etat.notification) {
+    return
+  }
+  retenirReponse(repondre(etat, lireReglages(), 'jeLeFais', new Date()))
+  publierRetrait()
   apresEvaluation?.()
 }
 
@@ -369,7 +381,8 @@ function retirerCanaux(): void {
     CANAL_NOTIFICATION.expirer,
     CANAL_NOTIFICATION.autreIdee,
     CANAL_NOTIFICATION.variante,
-    CANAL_NOTIFICATION.masquee
+    CANAL_NOTIFICATION.masquee,
+    CANAL_NOTIFICATION.pauseGuidee
   ]
   for (const canal of canaux) {
     ipcMain.removeAllListeners(canal)

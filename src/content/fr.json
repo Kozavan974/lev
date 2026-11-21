@@ -7,13 +7,18 @@
     "infobulle": "Lèv",
     "prochaine": "Lèv · prochaine pause à {heure}",
     "veille": "Lèv · en veille jusqu'à {heure}",
+    "reunionInfobulle": "Lèv · en réunion jusqu'à {heure}",
     "sequenceTravail": "Lèv — Séquence de travail : {reste} ({rang}/{total})",
     "sequencePause": "Lèv — Pause de séquence : {reste}",
     "sequenceGrande": "Lèv — Grande pause : {reste}",
     "sequence": "Démarrer une séquence de travail",
     "arreterSequences": "Arrêter la séquence de travail",
     "pause": "Faire une pause maintenant",
-    "veille1h": "Mettre en veille pendant 1 heure",
+    "reunion": "En réunion (1 h)",
+    "reunionEnCours": "Reprendre · en réunion jusqu'à {heure}",
+    "veilleMenu": "Mettre en veille",
+    "veille30": "30 min",
+    "veilleDemain": "Jusqu'à demain",
     "reprendre": "Reprendre les rappels",
     "mesRappels": "Mes rappels",
     "aPropos": "À propos",
@@ -36,10 +41,11 @@
     "decompteGrande": "Grande pause · {reste}",
     "repriseSequence": "On reprend quand tu veux.",
     "pause": "Faire une pause maintenant",
+    "reunion": "En réunion (1 h)",
+    "reunionEnCours": "Reprendre · en réunion jusqu'à {heure}",
     "rythmeSequence": "{travail} min concentré, puis {pause} min de pause",
     "veille": "Mettre les rappels en veille",
     "veille30": "30 min",
-    "veille1h": "1 heure",
     "veilleDemain": "Jusqu'à demain",
     "enVeille": "En veille jusqu'à {heure}",
     "reprendre": "Reprendre",
@@ -138,7 +144,8 @@
       "mouvementsAssis": "Préférer des mouvements discrets, à faire assis",
       "son": "Jouer un son doux avec chaque rappel",
       "lancerAuDemarrage": "Lancer Lèv au démarrage de l'ordinateur",
-      "verifierMajAuto": "Vérifier automatiquement les mises à jour (1 fois par semaine)"
+      "verifierMajAuto": "Vérifier automatiquement les mises à jour (1 fois par semaine)",
+      "suspendreInactivite": "Suspendre les rappels quand je suis absent depuis 5 minutes"
     }
   },
   "notification": {
@@ -166,6 +173,10 @@
       "jeLeFais": "Je le fais",
       "dans5min": "Dans 5 min",
       "plusTard": "Plus tard"
+    },
+    "pauseGuidee": {
+      "bouton": "Faire la pause (30 s)",
+      "reste": "{secondes} s"
     },
     "rythme": {
       "titre": "Ce rythme te convient ?",

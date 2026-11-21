@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Rappel, Reglages, TypeRappel } from './modeles'
 import { reglagesParDefaut } from './reglages'
+import { REUNION_MS } from './scheduler/constantes'
 import { executerAction, type ContexteAction, type ResultatAction } from './actionsReglages'
 
 const identifiants: Record<TypeRappel, string> = {
@@ -251,5 +252,25 @@ describe('premier lancement, guide et respiration', () => {
     expect(suivant?.frequenceMin).toBe(45)
     expect(suivant?.reportsDeSuite).toBe(0)
     expect(suivant?.neRienProposerAvant).toBeUndefined()
+  })
+
+  it('pose la réunion sur l’unique suspension, et une veille manuelle la remplace', () => {
+    const depart = reglagesParDefaut()
+    const quand = contexte(16, 10, 0)
+    const posee = executer(depart, { type: 'reunion' }, quand)
+    expect(posee.reglages.veilleJusqua).toBe(
+      new Date(quand.maintenant.getTime() + REUNION_MS).toISOString()
+    )
+    expect(posee.reglages.veilleMotif).toBe('reunion')
+
+    const manuelle = executer(posee.reglages, { type: 'veille', duree: '30min' }, quand)
+    expect(manuelle.reglages.veilleMotif).toBeUndefined()
+    expect(manuelle.reglages.veilleJusqua).toBe(
+      new Date(quand.maintenant.getTime() + 30 * 60 * 1000).toISOString()
+    )
+
+    const reprise = executer(posee.reglages, { type: 'reprendreReunion' }, quand)
+    expect(reprise.reglages.veilleJusqua).toBeUndefined()
+    expect(reprise.reglages.veilleMotif).toBeUndefined()
   })
 })
