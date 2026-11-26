@@ -1,0 +1,556 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      font-family: var(--font-display, "Atkinson Hyperlegible"), sans-serif;
+    }
+    #bu-scene {
+      position: absolute;
+      inset: 0;
+      --f1: #1c1a2b;
+      --f2: #2a2238;
+      --f3: #3a2a3c;
+      --texte: #f3e9e2;
+      --texte2: #b3aec4;
+      --action: #5fcfc6;
+      --sur-action: #1c1a2b;
+      --picto-bg: #3a2f3f;
+      --lisere: rgba(255, 255, 255, 0.14);
+      --carte: rgba(255, 255, 255, 0.06);
+      --trace: #3a3650;
+      --doc-bg: rgba(255, 255, 255, 0.05);
+      --doc-line: rgba(255, 255, 255, 0.13);
+      --doc-border: rgba(255, 255, 255, 0.08);
+    }
+    .bu-full {
+      position: absolute;
+      inset: 0;
+    }
+    #bu-ground-dark {
+      background:
+        radial-gradient(ellipse 70% 60% at 78% 100%, rgba(58, 42, 60, 0.9) 0%, rgba(58, 42, 60, 0) 70%),
+        #1c1a2b;
+    }
+    #bu-ground-light {
+      background: linear-gradient(180deg, #fdf1e7 0%, #f9e6e4 55%, #ece6f3 100%);
+    }
+    #bu-sun {
+      position: absolute;
+      left: 260px;
+      top: 380px;
+      width: 1400px;
+      height: 1400px;
+    }
+    #bu-sun-core,
+    #bu-sun-halo {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+    }
+    #bu-sun-core {
+      background: radial-gradient(circle, rgba(241, 190, 90, 0.42) 0%, rgba(241, 190, 90, 0.16) 38%, rgba(241, 190, 90, 0) 66%);
+    }
+    #bu-sun-halo {
+      background: radial-gradient(circle, rgba(241, 190, 90, 0.3) 0%, rgba(241, 190, 90, 0) 55%);
+    }
+
+    /* Fenêtre de travail floutée (comme la maquette « Rappel bouger ») */
+    #bu-doc {
+      position: absolute;
+      left: 120px;
+      top: 90px;
+      width: 1060px;
+      height: 800px;
+      border-radius: 28px;
+      background: var(--doc-bg);
+      border: 2px solid var(--doc-border);
+    }
+    .bu-line {
+      position: absolute;
+      left: 64px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--doc-line);
+      transform-origin: 0% 50%;
+    }
+    #bu-l1 { top: 64px; width: 440px; height: 34px; }
+    #bu-l2 { top: 140px; width: 920px; }
+    #bu-l3 { top: 196px; width: 860px; }
+    #bu-l4 { top: 252px; width: 900px; }
+    #bu-l5 { top: 308px; width: 600px; }
+    #bu-l6 { top: 364px; width: 780px; }
+
+    /* Accroche */
+    #bu-hook {
+      position: absolute;
+      left: 0;
+      top: 470px;
+      width: 1920px;
+      text-align: center;
+      font-size: 96px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+      color: #f3e9e2;
+    }
+    #bu-hook .w {
+      display: inline-block;
+      margin: 0 0.12em;
+    }
+    #bu-hook .sun {
+      color: #f1be5a;
+    }
+
+    /* Barre des tâches */
+    #bu-taskbar {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 1920px;
+      height: 88px;
+      background: #2e2a3f;
+      border-top: 2px solid rgba(255, 255, 255, 0.06);
+    }
+    #bu-tray {
+      position: absolute;
+      right: 186px;
+      top: 16px;
+      width: 56px;
+      height: 56px;
+    }
+    #bu-tray svg {
+      position: absolute;
+      inset: 0;
+      width: 56px;
+      height: 56px;
+    }
+    #bu-pastille {
+      position: absolute;
+      right: -6px;
+      top: -6px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #f1be5a;
+      border: 3px solid #2e2a3f;
+    }
+    #bu-clock {
+      position: absolute;
+      right: 64px;
+      top: 26px;
+      font-size: 30px;
+      color: #f3e9e2;
+      letter-spacing: 0.02em;
+    }
+
+    /* Notification Lèv */
+    #bu-carte-wrap {
+      position: absolute;
+      left: 980px;
+      top: 324px;
+      width: 860px;
+      height: 636px;
+      filter: drop-shadow(0 18px 40px rgba(20, 16, 32, 0.28));
+    }
+    #bu-carte {
+      position: absolute;
+      inset: 0;
+      border-radius: 28px;
+      background: linear-gradient(180deg, var(--f1) 0%, var(--f2) 55%, var(--f3) 100%);
+      border: 2px solid var(--lisere);
+      color: var(--texte);
+      overflow: hidden;
+    }
+    .bu-etat {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+    }
+    #bu-etat-a { height: 632px; }
+    #bu-etat-b { height: 480px; }
+    #bu-etat-c { height: 124px; justify-content: center; }
+    .bu-entete {
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+      padding-right: 64px;
+      height: 90px;
+    }
+    .bu-picto {
+      flex: none;
+      width: 84px;
+      height: 84px;
+      border-radius: 999px;
+      background: var(--picto-bg);
+      color: var(--action);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bu-picto svg {
+      width: 44px;
+      height: 44px;
+    }
+    .bu-titre {
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .bu-phrase {
+      margin-top: 8px;
+      font-size: 28px;
+      line-height: 1.35;
+      color: var(--texte2);
+      white-space: nowrap;
+    }
+    .bu-logo {
+      position: absolute;
+      right: 36px;
+      top: 36px;
+      width: 46px;
+      height: 46px;
+      color: var(--action);
+    }
+    .bu-idee {
+      margin-top: 30px;
+      padding: 30px;
+      border: 2px solid var(--lisere);
+      border-radius: 24px;
+      background: var(--carte);
+    }
+    .bu-idee-texte {
+      font-size: 28px;
+      line-height: 1.4;
+      height: 78px;
+    }
+    .bu-idee-actions {
+      margin-top: 24px;
+      display: flex;
+      gap: 18px;
+    }
+    .bu-bouton {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 66px;
+      padding: 0 30px;
+      border-radius: 999px;
+      font-size: 28px;
+      white-space: nowrap;
+    }
+    .bu-idee-actions .bu-bouton {
+      height: 58px;
+      font-size: 26px;
+      padding: 0 26px;
+    }
+    .bu-secondaire {
+      border: 2px solid var(--action);
+      background: var(--carte);
+      color: var(--action);
+    }
+    .bu-principal {
+      background: var(--action);
+      color: var(--sur-action);
+      font-weight: 700;
+    }
+    .bu-discret {
+      color: var(--texte2);
+      padding: 0 18px;
+    }
+    #bu-guide {
+      margin-top: 30px;
+      width: 100%;
+    }
+    .bu-actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 18px;
+    }
+    .bu-anneau {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .bu-anneau svg {
+      width: 84px;
+      height: 84px;
+    }
+    #bu-piste,
+    #bu-progression {
+      fill: none;
+      stroke-width: 2.5;
+    }
+    #bu-piste {
+      stroke: var(--trace);
+    }
+    #bu-progression {
+      stroke: var(--action);
+      stroke-linecap: round;
+      transform: rotate(-90deg);
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    #bu-reste {
+      font-size: 28px;
+      line-height: 1.3;
+      color: var(--texte2);
+      height: 34px;
+    }
+    #bu-message {
+      font-size: 40px;
+      font-weight: 700;
+      line-height: 1.2;
+      text-align: center;
+    }
+    #bu-message .w {
+      display: inline-block;
+      margin: 0 0.12em;
+    }
+
+    #bu-cursor {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 44px;
+      height: 44px;
+    }
+  </style>
+
+  <div id="root" data-composition-id="bureau" data-width="1920" data-height="1080">
+    <div id="bu-scene">
+      <div id="bu-ground-dark" class="bu-full"></div>
+      <div id="bu-ground-light" class="bu-full"></div>
+      <div id="bu-sun" data-layout-ignore>
+        <div id="bu-sun-core"></div>
+        <div id="bu-sun-halo"></div>
+      </div>
+
+      <div id="bu-doc" data-layout-ignore>
+        <div id="bu-l1" class="bu-line"></div>
+        <div id="bu-l2" class="bu-line"></div>
+        <div id="bu-l3" class="bu-line"></div>
+        <div id="bu-l4" class="bu-line"></div>
+        <div id="bu-l5" class="bu-line"></div>
+        <div id="bu-l6" class="bu-line"></div>
+      </div>
+
+      <h1 id="bu-hook" data-layout-allow-overlap>
+        <span class="w sun">Lèv</span><span class="w">—</span><span class="w">levez-vous,</span><span class="w">respirez.</span>
+      </h1>
+
+      <div id="bu-carte-wrap" data-hold>
+        <div id="bu-carte">
+          <!-- État A : la pause proposée -->
+          <div id="bu-etat-a" class="bu-etat">
+            <svg class="bu-logo" viewBox="2.4 -1.3 24 24" fill="none" aria-hidden="true">
+              <path d="M9.6 8 Q8.4 12.5 9 15.2 Q9.6 18 12.6 18 H20.4" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+              <circle cx="11.4" cy="3.7" r="1.9" fill="#f1be5a" />
+            </svg>
+            <div class="bu-entete">
+              <span class="bu-picto">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="4.5" r="2" fill="currentColor" />
+                  <path d="M12 7.2v6.2M12 9.2 7.2 6.4M12 9.2l5.2 2.2M12 13.4 8.6 19M12 13.4l3.6 5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <div>
+                <p class="bu-titre">Envie d'un petit mouvement&#8239;?</p>
+                <p class="bu-phrase">Quelques pas suffisent, à ton rythme.</p>
+              </div>
+            </div>
+            <div class="bu-idee">
+              <p class="bu-idee-texte">Tu peux marcher jusqu'au bout du couloir, puis revenir.</p>
+              <div class="bu-idee-actions">
+                <span class="bu-bouton bu-secondaire">Une autre idée</span>
+                <span class="bu-bouton bu-secondaire">Je reste assis</span>
+              </div>
+            </div>
+            <span id="bu-guide" class="bu-bouton bu-secondaire">Faire la pause (30 s)</span>
+            <div class="bu-actions">
+              <span class="bu-bouton bu-principal">Je le fais</span>
+              <span class="bu-bouton bu-secondaire">Dans 5 min</span>
+              <span class="bu-bouton bu-discret">Plus tard</span>
+            </div>
+          </div>
+
+          <!-- État B : la pause guidée de 30 s -->
+          <div id="bu-etat-b" class="bu-etat">
+            <svg class="bu-logo" viewBox="2.4 -1.3 24 24" fill="none" aria-hidden="true">
+              <path d="M9.6 8 Q8.4 12.5 9 15.2 Q9.6 18 12.6 18 H20.4" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+              <circle cx="11.4" cy="3.7" r="1.9" fill="#f1be5a" />
+            </svg>
+            <div class="bu-entete">
+              <span class="bu-picto">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="4.5" r="2" fill="currentColor" />
+                  <path d="M12 7.2v6.2M12 9.2 7.2 6.4M12 9.2l5.2 2.2M12 13.4 8.6 19M12 13.4l3.6 5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <div>
+                <p class="bu-titre">Envie d'un petit mouvement&#8239;?</p>
+                <p class="bu-phrase">Quelques pas suffisent, à ton rythme.</p>
+              </div>
+            </div>
+            <div class="bu-idee">
+              <div class="bu-anneau">
+                <svg viewBox="0 0 36 36" aria-hidden="true">
+                  <circle id="bu-piste" cx="18" cy="18" r="15" />
+                  <circle id="bu-progression" cx="18" cy="18" r="15" stroke-dasharray="94.2478" stroke-dashoffset="94.2478" />
+                </svg>
+                <p id="bu-reste">30 s</p>
+              </div>
+              <p class="bu-idee-texte">Tu peux marcher jusqu'au bout du couloir, puis revenir.</p>
+            </div>
+          </div>
+
+          <!-- État C : message de fin -->
+          <div id="bu-etat-c" class="bu-etat">
+            <p id="bu-message"><span class="w">Chaque</span><span class="w">petite</span><span class="w">pause</span><span class="w">compte.</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div id="bu-taskbar">
+        <div id="bu-tray">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect width="24" height="24" rx="5.76" fill="#0e6f6a" />
+            <svg x="1.68" y="1.68" width="20.64" height="20.64" viewBox="2.4 -1.3 24 24">
+              <path d="M9.6 8 Q8.4 12.5 9 15.2 Q9.6 18 12.6 18 H20.4" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <circle id="bu-tray-bulle" cx="11.4" cy="3.7" r="1.9" fill="#f1be5a" />
+            </svg>
+          </svg>
+          <span id="bu-pastille"></span>
+        </div>
+        <span id="bu-clock">10h40</span>
+      </div>
+
+      <svg id="bu-cursor" viewBox="0 0 24 24" aria-hidden="true" data-layout-ignore>
+        <path d="M3 2.5 L3 19.5 L7.6 15.4 L10.6 22 L13.6 20.7 L10.7 14.2 L17 14.2 Z" fill="#ffffff" stroke="#1c1a2b" stroke-width="1.4" stroke-linejoin="round" />
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const RMS = [0.838, 0.874, 0.898, 0.879, 0.851, 0.8, 0.827, 0.779, 0.884, 0.88, 0.868, 0.848, 0.786, 0.777, 0.751, 0.736, 0.657, 0.718, 0.796, 0.821, 0.819, 0.731, 0.701, 0.628, 0.625, 0.577, 0.661, 0.701, 0.67, 0.702, 0.682, 0.659, 0.587, 0.566, 0.499, 0.568, 0.61, 0.626, 0.669, 0.64, 0.762, 0.788, 0.783, 0.764, 0.747, 0.739, 0.772, 0.868, 0.856, 0.831, 0.783, 0.791, 0.736, 0.725, 0.685, 0.658, 0.701, 0.675, 0.739, 0.722, 0.74, 0.699, 0.708, 0.667, 0.692, 0.807, 0.832]; // musique, 1 valeur toutes les 2 images à partir de 19,0 s (temps du film)
+      const OFFSET = 9.6; // début de cette scène dans le film
+
+      // --- État initial ---
+      gsap.set("#bu-ground-light", { opacity: 0 });
+      gsap.set("#bu-sun", { opacity: 0, y: 420 });
+      gsap.set("#bu-sun-halo", { opacity: 0 });
+      gsap.set("#bu-carte-wrap", { opacity: 0, y: 80 });
+      gsap.set("#bu-carte", { clipPath: "inset(0px 0px 0px 0px round 28px)" });
+      gsap.set(["#bu-etat-b", "#bu-etat-c"], { opacity: 0 });
+      gsap.set("#bu-cursor", { opacity: 0, x: 1720, y: 1010 });
+      gsap.set("#bu-pastille", { opacity: 0, scale: 0.3 });
+      gsap.set(".bu-line", { scaleX: 0 });
+      gsap.set("#bu-hook .w", { opacity: 0, filter: "blur(8px)" });
+      gsap.set("#bu-message .w", { opacity: 0, filter: "blur(6px)" });
+
+      // --- Scène 1 : le fond sombre se pose sur la fin de l'intro ---
+      tl.fromTo("#bu-scene", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.inOut" }, 0);
+
+      // Saisie dans le document (frappes douces calées sur ces départs)
+      tl.to("#bu-l1", { scaleX: 1, duration: 0.38, ease: "power1.out" }, 0.6);
+      tl.to("#bu-l2", { scaleX: 1, duration: 0.28, ease: "none" }, 1.0);
+      tl.to("#bu-l3", { scaleX: 1, duration: 0.28, ease: "none" }, 1.28);
+      tl.to("#bu-l4", { scaleX: 1, duration: 0.3, ease: "none" }, 1.56);
+      tl.to("#bu-l5", { scaleX: 1, duration: 0.3, ease: "none" }, 1.88);
+      tl.to("#bu-l6", { scaleX: 1, duration: 0.25, ease: "none" }, 2.2);
+      tl.to("#bu-doc", { opacity: 0.55, duration: 0.4, ease: "power2.out" }, 0.7);
+
+      // Accroche : la signature, mot à mot. beat-locked: 10.54s (film)
+      tl.to("#bu-hook .w", { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power4.out", stagger: 0.08 }, 0.94);
+      tl.to("#bu-hook .w", { opacity: 0, filter: "blur(8px)", duration: 0.18, ease: "power3.in", stagger: 0.05 }, 3.5);
+
+      // Pastille « bientôt » sur l'icône. beat-grid: 11.64s (film)
+      tl.to("#bu-pastille", { opacity: 1, scale: 1, duration: 0.35, ease: "power4.out" }, 2.04);
+
+      // --- Scène 2 : la notification monte. beat-grid: 13.64s (film) ---
+      tl.to("#bu-carte-wrap", { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" }, 4.02);
+      tl.to("#bu-doc", { opacity: 0.4, duration: 0.6, ease: "power2.out" }, 4.02);
+      // La bulle de l'icône monte doucement puis s'efface (pause proposée)
+      tl.to("#bu-tray-bulle", { y: -3, opacity: 0, duration: 0.8, ease: "power2.out" }, 4.1);
+
+      // Curseur vers « Faire la pause (30 s) »
+      // d'abord un passage sur « Une autre idée », puis vers le bouton
+      tl.to("#bu-cursor", { opacity: 1, duration: 0.2, ease: "power1.out" }, 6.9);
+      tl.to("#bu-cursor", { x: 1180, y: 652, duration: 0.75, ease: "power2.inOut" }, 6.95);
+      tl.to("#bu-cursor", { x: 1436, y: 772, duration: 0.75, ease: "power2.inOut" }, 8.0);
+      // Clic. beat-locked: 18.55s (film)
+      tl.to("#bu-cursor", { scale: 0.86, duration: 0.07, ease: "power2.in" }, 8.95);
+      tl.to("#bu-cursor", { scale: 1, duration: 0.15, ease: "power2.out" }, 9.02);
+      tl.to("#bu-guide", { scale: 0.97, duration: 0.07, ease: "power2.in" }, 8.95);
+      tl.to("#bu-guide", { scale: 1, duration: 0.15, ease: "power2.out" }, 9.02);
+
+      // --- Scène 3 : la carte devient la pause guidée ---
+      tl.to("#bu-etat-a", { opacity: 0, filter: "blur(8px)", duration: 0.18, ease: "power2.in" }, 9.15);
+      tl.to("#bu-carte", { clipPath: "inset(152px 0px 0px 0px round 28px)", duration: 0.4, ease: "power3.inOut" }, 9.15);
+      tl.fromTo("#bu-etat-b", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power2.out" }, 9.3);
+      tl.to("#bu-cursor", { opacity: 0, duration: 0.3, ease: "power1.in" }, 9.2);
+
+      // Anneau de 30 s, en accéléré
+      const DEBUT = 9.55;
+      const DUREE = 1.95;
+      tl.to("#bu-progression", { attr: { "stroke-dashoffset": 0 }, duration: DUREE, ease: "none" }, DEBUT);
+      for (let k = 1; k < 30; k++) {
+        tl.set("#bu-reste", { textContent: 30 - k + " s" }, DEBUT + (k * DUREE) / 29);
+      }
+
+      // Le jour se lève : fond, soleil et couleurs de la carte passent au thème clair
+      tl.to("#bu-ground-light", { opacity: 1, duration: 2.0, ease: "power2.inOut" }, 9.7);
+      tl.to("#bu-sun", { opacity: 1, y: 0, duration: 2.4, ease: "power2.out" }, 9.6);
+      tl.to(
+        "#bu-scene",
+        {
+          "--f1": "#fdf1e7",
+          "--f2": "#f9e6e4",
+          "--f3": "#ece6f3",
+          "--texte": "#2e2a3f",
+          "--texte2": "#5f5a73",
+          "--action": "#0e6f6a",
+          "--sur-action": "#ffffff",
+          "--picto-bg": "#fde3d2",
+          "--lisere": "rgba(255, 255, 255, 0.7)",
+          "--carte": "rgba(255, 255, 255, 0.62)",
+          "--trace": "#f0d9cc",
+          "--doc-bg": "rgba(255, 255, 255, 0.45)",
+          "--doc-line": "rgba(239, 217, 204, 1)",
+          "--doc-border": "rgba(255, 255, 255, 0.7)",
+          duration: 1.6,
+          ease: "power2.inOut",
+        },
+        9.8,
+      );
+
+      // Halo du soleil qui respire avec la musique (réaction audio discrète)
+      for (let i = 0; i < RMS.length; i++) {
+        const t = 19.0 + (i * 2) / 30 - OFFSET;
+        if (t < 9.6) continue;
+        tl.set("#bu-sun-halo", { opacity: Math.min(1, 0.25 + RMS[i] * 0.85) }, t);
+      }
+
+      // Anneau complet → message de fin (beat-grid: 21.29s film, au plus près)
+      tl.to("#bu-etat-b", { opacity: 0, filter: "blur(8px)", duration: 0.15, ease: "power2.in" }, 11.55);
+      tl.to("#bu-carte", { clipPath: "inset(508px 0px 0px 0px round 28px)", duration: 0.4, ease: "power3.inOut" }, 11.55);
+      tl.set("#bu-etat-c", { opacity: 1 }, 11.6);
+      tl.to("#bu-message .w", { opacity: 1, filter: "blur(0px)", duration: 0.13, ease: "power4.out", stagger: 0.07 }, 11.65);
+      tl.to("#bu-pastille", { opacity: 0, scale: 0.3, duration: 0.25, ease: "power2.in" }, 11.6);
+      tl.fromTo("#bu-tray-bulle", { y: 3, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 11.7);
+
+      window.__timelines["bureau"] = tl;
+    })();
+  </script>
+</template>

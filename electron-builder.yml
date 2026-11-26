@@ -52,15 +52,15 @@ win:
   icon: build/icon.ico
   requestedExecutionLevel: asInvoker
 nsis:
-  oneClick: false
+  oneClick: true
   perMachine: false
   allowElevation: false
-  allowToChangeInstallationDirectory: true
-  createDesktopShortcut: false
+  allowToChangeInstallationDirectory: false
+  createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: Lèv
+  shortcutName: "Lèv"
   uninstallDisplayName: Lèv
-  deleteAppDataOnUninstall: true
+  deleteAppDataOnUninstall: false
   installerLanguages:
     - fr_FR
   displayLanguageSelector: false

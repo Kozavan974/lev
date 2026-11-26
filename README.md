@@ -8,6 +8,26 @@ Lèv est un logiciel libre sous [licence MIT](LICENSE), proposé par l'associati
 
 L'installateur Windows est publié sur les [Releases GitHub](https://github.com/Kozavan974/lev/releases/latest).
 
+## Déploiement en entreprise (Intune / Silent install)
+
+L'installateur est produit par `electron-builder`, cible NSIS one-click. Il s'installe pour l'utilisateur courant, sans droits administrateur.
+
+Installation silencieuse. Le `/S` est en majuscule, et la commande reste bloquante jusqu'à la fin de l'installation :
+
+```text
+Lev-Setup-<version>.exe /S
+```
+
+L'application est alors dans `%LOCALAPPDATA%\Programs\lev\Lèv.exe`.
+
+Désinstallation silencieuse :
+
+```text
+"%LOCALAPPDATA%\Programs\lev\Uninstall Lèv.exe" /S
+```
+
+Un double-clic sur le même fichier, sans `/S`, lance l'installation manuelle, au même endroit. La vérification des mises à jour ne télécharge rien et n'installe rien.
+
 ## Ce que Lèv propose
 
 - **Pauses actives.** Des invitations pour les yeux, pour bouger, pour boire, pour la posture. Chaque mouvement a une variante à faire assis. Sur un rappel pour bouger, « Faire la pause (30 s) » guide le geste, puis la fenêtre se ferme.
@@ -32,4 +52,4 @@ npm test
 npm run dist
 ```
 
-`npm run dev` lance Lèv en développement. `npm test` exécute la suite Vitest. `npm run dist` produit l'installateur Windows (`Lev-Setup-1.2.0.exe`).
+`npm run dev` lance Lèv en développement. `npm test` exécute la suite Vitest. `npm run dist` produit l'installateur Windows (`Lev-Setup-1.2.1.exe`).

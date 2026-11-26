@@ -1,0 +1,194 @@
+<!doctype html>
+<html
+  lang="fr"
+  data-composition-variables='[
+    {"id":"color-ground-light","type":"color","label":"Fond clair (haut)","default":"#fdf1e7"},
+    {"id":"color-ground-dark","type":"color","label":"Fond sombre","default":"#1c1a2b"},
+    {"id":"color-ink","type":"color","label":"Texte","default":"#2e2a3f"},
+    {"id":"color-ink-soft","type":"color","label":"Texte secondaire","default":"#5f5a73"},
+    {"id":"color-accent","type":"color","label":"Action (turquoise)","default":"#0e6f6a"},
+    {"id":"color-sun","type":"color","label":"Soleil (bulle)","default":"#f1be5a"},
+    {"id":"font-display","type":"string","label":"Police","default":"Atkinson Hyperlegible"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Atkinson Hyperlegible";
+        src: url("assets/fonts/AtkinsonHyperlegible-Regular.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Atkinson Hyperlegible";
+        src: url("assets/fonts/AtkinsonHyperlegible-Bold.woff2") format("woff2");
+        font-weight: 700;
+        font-style: normal;
+      }
+      :root {
+        --color-ground-light: #fdf1e7;
+        --color-ground-dark: #1c1a2b;
+        --color-ink: #2e2a3f;
+        --color-ink-soft: #5f5a73;
+        --color-accent: #0e6f6a;
+        --color-sun: #f1be5a;
+        --font-display: "Atkinson Hyperlegible";
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #14131f;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        font-family: var(--font-display), sans-serif;
+      }
+      #intro-video {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        object-fit: cover;
+        z-index: 1;
+      }
+      #bureau {
+        z-index: 2;
+      }
+      #souffle {
+        z-index: 3;
+      }
+      #marque {
+        z-index: 4;
+      }
+      #outro-video {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        object-fit: cover;
+        z-index: 5;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="43"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- Scène 0 : intro fournie par Laurent, sans son d'origine -->
+      <video
+        id="intro-video"
+        class="clip"
+        data-start="0"
+        data-duration="10"
+        data-track-index="0"
+        muted
+        playsinline
+        src="assets/video/intro-lev.mp4"
+      ></video>
+
+      <!-- Scènes 1 à 3 : le bureau, la notification, l'anneau de 30 s -->
+      <div
+        id="bureau"
+        data-composition-id="bureau"
+        data-composition-src="compositions/bureau.html"
+        data-start="9.6"
+        data-duration="13.85"
+        data-track-index="1"
+        data-track-kind="graphics"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+
+      <!-- Scène 4 : respiration guidée -->
+      <div
+        id="souffle"
+        data-composition-id="souffle"
+        data-composition-src="compositions/souffle.html"
+        data-start="22.93"
+        data-duration="4.8"
+        data-track-index="2"
+        data-track-kind="graphics"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+
+      <!-- Scène 5 : logo et signature -->
+      <div
+        id="marque"
+        data-composition-id="marque"
+        data-composition-src="compositions/marque.html"
+        data-start="27.3"
+        data-duration="6.3"
+        data-track-index="1"
+        data-track-kind="graphics"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+
+      <!-- Scène 6 : séquence de fin fournie par Laurent, sans son d'origine -->
+      <video
+        id="outro-video"
+        class="clip"
+        data-start="33"
+        data-duration="10"
+        data-track-index="0"
+        muted
+        playsinline
+        src="assets/video/outro-lev.mp4"
+      ></video>
+
+      <!-- Musique : « Emotional Piano », jonasblakewood -->
+      <audio
+        id="music"
+        class="clip"
+        data-timeline-role="music"
+        data-start="0"
+        data-duration="43"
+        data-track-index="5"
+        data-volume="0.35"
+        data-fade-in="0.4"
+        data-fade-out="2.5"
+        src="assets/music/jonasblakewood-emotional-piano-626969.mp3"
+      ></audio>
+
+      <!-- Bruitages (un seul couloir, aucun ne se chevauche) -->
+      <audio id="sfx-key-1" class="clip" data-start="10.22" data-duration="0.25" data-track-index="6" data-volume="0.35" src="assets/sfx/keypress-003.wav"></audio>
+      <audio id="sfx-key-2" class="clip" data-start="10.62" data-duration="0.25" data-track-index="6" data-volume="0.3" src="assets/sfx/keypress-012.wav"></audio>
+      <audio id="sfx-key-3" class="clip" data-start="10.9" data-duration="0.25" data-track-index="6" data-volume="0.35" src="assets/sfx/keypress-019.wav"></audio>
+      <audio id="sfx-key-4" class="clip" data-start="11.18" data-duration="0.25" data-track-index="6" data-volume="0.3" src="assets/sfx/keypress-007.wav"></audio>
+      <audio id="sfx-key-5" class="clip" data-start="11.5" data-duration="0.12" data-track-index="6" data-volume="0.3" src="assets/sfx/keypress-025.wav"></audio>
+      <audio id="sfx-pastille" class="clip" data-start="11.66" data-duration="0.12" data-track-index="6" data-volume="0.55" src="assets/sfx/bong_001.ogg"></audio>
+      <audio id="sfx-key-6" class="clip" data-start="11.82" data-duration="0.25" data-track-index="6" data-volume="0.28" src="assets/sfx/keypress-030.wav"></audio>
+      <audio id="sfx-carte" class="clip" data-start="13.6" data-duration="0.6" data-track-index="6" data-volume="0.45" src="assets/sfx/card-slide-1.ogg"></audio>
+      <audio id="sfx-clic" class="clip" data-start="18.57" data-duration="0.06" data-track-index="6" data-volume="0.8" src="assets/sfx/mouseclick1.ogg"></audio>
+      <audio id="sfx-anneau" class="clip" data-start="21.12" data-duration="1.48" data-track-index="6" data-volume="0.28" src="assets/sfx/impactBell_heavy_000.ogg"></audio>
+      <audio id="sfx-logo" class="clip" data-start="27.84" data-duration="0.18" data-track-index="6" data-volume="0.6" src="assets/sfx/impactSoft_medium_001.ogg"></audio>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // La séquence de fin se fond sur l'écran du lien GitHub
+      tl.fromTo("#outro-video", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.inOut" }, 33);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -692,7 +692,7 @@ Lèv ne collecte, ne transmet et ne conserve aucune donnée personnelle en dehor
 - La détection d'activité lit uniquement le temps écoulé depuis la dernière action. Aucune frappe, aucun titre de fenêtre, aucune capture d'écran n'est lu ni enregistré.
 - Si l'option est cochée, et seulement lorsqu'un rappel arrive à échéance, Lèv lit en lecture seule deux dates du registre de l'utilisateur (`ConsentStore\microphone` et `NonPackaged`) pour savoir si le microphone est ouvert. Elle n'ouvre pas le flux audio, ne conserve pas le nom de l'application et n'enregistre pas ces dates.
 - Les seuls accès réseau admis : la vérification des mises à jour (section 13), et l'ouverture d'un lien dans le navigateur quand l'utilisateur clique dessus.
-- Désinstaller l'application supprime aussi le fichier de réglages (option deleteAppDataOnUninstall de l'installateur, à activer).
+- Désinstaller l'application conserve le fichier de réglages (`deleteAppDataOnUninstall: false`).
 
 ### Règles de sécurité Electron
 
@@ -725,8 +725,9 @@ Lèv doit être utilisable au clavier, avec un lecteur d'écran et par une perso
 
 Lèv est livrée sous la forme d'un installateur Windows unique, qui s'installe sans droits d'administrateur.
 
-- **Installateur** : `electron-builder`, cible NSIS, installation par utilisateur, en français. Raccourci dans le menu Démarrer, pas d'icône imposée sur le bureau.
-- **Nom affiché** : « Lèv ». Identifiant technique sans accent : `re.ekilib.lev`. Nom du fichier : `Lev-Setup-1.2.0.exe`.
+- **Installateur** : `electron-builder`, cible NSIS one-click, installation par utilisateur, en français, sans choix de dossier. Raccourci « Lèv » dans le menu Démarrer et sur le bureau.
+- **Nom affiché** : « Lèv ». Identifiant technique sans accent : `re.ekilib.lev`. Nom du fichier : `Lev-Setup-1.2.1.exe`.
+- **Déploiement en entreprise (Intune / Silent install)** : voir la sous-section du même nom, plus bas.
 - **Démarrage automatique** : activé par défaut via `app.setLoginItemSettings`, désactivable dans « Autres réglages ». L'entrée de démarrage automatique lance Lèv avec l'argument --demarrage-auto : dans ce cas aucune fenêtre ne s'ouvre, seule l'icône apparaît. Un lancement à la main (menu Démarrer) ouvre « Mes rappels », ou l'accueil si c'est le premier lancement. Si Lèv tourne déjà, la relancer ouvre « Mes rappels » dans l'instance existante (événement second-instance) : sans cela, le clic semblerait sans effet.
 - **Signature du code** : sans certificat de signature, Windows affiche un avertissement « éditeur inconnu » à l'installation, ce qui décourage une partie du public. L'achat d'un certificat au nom de l'association est à décider (section 16).
 - **Distribution** : téléchargement depuis ekilib.re. Le Microsoft Store est une seconde voie possible, qui évite l'avertissement de Windows.
@@ -734,6 +735,22 @@ Lèv est livrée sous la forme d'un installateur Windows unique, qui s'installe 
 - **Versions** : numérotation `majeure.mineure.correctif`. Le numéro est affiché dans « À propos ».
 - **Empreinte au repos** : une seule instance (section 11). Accélération matérielle désactivée, tas V8 plafonné à 64 Mo, fenêtre de rappel détruite dès sa disparition (section 3). Entre deux rappels, aucun processus de rendu ne reste ouvert.
 - **macOS et Linux** : hors v1. Le code ne doit rien contenir qui empêche de les ajouter (section 3).
+
+### Déploiement en entreprise (Intune / Silent install)
+
+L'installateur est produit par `electron-builder`, cible NSIS one-click (`oneClick: true`, `perMachine: false`, `allowToChangeInstallationDirectory: false`). L'installation se fait pour l'utilisateur courant, sans élévation administrateur.
+
+Installation silencieuse. Le commutateur `/S` est en majuscule. Le processus reste bloquant jusqu'à la fin réelle de la copie :
+
+`Lev-Setup-<version>.exe /S`
+
+Chemin d'installation : `%LOCALAPPDATA%\Programs\lev\Lèv.exe`.
+
+Désinstallation silencieuse :
+
+`"%LOCALAPPDATA%\Programs\lev\Uninstall Lèv.exe" /S`
+
+Le même fichier, ouvert sans `/S`, fait l'installation manuelle one-click, au même endroit. La vérification des mises à jour décrite plus haut ne télécharge rien et n'installe rien.
 
 ## 14. Tests et critères d'acceptation
 
