@@ -60,10 +60,9 @@ export function APropos(): React.JSX.Element {
     <main className="application">
       <RetourRappels />
       <header className="entete">
-        <h1 className="titre-ecran" tabIndex={-1}>
-          {page.titre}
+        <h1 className="titre-ecran signature" tabIndex={-1}>
+          {page.signature}
         </h1>
-        <p className="signature">{page.signature}</p>
         <p className="corps">{page.phrase}</p>
       </header>
 

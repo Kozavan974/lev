@@ -9,7 +9,7 @@ alwaysApply: false
 - Aucun texte en dur : tout vient de `src/content/fr.json`.
 - Aucune couleur ni taille en dur : uniquement les variables CSS de la section 9.
 - Éléments HTML natifs (`button`, `a`, `input`, `label`, `select`). Jamais de `div` cliquable.
-- Cibles de 38 px minimum (34 px pour les pastilles, 32 px pour les lignes du menu), focus toujours visible.
+- Cibles de 38 px minimum (34 px pour les pastilles et les boutons du menu, 28 px pour les liens du menu, 30 px pour les boutons − et + de la respiration). Le focus est visible sur les éléments interactifs.
 - Respecte `prefers-reduced-motion`.
 - Les écrans passent par l'API du preload. Jamais d'accès direct au disque ni à `ipcRenderer`.
 - La notification mesure sa hauteur avec `ResizeObserver` et la transmet au processus principal, qui l'arrondit en entier avant `setBounds()`.

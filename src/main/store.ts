@@ -6,11 +6,30 @@ import { normaliser } from './reglages'
 let memoire: Store | null = null
 
 /**
- * Point de passage de toute évolution du format.
- * La version 1 est le premier format : rien à transformer.
+ * Point de passage de toute évolution du format. Le numéro reste 1.
+ * Une ancienne `reunionJusqua` rejoint `veilleJusqua` avec le motif `reunion`,
+ * puis disparaît. Une veille déjà écrite et plus tardive l'emporte, sans prendre ce motif.
+ * Une date de réunion illisible rend la fiche illisible : `normaliser` retombe sur les défauts.
  */
 export function migrer(donnees: unknown): unknown {
-  return donnees
+  if (!estEnregistrement(donnees) || !Object.hasOwn(donnees, 'reunionJusqua')) {
+    return donnees
+  }
+  const reunion = donnees.reunionJusqua
+  if (!estInstant(reunion)) {
+    return { version: 0 }
+  }
+  const suite: Record<string, unknown> = { ...donnees }
+  delete suite.reunionJusqua
+  if (Object.hasOwn(suite, 'veilleJusqua') && !estInstant(suite.veilleJusqua)) {
+    return suite
+  }
+  const veille = estInstant(suite.veilleJusqua) ? suite.veilleJusqua : undefined
+  if (veille === undefined || instantMs(reunion) >= instantMs(veille)) {
+    suite.veilleJusqua = reunion
+    suite.veilleMotif = 'reunion'
+  }
+  return suite
 }
 
 export function initialiserStore(): void {
@@ -36,6 +55,19 @@ export function enregistrerReglages(reglages: Reglages): void {
     throw new Error('Les réglages ne sont pas prêts.')
   }
   memoire.store = versEnregistrement(reglages)
+}
+
+function estEnregistrement(valeur: unknown): valeur is Record<string, unknown> {
+  return typeof valeur === 'object' && valeur !== null && !Array.isArray(valeur)
+}
+
+function estInstant(valeur: unknown): valeur is string {
+  return typeof valeur === 'string' && valeur.trim() === valeur && !Number.isNaN(Date.parse(valeur))
+}
+
+function instantMs(iso: string): number {
+  const fin = new Date(iso).getTime()
+  return Number.isFinite(fin) ? fin : 0
 }
 
 function versEnregistrement(reglages: Reglages): Record<string, unknown> {

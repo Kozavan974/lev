@@ -1,7 +1,10 @@
 node_modules
 dist
 out
+brag-output/
 .DS_Store
 .eslintcache
 *.log*
 *.tsbuildinfo
+
+dist-release/

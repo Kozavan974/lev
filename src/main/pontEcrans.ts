@@ -1,3 +1,8 @@
+/**
+ * Relie les actions des écrans aux réglages, aux fenêtres, à la veille et à la réunion.
+ * Les écrans ne lisent pas le fichier de réglages : ils passent par ce module.
+ * Une réunion et une veille manuelle sont la même suspension, distinguées par le motif.
+ */
 import { randomUUID } from 'node:crypto'
 import { app, ipcMain, nativeTheme, shell, type BrowserWindow } from 'electron'
 import textes from '../content/fr.json'

@@ -1,3 +1,8 @@
+/**
+ * Contrat entre le processus principal et les fenêtres.
+ * Canaux nommés, formes des messages, et gardes sur les valeurs `unknown`.
+ * Le preload n'expose que `ApiLev`. Les deux côtés refusent un message mal formé.
+ */
 import type {
   Frequence,
   Jours,
@@ -46,6 +51,12 @@ export interface ParcoursSequence {
   total: number
 }
 
+export interface AstuceNotification {
+  texte: string
+  lien: string | null
+  ecran: EcranNavigation | null
+}
+
 export interface VueNotification {
   cycle: number
   rappelId: string
@@ -66,6 +77,7 @@ export interface VueNotification {
   lienArret: boolean
   lienPoste: boolean
   resteAffichee: boolean
+  astuce: AstuceNotification | null
 }
 
 export interface VueMessage {
@@ -94,6 +106,7 @@ export type ClefOption =
   | 'lancerAuDemarrage'
   | 'verifierMajAuto'
   | 'suspendreInactivite'
+  | 'afficherAstuces'
 
 export type DureeVeille = '30min' | 'demain'
 
@@ -240,7 +253,8 @@ export function estVueNotification(valeur: unknown): valeur is VueNotification {
     typeof valeur.son === 'boolean' &&
     typeof valeur.lienArret === 'boolean' &&
     typeof valeur.lienPoste === 'boolean' &&
-    typeof valeur.resteAffichee === 'boolean'
+    typeof valeur.resteAffichee === 'boolean' &&
+    estAstuceNotification(valeur.astuce)
   )
 }
 
@@ -268,7 +282,8 @@ const CLEFS_OPTION = [
   'son',
   'lancerAuDemarrage',
   'verifierMajAuto',
-  'suspendreInactivite'
+  'suspendreInactivite',
+  'afficherAstuces'
 ] as const
 const DUREES_VEILLE = ['30min', 'demain'] as const
 const ACTIONS_SANS_CHARGE = [
@@ -399,6 +414,25 @@ function boutonsCoherents(valeur: Record<string, unknown>): boolean {
     return valeur.boutonOui === null && valeur.boutonGarder === null
   }
   return false
+}
+
+function estAstuceNotification(valeur: unknown): valeur is AstuceNotification | null {
+  if (valeur === null) {
+    return true
+  }
+  if (!estObjet(valeur)) {
+    return false
+  }
+  if (typeof valeur.texte !== 'string' || valeur.texte.length < 1 || valeur.texte.length > 200) {
+    return false
+  }
+  if (
+    valeur.lien !== null &&
+    (typeof valeur.lien !== 'string' || valeur.lien.length < 1 || valeur.lien.length > 40)
+  ) {
+    return false
+  }
+  return valeur.ecran === null || estParmi(valeur.ecran, ECRANS_NAVIGATION)
 }
 
 function estParcours(valeur: unknown): valeur is { faits: number; total: number } | null {

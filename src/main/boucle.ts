@@ -1,11 +1,18 @@
+/**
+ * Seul endroit qui lit l'horloge et le temps d'inactivité, puis appelle le moteur.
+ * Un seul intervalle tourne. Les écouteurs ne sont posés qu'une fois,
+ * et retirés à l'arrêt. Le raccourci global n'est pas géré ici.
+ */
 import { ipcMain, powerMonitor } from 'electron'
 import textes from '../content/fr.json'
 import {
   CANAL_NOTIFICATION,
   estReponseBouton,
+  type AstuceNotification,
   type ReponseBouton,
   type VueNotification
 } from '../preload/contrat'
+import { identifiantsAstuces, lireAstuce } from './astuces'
 import { composerVue } from './composerNotification'
 import type { Reglages } from './modeles'
 import {
@@ -24,6 +31,7 @@ import {
   INTERVALLE_EVALUATION_MS,
   MESSAGE_REPONSE_MS
 } from './scheduler/constantes'
+import { integrerAstuce } from './scheduler/astuces'
 import { sondageEchu } from './scheduler/sondage'
 import {
   appliquerAdaptation,
@@ -42,6 +50,7 @@ import { enregistrerReglages, lireReglages } from './store'
 
 let etat: EtatMoteur = creerEtat()
 let cycle = 0
+let astuceCourante: AstuceNotification | null = null
 let verrouille = false
 let veilleSysteme = false
 let reveilEnAttente = false
@@ -74,8 +83,9 @@ export function demarrerSequences(): void {
     return
   }
   etat = suivant
+  astuceCourante = null
   cycle += 1
-  const vue = composerVue(reglages, notification, cycle)
+  const vue = composerVue(reglages, notification, cycle, astuceCourante)
   if (vue) {
     publierNotification(vue)
   }
@@ -112,8 +122,9 @@ export function demanderPauseMaintenant(): void {
   if (!etat.notification) {
     return
   }
+  retenirAstuce()
   cycle += 1
-  const vue = composerVue(reglages, etat.notification, cycle)
+  const vue = composerVue(lireReglages(), etat.notification, cycle, astuceCourante)
   if (vue) {
     publierNotification(vue)
   }
@@ -218,8 +229,9 @@ function tick(): void {
   if (!etat.notification) {
     return
   }
+  retenirAstuce()
   cycle += 1
-  const vue = composerVue(reglages, etat.notification, cycle)
+  const vue = composerVue(lireReglages(), etat.notification, cycle, astuceCourante)
   if (vue) {
     publierNotification(vue)
   }
@@ -327,11 +339,27 @@ function preparerIdee(courant: EtatMoteur, reglages: Reglages): EtatMoteur {
   return noterCharge(courant, { assis: notification.charge.assis, ideeIndex })
 }
 
+/** Seul un rappel compte. Une autre idée, sur la même carte, ne repasse pas ici. */
+function retenirAstuce(): void {
+  if (etat.notification?.genre !== 'rappel') {
+    astuceCourante = null
+    return
+  }
+  const integration = integrerAstuce(lireReglages(), identifiantsAstuces())
+  enregistrerReglages(integration.reglages)
+  astuceCourante = integration.identifiant === null ? null : lireAstuce(integration.identifiant)
+}
+
 function republier(reglages: Reglages): void {
   if (!etat.notification) {
     return
   }
-  const vue: VueNotification | null = composerVue(reglages, etat.notification, cycle)
+  const vue: VueNotification | null = composerVue(
+    reglages,
+    etat.notification,
+    cycle,
+    astuceCourante
+  )
   if (vue) {
     publierNotification(vue)
   }

@@ -193,6 +193,115 @@ label.question {
   min-height: var(--cible-min);
 }
 
+.question.theme-bloc {
+  gap: var(--espace-6);
+}
+
+.theme-grille {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espace-6);
+  width: 100%;
+  min-width: 0;
+}
+
+.pilule-theme {
+  position: relative;
+  flex: 1 0 max-content;
+  justify-content: center;
+  max-width: 100%;
+  min-height: var(--cible-pastille);
+  padding: 0 var(--espace-14);
+  border: 1px solid var(--action);
+  border-radius: var(--rayon-pilule);
+  background: var(--carte);
+  color: var(--action);
+  font-weight: var(--graisse-texte);
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+}
+
+.pilule-theme span {
+  min-width: 0;
+}
+
+.pilule-theme:hover {
+  border-color: var(--action-survol);
+  color: var(--action-survol);
+}
+
+.pilule-theme:has(:checked) {
+  border-color: var(--action);
+  background: var(--action);
+  color: var(--sur-action);
+  font-weight: var(--graisse-forte);
+}
+
+.pilule-theme:has(:checked):hover {
+  border-color: var(--action-survol);
+  background: var(--action-survol);
+  color: var(--sur-action);
+}
+
+.pilule-theme input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pilule-theme:has(input:focus-visible) {
+  outline: var(--contour-focus);
+  outline-offset: 2px;
+}
+
+.pilule-theme input:focus-visible {
+  outline: none;
+}
+
+.corps-repli.autres-reglages {
+  gap: 0;
+}
+
+.groupe-options {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--espace-6);
+  width: 100%;
+  margin: 0;
+  border: none;
+  padding: 0;
+  min-inline-size: 0;
+}
+
+.corps-repli.autres-reglages > .groupe-options-bloc {
+  margin-top: var(--espace-12);
+  padding-top: var(--espace-12);
+  border-top: 1px solid var(--separateur);
+}
+
+.groupe-options > legend {
+  margin: 0;
+  padding: 0;
+  color: var(--texte-second);
+  font-size: var(--legende);
+  font-weight: var(--graisse-titre);
+  line-height: 1.3;
+}
+
+.corps-repli.autres-reglages > .bouton,
+.corps-repli.autres-reglages > .bandeau {
+  margin-top: var(--espace-12);
+}
+
 .carte.repli {
   gap: 0;
   padding: 0;
@@ -366,6 +475,7 @@ details.carte.repli-ekilib[open] {
   margin: 0;
   color: var(--signature);
   font-weight: var(--graisse-forte);
+  text-align: center;
 }
 
 .signature-technique {

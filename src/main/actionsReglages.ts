@@ -192,13 +192,6 @@ function ajouter(
 }
 
 /** Les quatre rappels de base reviennent au départ. Les rappels personnels restent, à la suite. */
-export function retablirRappelsOrigine(
-  reglages: Reglages,
-  identifiants: Record<TypeRappel, string>
-): Reglages {
-  return retablir(reglages, identifiants)
-}
-
 function retablir(reglages: Reglages, identifiants: Record<TypeRappel, string>): Reglages {
   const bases = reglagesParDefaut().rappels.map((modele) => {
     const existant = reglages.rappels.find(

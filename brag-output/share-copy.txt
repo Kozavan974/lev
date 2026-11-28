@@ -1,1 +1,0 @@
-Lèv — levez-vous, respirez. Une petite appli Windows qui t'invite à bouger, à reposer tes yeux et à respirer, sans rien compter ni rien reprocher : gratuite et libre, aucun compte, proposée par la Maison Sport Santé Ekilib.re. https://github.com/Kozavan974/lev/releases/latest

@@ -1,3 +1,8 @@
+/**
+ * Valeurs de départ et validation du format version 1.
+ * Une fiche absente ou illisible redevient les défauts, sans message technique.
+ * L'ancienne clé `reunionJusqua` n'est pas lue ici : `store.migrer` la reprend avant.
+ */
 import { randomUUID } from 'node:crypto'
 import { estVersionSemVer } from './misesAJour'
 import type {
@@ -70,11 +75,14 @@ export function reglagesParDefaut(): Reglages {
       son: false,
       lancerAuDemarrage: true,
       verifierMajAuto: true,
-      suspendreInactivite: true
+      suspendreInactivite: true,
+      afficherAstuces: true
     },
     theme: 'auto',
     respiration: { inspiration: 4, pleine: 4, expiration: 4, vide: 4, minutes: 1 },
-    guidePoste: [false, false, false, false, false]
+    guidePoste: [false, false, false, false, false],
+    astucesVues: [],
+    notificationsAffichees: 0
   }
 }
 
@@ -99,8 +107,9 @@ function lireReglagesValides(donnees: unknown): Reglages | null {
   const options = lireOptions(donnees.options)
   const respiration = lireRespiration(donnees.respiration)
   const guidePoste = lireGuide(donnees.guidePoste)
+  const astucesVues = lireAstucesVues(donnees)
+  const notificationsAffichees = lireNotificationsAffichees(donnees)
   const veille = lireOptionnel(donnees, 'veilleJusqua', estInstant)
-  const reunion = lireOptionnel(donnees, 'reunionJusqua', estInstant)
   const verification = lireOptionnel(donnees, 'derniereVerificationMaj', estInstant)
   const versionVue = lireOptionnel(donnees, 'derniereVersionVue', estVersionSemVer)
   if (
@@ -110,8 +119,9 @@ function lireReglagesValides(donnees: unknown): Reglages | null {
     !options ||
     !respiration ||
     !guidePoste ||
+    astucesVues === null ||
+    notificationsAffichees === null ||
     !veille.ok ||
-    !reunion.ok ||
     !verification.ok ||
     !versionVue.ok ||
     !estParmi(donnees.theme, THEMES)
@@ -127,18 +137,15 @@ function lireReglagesValides(donnees: unknown): Reglages | null {
     options,
     theme: donnees.theme,
     respiration,
-    guidePoste
+    guidePoste,
+    astucesVues,
+    notificationsAffichees
   }
-  const suspension = retenirSuspension(
-    veille.valeur,
-    reunion.valeur,
-    donnees.veilleMotif === 'reunion'
-  )
-  if (suspension.veilleJusqua !== undefined) {
-    reglages.veilleJusqua = suspension.veilleJusqua
-  }
-  if (suspension.veilleMotif !== undefined) {
-    reglages.veilleMotif = suspension.veilleMotif
+  if (veille.valeur !== undefined) {
+    reglages.veilleJusqua = veille.valeur
+    if (donnees.veilleMotif === 'reunion') {
+      reglages.veilleMotif = 'reunion'
+    }
   }
   if (verification.valeur !== undefined) {
     reglages.derniereVerificationMaj = verification.valeur
@@ -277,26 +284,6 @@ function lireSequences(valeur: unknown): Reglages['sequences'] | null {
   }
 }
 
-/** Une seule suspension. Une réunion déjà écrite dans `reunionJusqua` y est reprise. */
-function retenirSuspension(
-  veille: string | undefined,
-  reunion: string | undefined,
-  motifReunion: boolean
-): { veilleJusqua?: string; veilleMotif?: 'reunion' } {
-  if (reunion !== undefined && (veille === undefined || instantMs(reunion) >= instantMs(veille))) {
-    return { veilleJusqua: reunion, veilleMotif: 'reunion' }
-  }
-  if (veille === undefined) {
-    return {}
-  }
-  return motifReunion ? { veilleJusqua: veille, veilleMotif: 'reunion' } : { veilleJusqua: veille }
-}
-
-function instantMs(iso: string): number {
-  const fin = new Date(iso).getTime()
-  return Number.isFinite(fin) ? fin : 0
-}
-
 function lireOptions(valeur: unknown): Reglages['options'] | null {
   if (!estEnregistrement(valeur)) {
     return null
@@ -312,6 +299,8 @@ function lireOptions(valeur: unknown): Reglages['options'] | null {
     valeur.verifierMajAuto === undefined ? true : lireBooleen(valeur.verifierMajAuto)
   const suspendreInactivite =
     valeur.suspendreInactivite === undefined ? true : lireBooleen(valeur.suspendreInactivite)
+  const afficherAstuces =
+    valeur.afficherAstuces === undefined ? true : lireBooleen(valeur.afficherAstuces)
   if (
     attendreAccalmie === null ||
     pausesSpontanees === null ||
@@ -321,7 +310,8 @@ function lireOptions(valeur: unknown): Reglages['options'] | null {
     son === null ||
     lancerAuDemarrage === null ||
     verifierMajAuto === null ||
-    suspendreInactivite === null
+    suspendreInactivite === null ||
+    afficherAstuces === null
   ) {
     return null
   }
@@ -334,8 +324,40 @@ function lireOptions(valeur: unknown): Reglages['options'] | null {
     son,
     lancerAuDemarrage,
     verifierMajAuto,
-    suspendreInactivite
+    suspendreInactivite,
+    afficherAstuces
   }
+}
+
+const IDENTIFIANT_ASTUCE = /^[a-z0-9-]{1,40}$/
+
+function lireAstucesVues(donnees: Record<string, unknown>): string[] | null {
+  if (!Object.hasOwn(donnees, 'astucesVues')) {
+    return []
+  }
+  const valeur = donnees.astucesVues
+  if (!Array.isArray(valeur) || valeur.length > 24) {
+    return null
+  }
+  const vues: string[] = []
+  for (const element of valeur) {
+    if (typeof element !== 'string' || !IDENTIFIANT_ASTUCE.test(element)) {
+      return null
+    }
+    if (!vues.includes(element)) {
+      vues.push(element)
+    }
+  }
+  return vues
+}
+
+function lireNotificationsAffichees(donnees: Record<string, unknown>): number | null {
+  if (!Object.hasOwn(donnees, 'notificationsAffichees')) {
+    return 0
+  }
+  return estEntier(donnees.notificationsAffichees, 0, 100_000)
+    ? donnees.notificationsAffichees
+    : null
 }
 
 function lireRespiration(valeur: unknown): Reglages['respiration'] | null {

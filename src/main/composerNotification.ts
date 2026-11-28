@@ -1,6 +1,6 @@
 import textes from '../content/fr.json'
 import { formaterInstant, remplir } from '../partage/format'
-import type { VueNotification } from '../preload/contrat'
+import type { AstuceNotification, VueNotification } from '../preload/contrat'
 import { frequenceSuperieure, type Frequence, type Rappel, type Reglages } from './modeles'
 import type { DetailSequence, NotificationEnCours } from './scheduler/moteur'
 import { texteIdee } from './selectionIdees'
@@ -8,13 +8,14 @@ import { texteIdee } from './selectionIdees'
 export function composerVue(
   reglages: Reglages,
   notification: NotificationEnCours,
-  cycle: number
+  cycle: number,
+  astuce: AstuceNotification | null = null
 ): VueNotification | null {
   const vue = composerContenu(reglages, notification, cycle)
   if (!vue) {
     return null
   }
-  return { ...vue, son: reglages.options.son }
+  return { ...vue, son: reglages.options.son, astuce }
 }
 
 function composerContenu(
@@ -260,6 +261,7 @@ function vue(
     son: false,
     lienArret: complement.lienArret ?? false,
     lienPoste: complement.lienPoste ?? false,
-    resteAffichee: complement.resteAffichee ?? false
+    resteAffichee: complement.resteAffichee ?? false,
+    astuce: null
   }
 }

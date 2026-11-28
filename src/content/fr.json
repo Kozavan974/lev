@@ -8,9 +8,9 @@
     "prochaine": "Lèv · prochaine pause à {heure}",
     "veille": "Lèv · en veille jusqu'à {heure}",
     "reunionInfobulle": "Lèv · en réunion jusqu'à {heure}",
-    "sequenceTravail": "Lèv — Séquence de travail : {reste} ({rang}/{total})",
-    "sequencePause": "Lèv — Pause de séquence : {reste}",
-    "sequenceGrande": "Lèv — Grande pause : {reste}",
+    "sequenceTravail": "Lèv - Séquence de travail : {reste} ({rang}/{total})",
+    "sequencePause": "Lèv - Pause de séquence : {reste}",
+    "sequenceGrande": "Lèv - Grande pause : {reste}",
     "sequence": "Démarrer une séquence de travail",
     "arreterSequences": "Arrêter la séquence de travail",
     "pause": "Faire une pause maintenant",
@@ -81,6 +81,11 @@
     "phraseHeure": "Lèv te rappellera « {nom} » à {heure}, {repetition}.",
     "autres": "Autres réglages",
     "theme": "Thème",
+    "groupes": {
+      "activite": "Respect de mon activité",
+      "conseils": "Rappels et conseils",
+      "systeme": "Application et système"
+    },
     "retablir": "Rétablir les rappels d'origine",
     "retabli": "Rappels d'origine rétablis.",
     "apropos": "À propos",
@@ -101,8 +106,10 @@
       "240": "4 heures"
     },
     "frequencePhrase": {
+      "10": "toutes les 10 minutes",
       "20": "toutes les 20 minutes",
       "30": "toutes les 30 minutes",
+      "45": "toutes les 45 minutes",
       "60": "toutes les heures",
       "120": "toutes les 2 heures",
       "240": "toutes les 4 heures"
@@ -145,7 +152,8 @@
       "son": "Jouer un son doux avec chaque rappel",
       "lancerAuDemarrage": "Lancer Lèv au démarrage de l'ordinateur",
       "verifierMajAuto": "Vérifier automatiquement les mises à jour (1 fois par semaine)",
-      "suspendreInactivite": "Suspendre les rappels quand je suis absent depuis 5 minutes"
+      "suspendreInactivite": "Suspendre les rappels quand je suis absent depuis 5 minutes",
+      "afficherAstuces": "Me montrer parfois une courte astuce d'utilisation"
     }
   },
   "notification": {
@@ -267,7 +275,7 @@
   "accueil": {
     "titre": "Bienvenue dans Lèv.",
     "suite": "Je te rappellerai doucement de bouger et de reposer tes yeux.",
-    "choix": "Tu choisis le rythme — et tu peux changer d'avis à tout moment.",
+    "choix": "Tu choisis le rythme, et tu peux changer d'avis à tout moment.",
     "commencer": "Commencer",
     "rythme": "Choisir mon rythme",
     "rejouerLogo": "Revoir le mouvement du logo",
@@ -296,8 +304,7 @@
     "mentions": ["Aucun compte", "Aucune inscription", "Aucune donnée personnelle"]
   },
   "apropos": {
-    "titre": "À propos",
-    "signature": "Lèv — une pause, naturellement.",
+    "signature": "Lèv - une pause, naturellement.",
     "phrase": "Un compagnon discret pour bouger un peu plus souvent pendant le travail sur écran, et laisser ses yeux se reposer.",
     "philosophie": {
       "titre": "Philosophie",

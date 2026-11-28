@@ -1,10 +1,10 @@
 {
   "name": "lev",
   "productName": "Lèv",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Lèv — une pause, naturellement.",
   "license": "MIT",
-  "author": "Ekilib.re",
+  "author": "Association Ekilib.re",
   "main": "./out/main/index.js",
   "scripts": {
     "format": "prettier --write .",

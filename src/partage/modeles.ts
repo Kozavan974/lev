@@ -54,6 +54,7 @@ export interface Reglages {
     lancerAuDemarrage: boolean
     verifierMajAuto: boolean
     suspendreInactivite: boolean
+    afficherAstuces: boolean
   }
   theme: Theme
   respiration: {
@@ -64,6 +65,10 @@ export interface Reglages {
     minutes: DureeRespiration
   }
   guidePoste: boolean[]
+  /** Identifiants des astuces déjà glissées en pied de notification. */
+  astucesVues: string[]
+  /** Nombre de rappels déjà proposés depuis l'installation. */
+  notificationsAffichees: number
   veilleJusqua?: string
   /** Présent seulement quand la suspension d'une heure vient de « En réunion ». */
   veilleMotif?: 'reunion'

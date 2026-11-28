@@ -1,0 +1,40 @@
+{
+  "astuces": [
+    {
+      "id": "frequence",
+      "texte": "Tu peux régler la fréquence de chaque rappel, et les heures où je me manifeste.",
+      "lien": "Ouvrir les réglages",
+      "ecran": "rappels"
+    },
+    {
+      "id": "reunion",
+      "texte": "Le menu propose « En réunion (1 h) » pour une heure au calme.",
+      "lien": null,
+      "ecran": null
+    },
+    {
+      "id": "respiration",
+      "texte": "Une respiration guidée de quelques minutes, si tu veux souffler.",
+      "lien": "Essayer la respiration",
+      "ecran": "respiration"
+    },
+    {
+      "id": "assis",
+      "texte": "Tu peux préférer des mouvements discrets, à faire assis.",
+      "lien": "Ouvrir les réglages",
+      "ecran": "rappels"
+    },
+    {
+      "id": "pause30",
+      "texte": "Sur le rappel pour marcher, une pause guidée de 30 secondes est proposée.",
+      "lien": null,
+      "ecran": null
+    },
+    {
+      "id": "poste",
+      "texte": "Le guide du poste reprend des repères de l'INRS.",
+      "lien": "Voir le guide",
+      "ecran": "poste"
+    }
+  ]
+}

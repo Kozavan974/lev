@@ -49,7 +49,22 @@ Prérequis : Node.js et npm.
 npm install
 npm run dev
 npm test
+npm run typecheck
 npm run dist
 ```
 
-`npm run dev` lance Lèv en développement. `npm test` exécute la suite Vitest. `npm run dist` produit l'installateur Windows (`Lev-Setup-1.2.1.exe`).
+`npm run dev` lance Lèv en développement. `npm test` exécute la suite Vitest. `npm run typecheck` vérifie les types. `npm run dist` produit l'installateur Windows (`Lev-Setup-1.2.2.exe`).
+
+Le cahier des charges est dans [docs/CDC.md](docs/CDC.md). En cas d'écart avec une maquette (`docs/maquettes/`), ce document fait foi.
+
+```text
+src/main/       processus principal : boucle, moteur (scheduler/), réglages, fenêtres, zone de notification
+src/preload/    pont sécurisé entre les fenêtres et le processus principal
+src/renderer/   écrans React : notification, menu, application
+src/content/    textes français (fr.json, idees.fr.json, guide.fr.json, astuces.fr.json)
+src/partage/    types et calculs utilisés par le processus principal et les écrans
+```
+
+## Contribuer
+
+Lis [docs/CDC.md](docs/CDC.md) avant de modifier un comportement. Les textes de l'interface sont dans `src/content/`, pas dans les composants. TypeScript strict, aucun `any`. Tout ce qui dépend de Windows reste dans `src/main/platform/`. Les fenêtres Application et Menu se créent à la demande et se détruisent à la fermeture. Le tutoiement reste une invitation, jamais un ordre ni un reproche. Avant de proposer une modification, lance `npm test` et `npm run typecheck`.

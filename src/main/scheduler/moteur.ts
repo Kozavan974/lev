@@ -1,3 +1,9 @@
+/**
+ * Moteur de rappels. Logique pure : l'instant et l'inactivité sont injectés,
+ * sans Electron ni horloge réelle.
+ * Au plus une notification à la fois. Un retour de veille, de verrou ou d'absence
+ * ne rattrape pas les cartes manquées. Réunion et veille manuelle partagent `veilleJusqua`.
+ */
 import { jourDeRepetition, jourLocal } from '../../partage/format'
 import {
   frequenceSuperieure,
@@ -227,6 +233,11 @@ export function noterCharge(etat: EtatMoteur, charge: ChargeNotification): EtatM
   return { ...etat, notification: { ...etat.notification, charge } }
 }
 
+/**
+ * Décide d'afficher, de fermer ou de se taire.
+ * Verrou, horaires, veille et absence sont tranchés avant le choix du rappel :
+ * au retour, les cartes accumulées ne s'ouvrent pas en rafale.
+ */
 export function evaluer(
   etat: EtatMoteur,
   reglages: Reglages,
@@ -985,6 +996,10 @@ function compareRappel(a: Rappel, b: Rappel): number {
   return ORDRE_TYPE[a.type] - ORDRE_TYPE[b.type]
 }
 
+/**
+ * Une réunion et une veille manuelle s'arrêtent au même instant.
+ * `veilleMotif` ne change que le libellé, il ne prolonge pas la suspension.
+ */
 function estVeilleActive(reglages: Reglages, maintenantMs: number): boolean {
   return instantFutur(reglages.veilleJusqua, maintenantMs)
 }
@@ -997,6 +1012,11 @@ function instantFutur(iso: string | undefined, maintenantMs: number): boolean {
   return Number.isFinite(fin) && fin > maintenantMs
 }
 
+/**
+ * À partir de 5 minutes, la personne est absente : le décompte se fige
+ * et aucune carte ne s'ouvre. Les 3 minutes d'une pause spontanée sont un autre
+ * seuil : elles comptent comme une pause déjà prise, pas comme une absence.
+ */
 function inactiviteLongue(reglages: Reglages, entree: EntreeMoteur): boolean {
   return (
     reglages.options.suspendreInactivite &&

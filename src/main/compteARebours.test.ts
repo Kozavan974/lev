@@ -71,7 +71,7 @@ describe('compte à rebours', () => {
         '10h40',
         INFOBULLE
       )
-    ).toBe('Lèv — Séquence de travail : 18 min restantes (2/4)')
+    ).toBe('Lèv - Séquence de travail : 18 min restantes (2/4)')
     expect(
       choisirInfobulle(
         { phase: 'pause', grande: false, reste: '4 min restantes' },
@@ -80,7 +80,7 @@ describe('compte à rebours', () => {
         '10h40',
         INFOBULLE
       )
-    ).toBe('Lèv — Pause de séquence : 4 min restantes')
+    ).toBe('Lèv - Pause de séquence : 4 min restantes')
     expect(
       choisirInfobulle(
         { phase: 'pause', grande: true, reste: '15 min restantes' },
@@ -89,7 +89,7 @@ describe('compte à rebours', () => {
         null,
         INFOBULLE
       )
-    ).toBe('Lèv — Grande pause : 15 min restantes')
+    ).toBe('Lèv - Grande pause : 15 min restantes')
   })
 
   it('hors séquence, garde la prochaine pause, la veille, ou le nom', () => {

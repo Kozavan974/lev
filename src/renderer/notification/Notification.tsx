@@ -1,6 +1,16 @@
+/**
+ * Carte de notification, en bas à droite. Elle ne prend pas le focus à l'apparition.
+ * Elle mesure sa hauteur et la transmet au processus principal.
+ * Chaque minuteur est annulé quand la carte change ou quitte l'écran.
+ */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import textes from '../../content/fr.json'
-import type { ReponseBouton, VueMessage, VueNotification } from '../../preload/contrat'
+import type {
+  AstuceNotification,
+  ReponseBouton,
+  VueMessage,
+  VueNotification
+} from '../../preload/contrat'
 import { Logo } from '../shared/Logo'
 import { jouerPourCycle } from '../shared/son'
 import { PictoBouger, PictoLibre, PictoPosture, PictoYeux } from '../shared/Pictogrammes'
@@ -440,11 +450,32 @@ export function Notification(): React.JSX.Element {
                   {textes.notification.finSequence.arreter}
                 </button>
               ) : null}
+              {vue.astuce ? <PiedAstuce astuce={vue.astuce} /> : null}
             </>
           ) : null}
         </article>
       ) : null}
     </div>
+  )
+}
+
+function PiedAstuce({ astuce }: { astuce: AstuceNotification }): React.JSX.Element {
+  const ecran = astuce.ecran
+  return (
+    <footer className="notification-astuce">
+      <p className="notification-astuce-texte">{astuce.texte}</p>
+      {astuce.lien && ecran ? (
+        <button
+          type="button"
+          className="notification-lien"
+          onClick={() => {
+            window.lev.agir({ type: 'ouvrirEcran', ecran })
+          }}
+        >
+          {astuce.lien}
+        </button>
+      ) : null}
+    </footer>
   )
 }
 

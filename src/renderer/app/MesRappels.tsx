@@ -1,3 +1,7 @@
+/**
+ * Écran « Mes rappels ». Chaque changement part tout de suite par `window.lev.agir`,
+ * sans bouton Enregistrer. Les libellés viennent de `fr.json`.
+ */
 import { useState, type FormEvent } from 'react'
 import textes from '../../content/fr.json'
 import { ligneDecompte } from '../../partage/compteARebours'
@@ -15,17 +19,23 @@ const REPETITIONS = ['jour', 'semaine', 'une'] as const
 const JOURS = ['semaine', 'samedi', 'jour'] as const
 const RYTHMES = ['25-5', '50-10', 'heure', 'autre'] as const
 const THEMES = ['auto', 'clair', 'sombre'] as const
-const OPTIONS = [
-  'attendreAccalmie',
-  'pausesSpontanees',
-  'nePasDeranger',
-  'proposerEspacer',
-  'mouvementsAssis',
-  'son',
-  'lancerAuDemarrage',
-  'verifierMajAuto',
-  'suspendreInactivite'
-] as const satisfies readonly ClefOption[]
+const GROUPES_OPTIONS = [
+  {
+    id: 'activite',
+    cles: ['attendreAccalmie', 'pausesSpontanees', 'suspendreInactivite', 'nePasDeranger']
+  },
+  {
+    id: 'conseils',
+    cles: ['mouvementsAssis', 'son', 'proposerEspacer', 'afficherAstuces']
+  },
+  {
+    id: 'systeme',
+    cles: ['lancerAuDemarrage', 'verifierMajAuto']
+  }
+] as const satisfies readonly {
+  id: keyof typeof textes.rappels.groupes
+  cles: readonly ClefOption[]
+}[]
 
 const HEURE = /^([01]\d|2[0-3]):[0-5]\d$/
 
@@ -360,40 +370,48 @@ export function MesRappels(): React.JSX.Element {
             <span>{textes.rappels.autres}</span>
             <Chevron />
           </summary>
-          <div className="corps-repli">
-            <fieldset className="question">
+          <div className="corps-repli autres-reglages">
+            <fieldset className="question theme-bloc">
               <legend>{textes.rappels.theme}</legend>
-              {THEMES.map((theme) => (
-                <label key={theme} className="choix">
-                  <input
-                    className="case"
-                    type="radio"
-                    name="theme"
-                    checked={reglages.theme === theme}
-                    onChange={() => {
-                      window.lev.agir({ type: 'theme', theme })
-                    }}
-                  />
-                  <span>{textes.rappels.themes[theme]}</span>
-                </label>
-              ))}
+              <div className="theme-grille">
+                {THEMES.map((theme) => (
+                  <label key={theme} className="pilule-theme">
+                    <input
+                      type="radio"
+                      name="theme"
+                      checked={reglages.theme === theme}
+                      onChange={() => {
+                        window.lev.agir({ type: 'theme', theme })
+                      }}
+                    />
+                    <span>{textes.rappels.themes[theme]}</span>
+                  </label>
+                ))}
+              </div>
             </fieldset>
-            {OPTIONS.map((cle) => (
-              <label key={cle} className="choix">
-                <input
-                  className="case"
-                  type="checkbox"
-                  checked={reglages.options[cle]}
-                  onChange={(evenement) => {
-                    const coche = evenement.target.checked
-                    window.lev.agir({ type: 'option', cle, valeur: coche })
-                    if (cle === 'son' && coche) {
-                      jouerSonDoux()
-                    }
-                  }}
-                />
-                <span>{textes.rappels.options[cle]}</span>
-              </label>
+            {GROUPES_OPTIONS.map((groupe) => (
+              <div key={groupe.id} className="groupe-options-bloc">
+                <fieldset className="groupe-options">
+                  <legend>{textes.rappels.groupes[groupe.id]}</legend>
+                  {groupe.cles.map((cle) => (
+                    <label key={cle} className="choix">
+                      <input
+                        className="case"
+                        type="checkbox"
+                        checked={reglages.options[cle]}
+                        onChange={(evenement) => {
+                          const coche = evenement.target.checked
+                          window.lev.agir({ type: 'option', cle, valeur: coche })
+                          if (cle === 'son' && coche) {
+                            jouerSonDoux()
+                          }
+                        }}
+                      />
+                      <span>{textes.rappels.options[cle]}</span>
+                    </label>
+                  ))}
+                </fieldset>
+              </div>
             ))}
             <button
               type="button"
@@ -580,16 +598,20 @@ function phraseAjout(
 
 function phraseFrequence(frequence: Frequence): string {
   switch (frequence) {
+    case 10:
+      return textes.rappels.frequencePhrase['10']
     case 20:
       return textes.rappels.frequencePhrase['20']
     case 30:
       return textes.rappels.frequencePhrase['30']
+    case 45:
+      return textes.rappels.frequencePhrase['45']
+    case 60:
+      return textes.rappels.frequencePhrase['60']
     case 120:
       return textes.rappels.frequencePhrase['120']
     case 240:
       return textes.rappels.frequencePhrase['240']
-    default:
-      return textes.rappels.frequencePhrase['60']
   }
 }
 

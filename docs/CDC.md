@@ -6,7 +6,7 @@ Nov 13, 2026 · @Laurent
 
 Lèv est une application de bureau gratuite qui invite, sans jamais l'imposer, à bouger et à reposer ses yeux pendant le travail sur écran. Elle est éditée par l'association Ekilib.re, Maison Sport-Santé au Tampon (La Réunion).
 
-- **Signature** : « Lèv — une pause, naturellement. »
+- **Signature** : « Lèv - une pause, naturellement. »
 - **Public** : grand public, toute personne qui travaille sur ordinateur.
 - **Plateforme** : Windows 10 et 11 pour la v1. Le code doit rester portable vers macOS, puis Linux.
 - **Promesse** : aucun compte, aucune inscription, aucune donnée personnelle demandée. Tout reste sur l'ordinateur.
@@ -18,7 +18,7 @@ Lèv est une application de bureau gratuite qui invite, sans jamais l'imposer, �
 2. Notifications non bloquantes en bas à droite, avec trois réponses : « Je le fais », « Dans 5 min », « Plus tard ».
 3. Séquences de travail de type Pomodoro.
 4. Choix du bon moment : attendre une accalmie, tenir compte des pauses spontanées, horaires de travail, mise en veille.
-5. Icône dans la zone de notification avec trois états (calme, bientôt, pause proposée) et un menu.
+5. Icône dans la zone de notification (calme, bientôt, veille, compte des minutes pendant une séquence) et un menu. Pendant qu'une notification est affichée, l'icône reste celle de « bientôt ».
 6. Écrans annexes : premier lancement, « Mes rappels », « À propos », « Bien installer mon poste », respiration guidée.
 7. Thème clair et thème sombre.
 
@@ -40,7 +40,7 @@ Ces décisions sont prises. Elles ne sont pas à rediscuter pendant le développ
 | Sujet                    | Décision                                                                                                                                                                                 |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Nom                      | Lèv                                                                                                                                                                                      |
-| Adresse à l'utilisateur  | Tutoiement partout dans l'interface. La signature « Lèv — une pause, naturellement. » reste telle quelle                                                                                |
+| Adresse à l'utilisateur  | Tutoiement partout dans l'interface. La signature « Lèv - une pause, naturellement. » reste telle quelle                                                                                |
 | Voix                     | Lèv parle à la première personne dans l'accueil et les notifications (« Je te rappellerai… »), et à la troisième personne dans les réglages et « À propos » (« Lèv retient ton rythme ») |
 | Réglage                  | Zéro réglage obligatoire. L'application fonctionne dès le premier lancement                                                                                                              |
 | Enregistrement           | Pas de bouton « Enregistrer ». Tout changement s'applique immédiatement                                                                                                                  |
@@ -71,12 +71,12 @@ Lèv est une application Electron écrite en TypeScript, avec une interface en R
 | Styles       | CSS natif avec variables (jetons de la section 9)         | Pas de bibliothèque de composants                                             |
 | Stockage     | `electron-store` (un fichier JSON local)                  | Réglages et rappels                                                           |
 | Empaquetage  | `electron-builder`, installateur NSIS par utilisateur     | Installation sans droits administrateur                                       |
-| Mises à jour | `electron-updater`                                        | Voir section 13                                                               |
+| Mises à jour | API GitHub Releases, sans `electron-updater`              | Vérification seule, rien n'est téléchargé (section 13)                        |
 | Tests        | Vitest pour le moteur. Les écrans sont vérifiés à la main | Voir section 14                                                               |
 
 Contrepartie assumée : une application Electron pèse environ 100 Mo et consomme plus de mémoire qu'une application native. Objectifs : moins de 150 Mo de mémoire au repos, processeur proche de 0 % entre deux rappels. Si ces objectifs ne sont pas tenus, l'alternative à étudier est Tauri, plus légère mais qui demande du Rust.
 
-Une dépendance d'appel natif est à prévoir au lot 3 pour interroger Windows (section 5.9). Elle est proposée et validée à ce moment-là.
+L'appel natif Windows utilise Koffi (section 5.9).
 
 ### Organisation du code
 
@@ -91,20 +91,29 @@ resources/
 src/
   main/                processus principal (aucune interface)
     index.ts           démarrage, instance unique, cycle de vie
+    boucle.ts          horloge, inactivité, écoute des notifications
+    reglages.ts        valeurs par défaut et validation du format
+    store.ts           lecture, écriture et migration (reunionJusqua)
     scheduler/         moteur de rappels : logique pure, sans Electron, testable
       constantes.ts    toutes les durées du moteur
-    tray.ts            icône, états, infobulle
-    windows.ts         création et placement des fenêtres
-    store.ts           lecture, écriture et migration des réglages
+      moteur.ts        décision d'affichage
+    tray.ts            icône, états, infobulle, menu du clic droit
+    windows.ts         création commune des fenêtres
+    applicationFenetre.ts
+    menuFenetre.ts
+    notificationFenetre.ts
+    pontEcrans.ts      actions des écrans, veille, réunion, mises à jour
+    composerNotification.ts
     platform/          tout ce qui dépend du système (win32.ts, puis darwin.ts, linux.ts)
-    ipc.ts             canaux entre processus
-  preload/             pont sécurisé (contextBridge), API typée
+    ipc.ts             politique de sécurité des fenêtres
+  preload/             pont sécurisé (contextBridge), contrat typé
   renderer/
     notification/      la notification en bas à droite
     menu/              le menu de la zone de notification
     app/               Mes rappels, À propos, Guide du poste, Respiration, Bienvenue
     shared/            composants, jetons, pictogrammes, logo
-  content/             textes et contenus (fr.json, idees.fr.json, guide.fr.json)
+  content/             textes et contenus (fr.json, idees.fr.json, guide.fr.json, astuces.fr.json)
+  partage/             types et calculs communs au processus principal et aux écrans
 ```
 
 Les trois fenêtres chargent la même page, `src/renderer/index.html`, et se distinguent par l'adresse : `#/notification`, `#/menu`, `#/app`. Une seule entrée évite les erreurs de configuration de Vite entre le mode développement et l'installateur. Les dossiers `notification/`, `menu/` et `app/` rangent les composants, pas des pages séparées. Le fond de la page n'est transparent que pour `#/notification` et `#/menu`.
@@ -205,6 +214,7 @@ interface Reglages {
     lancerAuDemarrage: boolean // true
     verifierMajAuto: boolean // true
     suspendreInactivite: boolean // true
+    afficherAstuces: boolean // true, astuces en pied de notification
   }
   theme: 'auto' | 'clair' | 'sombre' // 'auto'
   respiration: {
@@ -215,6 +225,8 @@ interface Reglages {
     minutes: 1 | 3 | 5
   }
   guidePoste: boolean[] // 5 cases cochées ou non
+  astucesVues: string[] // identifiants déjà affichés, vide au départ
+  notificationsAffichees: number // rappels déjà proposés depuis l'installation, 0 au départ
   veilleJusqua?: string // date ISO, veille manuelle ou réunion
   veilleMotif?: 'reunion' // présent seulement pour « En réunion (1 h) »
   derniereVerificationMaj?: string // date ISO, dernière vérification réussie
@@ -241,7 +253,7 @@ Respiration : 4, 4, 4, 4 secondes, 1 minute. Dans la maquette, le rappel « Paus
 - « Rétablir les rappels d'origine » (section 7.4) remet les quatre rappels de base à leurs valeurs de départ, sans toucher aux rappels personnels.
 - La liste `Frequence` est la même partout. Le formulaire d'ajout n'en propose que cinq en raccourci, mais la liste déroulante d'une ligne les propose toutes les sept.
 - Le fichier porte un numéro de `version`. Toute évolution du format passe par une fonction de migration dans `store.ts`.
-- `verifierMajAuto` absent d'un fichier déjà écrit vaut `true`. `suspendreInactivite` absent vaut `true`. `veilleMotif` absent signifie que la suspension, s'il y en a une, est une veille manuelle. Une ancienne `reunionJusqua` est reprise dans `veilleJusqua` avec le motif `reunion`, sans changer le numéro de `version`. Le numéro de `version` reste 1 : ces champs s'ajoutent sans rendre illisibles les réglages existants. Une vérification qui trouve une version plus récente l'enregistre dans `derniereVersionVue`. Une vérification réussie qui n'en trouve pas retire cette version. Une erreur réseau ne modifie ni la date ni la version retenue.
+- `verifierMajAuto` absent d'un fichier déjà écrit vaut `true`. `suspendreInactivite` absent vaut `true`. `afficherAstuces` absent vaut `true`. `astucesVues` absent vaut une liste vide. `notificationsAffichees` absent vaut 0. `veilleMotif` absent signifie que la suspension, s'il y en a une, est une veille manuelle. Une ancienne `reunionJusqua` est reprise dans `veilleJusqua` avec le motif `reunion`, sans changer le numéro de `version`. Le numéro de `version` reste 1 : ces champs s'ajoutent sans rendre illisibles les réglages existants. Une vérification qui trouve une version plus récente l'enregistre dans `derniereVersionVue`. Une vérification réussie qui n'en trouve pas retire cette version. Une erreur réseau ne modifie ni la date ni la version retenue.
 - Un fichier absent ou illisible est remplacé par les valeurs par défaut, sans message d'erreur technique.
 - Seul `reportsDeSuite` garde une trace du comportement, et uniquement comme compteur remis à zéro. Aucun historique daté n'est conservé.
 
@@ -362,7 +374,7 @@ Lèv vit dans la zone de notification de Windows, près de l'horloge, et reste s
 
 - **En veille** : l'icône passe en gris (#7b7f8c), L et bulle en blanc.
 - **Séquence de travail** : pendant le temps de travail, et seulement si Lèv n'est pas en veille, l'icône habituelle laisse la place à un carré de 16 px et de 32 px. Il porte les minutes restantes (`25`, `03`, `120`) ou `<1` sous une minute. Barre des tâches claire : texte `#2e2a3f` sur `#fdf1e7`. Barre sombre : texte `#f3e9e2` sur `#1c1a2b`. Le thème se lit dans `SystemUsesLightTheme`, seulement tant que ce chiffre est affiché. Si la clé manque, on suit le thème déjà résolu de l'application. Dès la pause de la séquence, l'arrêt, la reprise ou la veille, l'icône habituelle revient. Le dessin ne change qu'avec la minute ou le thème de la barre.
-- **Infobulle** au survol, hors séquence de travail : « Lèv · prochaine pause à 10h40 », ou « Lèv · en veille jusqu'à 11h00 », sinon « Lèv ». Pendant une réunion, et devant les autres textes : « Lèv · en réunion jusqu'à 15h40 ». Pendant le travail : « Lèv — Séquence de travail : 18 min restantes (2/4) ». Pendant la pause courte : « Lèv — Pause de séquence : 4 min restantes ». Pendant la grande pause : « Lèv — Grande pause : 15 min restantes ». Sous une minute, le texte dit « moins d'une minute ». La reprise (« On reprend quand tu veux. ») reprend l'infobulle habituelle.
+- **Infobulle** au survol, hors séquence de travail : « Lèv · prochaine pause à 10h40 », ou « Lèv · en veille jusqu'à 11h00 », sinon « Lèv ». Pendant une réunion, et devant les autres textes : « Lèv · en réunion jusqu'à 15h40 ». Pendant le travail : « Lèv - Séquence de travail : 18 min restantes (2/4) ». Pendant la pause courte : « Lèv - Pause de séquence : 4 min restantes ». Pendant la grande pause : « Lèv - Grande pause : 15 min restantes ». Sous une minute, le texte dit « moins d'une minute ». La reprise (« On reprend quand tu veux. ») reprend l'infobulle habituelle.
 - **Clic gauche** : ouvre le menu (section 7.2). **Clic droit** : menu système natif, texte seul, sans icône. Dans l'ordre : si les séquences de travail sont activées, « Démarrer une séquence de travail », ou « Arrêter la séquence de travail » lorsqu'une série est en cours ; « Faire une pause maintenant » (la notification « bouger », tout de suite) ; « En réunion (1 h) », remplacé par « Reprendre · en réunion jusqu'à 15h40 » lorsqu'une réunion est en cours ; « Mettre en veille », avec le sous-menu « 30 min » et « Jusqu'à demain », remplacé par « Reprendre les rappels » lorsqu'une veille manuelle est en cours ; pendant une réunion, ce sous-menu reste disponible et remplace la réunion ; un séparateur ; « Mes rappels » (fenêtre Application) ; « À propos » (écran « À propos ») ; un séparateur ; « Quitter ».
 - Les icônes sont des fichiers `.ico` contenant les tailles 16, 20, 24, 32 et 48 px. Les quatre fichiers sont déjà fournis : tray-calme.ico, tray-bientot.ico, tray-veille.ico, et lev.ico pour l'application (jusqu'à 256 px). À 16 et 24 px, on utilise le dessin simplifié du logo (section 9).
 - Aucun clignotement, aucune animation de l'icône dans la barre des tâches.
@@ -375,7 +387,7 @@ L'application compte sept écrans ou familles d'écrans. Chacun correspond à un
 
 Affiché dans la fenêtre « Application », au premier lancement, puis à la demande depuis « À propos » (section 7.5). Le fichier de réglages n'est écrit qu'au premier passage.
 
-- Le contenu tient dans une carte centrée dans la fenêtre (460 px au plus, fond `--carte`, bordure `--lisere`, rayon 12 px, marge interne 14 px sur 18 px, ombre douce). Logo de 44 px. L'animation ne démarre qu'une fois la fenêtre visible, puis attend 250 ms. Le L se redresse et le point doré s'élève avec un léger rebond, une seule fois, sur 1,8 s. Un clic sur le logo rejoue ce geste. Si les animations sont réduites, il reste immobile. Puis le texte exact : « Bienvenue dans Lèv. » en 22 px, « Je te rappellerai doucement de bouger et de reposer tes yeux. » et « Tu choisis le rythme — et tu peux changer d'avis à tout moment. » en 14 px.
+- Le contenu tient dans une carte centrée dans la fenêtre (460 px au plus, fond `--carte`, bordure `--lisere`, rayon 12 px, marge interne 14 px sur 18 px, ombre douce). Logo de 44 px. L'animation ne démarre qu'une fois la fenêtre visible, puis attend 250 ms. Le L se redresse et le point doré s'élève avec un léger rebond, une seule fois, sur 1,8 s. Un clic sur le logo rejoue ce geste. Si les animations sont réduites, il reste immobile. Puis le texte exact : « Bienvenue dans Lèv. » en 22 px, « Je te rappellerai doucement de bouger et de reposer tes yeux. » et « Tu choisis le rythme, et tu peux changer d'avis à tout moment. » en 14 px.
 - Entre cette dernière phrase et le bouton « Commencer », une grille de deux colonnes présente quatre micro-cartes, dans cet ordre, de même hauteur sur chaque ligne (`grid-auto-rows: 1fr`, `align-items: stretch`). Chaque micro-carte a un fond `--surface-douce`, une bordure fine `--separateur`, un rayon de 12 px et une marge interne de 8 px sur 10 px. L'écart de la grille est de 8 px. L'icône SVG, en trait fin et en `--action`, est centrée dans une pastille ronde de 28 px au fond `color-mix(in srgb, var(--action) 12%, transparent)`, avec un fin liseré intérieur `color-mix(in srgb, var(--action) 32%, transparent)` pour qu'elle reste lisible sur `--surface-douce` ; le dessin mesure 16 px. Le titre est en 13 px, la phrase en 12,5 px (interligne 1,35, couleur `--texte-second`), sur deux lignes au plus :
   1. « Pauses actives » : « Rappels doux pour bouger, boire et reposer tes yeux. »
   2. « Séquences de travail » : « Alterne concentration et pauses régulières à ton rythme. »
@@ -422,6 +434,7 @@ Particularités :
 - **Fin de séquence** affiche la ligne de parcours : un tracé courbe avec un point par séquence, les séquences faites en turquoise, la grande pause en jaune.
 - Après une réponse, la carte affiche le message de la section 5.5 pendant 3 secondes, puis disparaît en fondu.
 - La notification n'a pas de bouton de fermeture : « Plus tard » en tient lieu. La touche Échap vaut « Plus tard » quand la notification a le focus.
+- **Astuce d'utilisation.** Certaines cartes de rappel se terminent par une phrase courte, sous un filet (`--separateur`), en 12,5 px, couleur `--texte-second`, interligne 1,35. Elle ne s'affiche pas sur l'annonce de séquence, la fin de séquence, la fin de pause, ni la question de rythme. Les deux premiers rappels après l'installation n'en ont pas. Ensuite, un rappel sur quatre en porte une qui n'a pas encore été vue : le 6e, le 10e, le 14e, et ainsi de suite. « Dans 5 min » compte comme un rappel de plus. Changer d'idée ou passer à la variante assise, sur la même carte, ne compte pas. Quand les six astuces ont été vues, plus aucune n'apparaît. La case « Me montrer parfois une courte astuce d'utilisation », dans Autres réglages, est cochée par défaut : si on la décoche, le compteur avance toujours et aucune astuce n'est affichée. Quand l'astuce ouvre un écran, un lien est posé dessous : « Ouvrir les réglages », « Essayer la respiration » ou « Voir le guide ». Le clic ouvre la fenêtre Application sur cet écran et laisse la notification en place. Les phrases sont dans `content/astuces.fr.json` (section 10.6).
 
 ### 7.4 Mes rappels (planche « Mes rappels »)
 
@@ -449,8 +462,11 @@ Une phrase se met à jour en direct : « Lèv te rappellera « M'étirer » tout
 
 **Autres réglages**, bloc replié par défaut. Fermé, il fait environ 40 px de haut : pas de marge interne sur le bloc, `9 px` sur `14 px` sur le titre, en 14 px, rayon de 8 px. Ouvert, le contenu a une marge de `4 px 14 px 12 px`. Le titre a un chevron à droite qui pivote de 0° à 180° à l'ouverture, et un survol en pointeur :
 
-- Thème : « Automatique, comme mon ordinateur », « Clair », « Sombre ».
-- Neuf cases, dans cet ordre : « Attendre que j'aie fini de taper pour afficher un rappel », « Tenir compte des pauses que je prends de moi-même », « Ne pas me déranger en plein écran, en présentation ou pendant un appel », « Me proposer d'espacer un rappel quand son rythme ne me convient pas », « Préférer des mouvements discrets, à faire assis », « Jouer un son doux avec chaque rappel », « Lancer Lèv au démarrage de l'ordinateur », « Vérifier automatiquement les mises à jour (1 fois par semaine) », « Suspendre les rappels quand je suis absent depuis 5 minutes ».
+- **Thème**, groupe `fieldset` dont la légende est « Thème » (14 px, graisse forte, comme les autres questions). Les trois options « Automatique, comme mon ordinateur », « Clair » et « Sombre » sont des pastilles radio. Elles se partagent la largeur utile, restent sur une ligne tant que leur texte tient, et la pastille qui ne tient plus passe entière à la ligne. Si une pastille atteint la largeur du bloc, son texte passe à la ligne sans être coupé. Écart de 6 px. Au repos : bordure `--action`, fond `--carte`, texte `--action`, hauteur minimale 34 px. Choisie : fond `--action`, texte `--sur-action`, graisse forte. Le focus clavier dessine le contour `--contour-focus` autour de la pastille. Les couleurs viennent des jetons, au clair comme au sombre.
+- Trois sous-sections, chacune un `fieldset` avec une légende discrète en 12,5 px (`--legende`), couleur `--texte-second`. Les cases d'une même sous-section sont espacées de 6 px. Un filet `--separateur` précède chaque sous-section, avec 12 px au-dessus du filet et 12 px en dessous :
+  1. « Respect de mon activité » : « Attendre que j'aie fini de taper pour afficher un rappel », « Tenir compte des pauses que je prends de moi-même », « Suspendre les rappels quand je suis absent depuis 5 minutes », « Ne pas me déranger en plein écran, en présentation ou pendant un appel ».
+  2. « Rappels et conseils » : « Préférer des mouvements discrets, à faire assis », « Jouer un son doux avec chaque rappel », « Me proposer d'espacer un rappel quand son rythme ne me convient pas », « Me montrer parfois une courte astuce d'utilisation ».
+  3. « Application et système » : « Lancer Lèv au démarrage de l'ordinateur », « Vérifier automatiquement les mises à jour (1 fois par semaine) ».
 
 Sous ces cases, un bouton discret « Rétablir les rappels d'origine » remet les quatre rappels de base à leurs valeurs de départ. Il agit tout de suite et affiche un bandeau « Rappels d'origine rétablis. » avec « Annuler ». Ce bouton n'est pas maquetté.
 
@@ -460,7 +476,7 @@ En bas de page, un lien « À propos ».
 
 Une page de lecture. En haut, un lien discret « ← Mes rappels », puis l'en-tête toujours visible. Les quatre blocs suivants sont des tiroirs fermés par défaut, espacés de 6 px, avec le même chevron et le même gabarit fin que « Autres réglages ». Les textes exacts sont en section 10.5.
 
-1. En-tête : « Lèv — une pause, naturellement. » en `--signature`, et une phrase de présentation. En thème clair, `--signature` est le rose du cœur approfondi (`#9a524e`) pour rester lisible sur le fond pêche. En thème sombre, c'est `--coeur` (`#c98480`).
+1. En-tête : le titre de page (`h1`, 22 px, chasse −0,01 em, graisse forte, centré) est « Lèv - une pause, naturellement. », en `--signature`, puis la phrase de présentation. En thème clair, `--signature` est le rose du cœur approfondi (`#9a524e`) pour rester lisible sur le fond pêche. En thème sombre, c'est `--coeur` (`#c98480`).
 2. « Philosophie » : sept principes courts.
 3. « Les repères » : se lever toutes les 30 minutes, marcher 5 minutes, quitter l'écran des yeux. Lien vers « Bien installer mon poste ».
 4. « Textes de référence » : sept liens (section 10.3), ouverts dans le navigateur par défaut.
@@ -536,7 +552,7 @@ L'ambiance visée est celle d'un lever de soleil : fluide, respirante, douce. Le
 | `--surface-douce` | `rgba(45,106,99,0.06)`                                    | `rgba(95,207,198,0.12)`                                   | Encart de conseil de la respiration                                                   |
 | `--soleil`        | `#f1be5a`                                                 | `#f1be5a`                                                 | Bulle du logo, pastille « bientôt », grande pause. Jamais de texte dans cette couleur |
 | `--coeur`         | `#c98480`                                                 | `#c98480`                                                 | Cœur du résumé « Fait avec … à La Réunion » (section 7.5). Rose doux tiré du fond. Jamais de texte dans cette couleur |
-| `--signature`     | `#9a524e`                                                 | `#c98480` (`--coeur`)                                     | Signature « Lèv — une pause, naturellement. » Même rose que le cœur, approfondi en thème clair |
+| `--signature`     | `#9a524e`                                                 | `#c98480` (`--coeur`)                                     | Signature « Lèv - une pause, naturellement. » Même rose que le cœur, approfondi en thème clair |
 | `--trace`         | `#f0d9cc`                                                 | `#3a3650`                                                 | Partie non parcourue d'une ligne de parcours                                          |
 
 Le turquoise `--action` et le jaune `--soleil` viennent du logotype Ekilib.re. Le thème « automatique » suit le réglage clair ou sombre de Windows et change sans redémarrage.
@@ -646,7 +662,7 @@ Seule la page de l'Anses a été ouverte et lue en entier pendant la conception.
 
 Ces textes sont à reprendre mot pour mot dans `content/fr.json`.
 
-**En-tête.** Titre : « À propos ». Signature : « Lèv — une pause, naturellement. », couleur `--signature`. Phrase : « Un compagnon discret pour bouger un peu plus souvent pendant le travail sur écran, et laisser ses yeux se reposer. »
+**En-tête.** Titre de page (`h1`, 22 px, chasse −0,01 em, graisse forte, centré) : « Lèv - une pause, naturellement. », couleur `--signature`. Phrase : « Un compagnon discret pour bouger un peu plus souvent pendant le travail sur écran, et laisser ses yeux se reposer. »
 
 **Philosophie**
 
@@ -679,6 +695,19 @@ Un encart au fond `--surface-douce` explique : « Les Maisons Sport-Santé sont 
 Sous l'encart, une rangée centrée : « Découvrir Ekilib.re » vers `https://ekilib.re`, libellé lu « Découvrir Ekilib.re. S'ouvre dans le navigateur. », et « Code source sur GitHub » vers `https://github.com/Kozavan974/lev`, libellé lu « Code source sur GitHub. S'ouvre dans le navigateur. ». Puis un bouton discret centré « Vérifier les mises à jour ». Le numéro de version n'est pas dans ce tiroir : il rejoint la ligne technique en bas de page. Pendant l'appel : « Vérification en cours… ». Si la version installée est la dernière : « Tu utilises déjà la dernière version de Lèv. » Si la vérification ne peut pas aboutir : « Vérification impossible pour le moment. » Si une version plus récente existe : « Une nouvelle version ({version}) est disponible. » et un lien « Télécharger sur GitHub » vers `https://github.com/Kozavan974/lev/releases/latest`. Quand une version plus récente a déjà été constatée, ce message et ce lien sont affichés sans nouvel appel. Ces messages restent dans la carte.
 
 En bas de page, seul le bouton « Revoir l'écran de bienvenue ». Il rouvre l'accueil sans modifier `reglages.json`. Sous un filet, une ligne en 12,5 px et en `--texte-second` : « Lèv v{version} · Propulsé par Electron {electron} et Chromium {chrome} ». `{version}` est `app.getVersion()`, donc le passage à `1.1.1` se reflète tout seul. `{electron}` et `{chrome}` viennent de `process.versions`. Aucun outil de build n'est cité. La signature « Lèv — levez-vous, respirez. » n'est plus affichée.
+
+### 10.6 Astuces d'utilisation (`content/astuces.fr.json`)
+
+Six phrases courtes, affichées une seule fois, en pied de certaines notifications (section 7.3). Le libellé de la case qui les active est dans `content/fr.json`. L'ordre du fichier est l'ordre d'affichage.
+
+| Id          | Phrase                                                                          | Lien                   | Écran                    |
+| ----------- | ------------------------------------------------------------------------------- | ---------------------- | ------------------------ |
+| frequence   | Tu peux régler la fréquence de chaque rappel, et les heures où je me manifeste. | Ouvrir les réglages    | Mes rappels              |
+| reunion     | Le menu propose « En réunion (1 h) » pour une heure au calme.                   | aucun                  | aucun                    |
+| respiration | Une respiration guidée de quelques minutes, si tu veux souffler.                | Essayer la respiration | Respiration guidée       |
+| assis       | Tu peux préférer des mouvements discrets, à faire assis.                        | Ouvrir les réglages    | Mes rappels              |
+| pause30     | Sur le rappel pour marcher, une pause guidée de 30 secondes est proposée.       | aucun                  | aucun                    |
+| poste       | Le guide du poste reprend des repères de l'INRS.                                | Voir le guide          | Bien installer mon poste |
 
 ## 11. Confidentialité et sécurité
 
@@ -726,7 +755,7 @@ Lèv doit être utilisable au clavier, avec un lecteur d'écran et par une perso
 Lèv est livrée sous la forme d'un installateur Windows unique, qui s'installe sans droits d'administrateur.
 
 - **Installateur** : `electron-builder`, cible NSIS one-click, installation par utilisateur, en français, sans choix de dossier. Raccourci « Lèv » dans le menu Démarrer et sur le bureau.
-- **Nom affiché** : « Lèv ». Identifiant technique sans accent : `re.ekilib.lev`. Nom du fichier : `Lev-Setup-1.2.1.exe`.
+- **Nom affiché** : « Lèv ». Identifiant technique sans accent : `re.ekilib.lev`. Nom du fichier : `Lev-Setup-1.2.2.exe`.
 - **Déploiement en entreprise (Intune / Silent install)** : voir la sous-section du même nom, plus bas.
 - **Démarrage automatique** : activé par défaut via `app.setLoginItemSettings`, désactivable dans « Autres réglages ». L'entrée de démarrage automatique lance Lèv avec l'argument --demarrage-auto : dans ce cas aucune fenêtre ne s'ouvre, seule l'icône apparaît. Un lancement à la main (menu Démarrer) ouvre « Mes rappels », ou l'accueil si c'est le premier lancement. Si Lèv tourne déjà, la relancer ouvre « Mes rappels » dans l'instance existante (événement second-instance) : sans cela, le clic semblerait sans effet.
 - **Signature du code** : sans certificat de signature, Windows affiche un avertissement « éditeur inconnu » à l'installation, ce qui décourage une partie du public. L'achat d'un certificat au nom de l'association est à décider (section 16).
@@ -786,6 +815,7 @@ Chaque règle de la section 5 a au moins un test. Cas obligatoires :
 22. Une absence de 5 minutes ne change pas l'heure de fin d'une séquence. Si elle est échue au retour, une seule carte de séquence s'affiche.
 23. Une réunion d'une heure est l'unique suspension : les rappels restent tus jusqu'à l'heure exacte, puis les compteurs repartent de zéro sans carte immédiate. Reprendre retire cette suspension. Une veille de 30 minutes la remplace et retire le motif réunion.
 24. Un fichier sans `suspendreInactivite` reste en version 1 et la case vaut vrai. Une ancienne `reunionJusqua` devient `veilleJusqua` avec le motif `reunion`.
+25. Les deux premiers rappels affichés n'ont pas d'astuce. Le 6e, le 10e, le 14e, le 18e, le 22e et le 26e montrent les six astuces, dans l'ordre du catalogue, puis plus aucune. La case décochée laisse le compteur avancer sans rien afficher. Un fichier sans `afficherAstuces`, `astucesVues` ni `notificationsAffichees` reste en version 1 : la case est cochée, la liste est vide, le compteur vaut 0.
 
 ### Contrôle manuel avant version
 
@@ -804,11 +834,12 @@ Chaque règle de la section 5 a au moins un test. Cas obligatoires :
 - [ ] Pare-feu en mode blocage : l'application fonctionne normalement hors connexion
 - [ ] Mémoire au repos inférieure à 150 Mo, processeur proche de 0 % sur dix minutes
 - [ ] Anneau de 30 secondes lisible en thème clair et en thème sombre, immobile si les animations sont réduites, fenêtre absente après la fin du guide
+- [ ] Une astuce en pied de carte, lisible en thème clair et en thème sombre, dont le lien ouvre le bon écran
 - [ ] Relecture de tous les textes au regard de la section 8
 
 ## 15. Plan de développement
 
-Le développement se fait en huit lots, dans cet ordre. Chaque lot se termine par une application qui se lance et se teste : on ne commence pas le suivant avant.
+Les huit lots ci-dessous sont livrés dans la version 1.2.2. Le tableau conserve l'ordre de construction. La liste de contrôle manuelle de la section 14 reste à vérifier avant chaque publication.
 
 | Lot                                | Contenu                                                                                                                                                                                                                                              | Terminé quand                                                                                    |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -821,11 +852,11 @@ Le développement se fait en huit lots, dans cet ordre. Chaque lot se termine pa
 | 6. Finitions                       | Rappel qui s'adapte (5.7), thème sombre et automatique, son, accessibilité (section 12), animation du logo                                                                                                                                           | Test 7 au vert. Parcours clavier et NVDA validés. Contrastes mesurés                             |
 | 7. Livraison                       | Installateur, démarrage automatique, mises à jour, signature si décidée, contrôle manuel complet                                                                                                                                                     | La liste de contrôle de la section 14 est entièrement cochée sur Windows 10 et 11                |
 
-Les contenus définitifs des enseignants en APA (section 10.1) peuvent arriver en parallèle : il suffit de remplacer le fichier JSON avant le lot 7.
+Les contenus définitifs des enseignants en APA (section 10.1) peuvent encore remplacer `content/idees.fr.json`, qui reste marqué provisoire.
 
 ## 16. Points ouverts
 
-Le son est tranché au lot 6. L'hébergement des mises à jour et la licence MIT le sont pour la version 1.1.0. Treize points restent ouverts : dix lignes du tableau et les trois qui le suivent. Chacun des points ouverts a une règle provisoire, pour que le développement ne soit pas bloqué.
+La version livrée est 1.2.2. Le son est tranché au lot 6. L'hébergement des mises à jour et la licence MIT le sont depuis la version 1.1.0. Les lignes marquées « Tranché » ne sont plus ouvertes. Les autres gardent une règle provisoire.
 
 | Point                    | À décider                                                                                        | Règle provisoire                                             | Avant le lot |
 | ------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ------------ |
@@ -834,7 +865,7 @@ Le son est tranché au lot 6. L'hébergement des mises à jour et la licence MIT
 | Visioconférences         | Peut-on lire de façon fiable le mode « Ne pas déranger » de Windows                              | Plein écran, présentation, et micro en cours (5.9). Un appel sans micro, et le mode « Ne pas déranger » de Windows, restent hors détection. | 3            |
 | Logotype                 | La bulle au-dessus du L et l'accent du « è » font double emploi                                  | Garder les deux, comme sur la maquette                       | 5            |
 | Logo Ekilib.re           | Fichier du logo de l'association pour l'écran « À propos »                                       | Nom en toutes lettres, sans logo                             | 5            |
-| Idées de mouvement       | Relecture et rédaction par les enseignants en APA                                                | Les six exemples, marqués provisoires                        | 7            |
+| Idées de mouvement       | Relecture et rédaction par les enseignants en APA                                                | 15 idées par liste dans `idees.fr.json`, encore marquées provisoires | 7            |
 | Guide du poste           | Relecture des cinq consignes et de la mention de source                                          | Textes de la section 10.2                                    | 7            |
 | Son                      | Quel son, créé ou libre de droits                                                                | Tranché : deux notes douces en sinus, Web Audio, environ 300 ms, sans fichier. Option visible, décochée. Un aperçu joue au cochage. | 6            |
 | Écrans sombres           | Seuls le menu et le rappel « bouger » ont une maquette sombre                                    | Appliquer les jetons sombres de la section 9                 | 6            |
@@ -927,7 +958,7 @@ alwaysApply: false
 - Aucun appel à l'horloge système (`Date.now()`, `new Date()` sans argument, `setTimeout`, `setInterval`) : l'instant courant (`maintenant: Date`) et l'inactivité (`inactiviteSec: number`) sont passés en paramètres à la fonction d'évaluation. `new Date(valeur)` reste permis pour lire une date enregistrée.
 - Toute durée est une constante nommée dans `constantes.ts`.
 - Chaque règle de la section 5 du cahier des charges a un test Vitest avec une horloge simulée.
-- Les 18 cas de la section 14 sont obligatoires.
+- Les 25 cas de la section 14 sont obligatoires.
 ```
 
 `.cursor/rules/03-ecrans.mdc`

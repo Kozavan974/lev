@@ -1,6 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { Rappel, Reglages } from './modeles'
 import { normaliser, reglagesParDefaut } from './reglages'
+import { migrer } from './store'
+
+vi.mock('electron', () => ({ app: {} }))
+vi.mock('electron-store', () => ({
+  default: class Store {}
+}))
 
 function empreinte(reglages: Reglages): string {
   const copie = structuredClone(reglages)
@@ -64,7 +70,8 @@ describe('réglages par défaut', () => {
       son: false,
       lancerAuDemarrage: true,
       verifierMajAuto: true,
-      suspendreInactivite: true
+      suspendreInactivite: true,
+      afficherAstuces: true
     })
     expect(reglages.theme).toBe('auto')
     expect(reglages.respiration).toEqual({
@@ -75,6 +82,8 @@ describe('réglages par défaut', () => {
       minutes: 1
     })
     expect(reglages.guidePoste).toEqual([false, false, false, false, false])
+    expect(reglages.astucesVues).toEqual([])
+    expect(reglages.notificationsAffichees).toBe(0)
     expect(reglages.veilleJusqua).toBeUndefined()
     expect(reglages.veilleMotif).toBeUndefined()
     expect(reglages.derniereVerificationMaj).toBeUndefined()
@@ -149,20 +158,24 @@ describe('normaliser', () => {
 
   it('reprend une réunion déjà écrite dans l’unique suspension', () => {
     const depart = reglagesParDefaut()
-    const resultat = normaliser({
-      ...depart,
-      reunionJusqua: '2026-11-16T10:00:00.000Z'
-    })
+    const resultat = normaliser(
+      migrer({
+        ...depart,
+        reunionJusqua: '2026-11-16T10:00:00.000Z'
+      })
+    )
     expect(resultat.version).toBe(1)
     expect(resultat.veilleJusqua).toBe('2026-11-16T10:00:00.000Z')
     expect(resultat.veilleMotif).toBe('reunion')
     expect(Object.hasOwn(resultat, 'reunionJusqua')).toBe(false)
 
-    const plusTard = normaliser({
-      ...depart,
-      veilleJusqua: '2026-11-17T08:00:00.000Z',
-      reunionJusqua: '2026-11-16T10:00:00.000Z'
-    })
+    const plusTard = normaliser(
+      migrer({
+        ...depart,
+        veilleJusqua: '2026-11-17T08:00:00.000Z',
+        reunionJusqua: '2026-11-16T10:00:00.000Z'
+      })
+    )
     expect(plusTard.veilleJusqua).toBe('2026-11-17T08:00:00.000Z')
     expect(plusTard.veilleMotif).toBeUndefined()
   })
@@ -196,6 +209,59 @@ describe('normaliser', () => {
     expect(empreinte(normaliser({ ...depart, derniereVersionVue: 'bientot' }))).toBe(
       empreinte(reglagesParDefaut())
     )
+  })
+
+  it('coche les astuces et remet le compteur à zéro quand l’ancienne fiche ne les connaît pas', () => {
+    const depart = reglagesParDefaut()
+    const { afficherAstuces: retiree, ...options } = depart.options
+    const { astucesVues: vues, notificationsAffichees: compte, ...reste } = depart
+    expect(retiree).toBe(true)
+    expect(vues).toEqual([])
+    expect(compte).toBe(0)
+    const resultat = normaliser({ ...reste, options })
+    expect(resultat.version).toBe(1)
+    expect(resultat.options.afficherAstuces).toBe(true)
+    expect(resultat.astucesVues).toEqual([])
+    expect(resultat.notificationsAffichees).toBe(0)
+    expect(resultat.rappels.map((rappel) => rappel.id)).toEqual(
+      depart.rappels.map((rappel) => rappel.id)
+    )
+  })
+
+  it('conserve les astuces déjà affichées', () => {
+    const depart = reglagesParDefaut()
+    const modifie: Reglages = {
+      ...depart,
+      astucesVues: ['frequence', 'poste'],
+      notificationsAffichees: 10,
+      options: { ...depart.options, afficherAstuces: false }
+    }
+    expect(normaliser(modifie)).toEqual(modifie)
+  })
+
+  it('retire un doublon dans les astuces déjà vues', () => {
+    const depart = reglagesParDefaut()
+    const resultat = normaliser({ ...depart, astucesVues: ['poste', 'poste', 'frequence'] })
+    expect(resultat.version).toBe(1)
+    expect(resultat.astucesVues).toEqual(['poste', 'frequence'])
+    expect(resultat.rappels.map((rappel) => rappel.id)).toEqual(
+      depart.rappels.map((rappel) => rappel.id)
+    )
+  })
+
+  it('remplace une fiche dont le suivi des astuces est illisible', () => {
+    const depart = reglagesParDefaut()
+    const attendu = empreinte(reglagesParDefaut())
+    expect(empreinte(normaliser({ ...depart, notificationsAffichees: -1 }))).toBe(attendu)
+    expect(empreinte(normaliser({ ...depart, astucesVues: ['Frequence'] }))).toBe(attendu)
+    expect(
+      empreinte(
+        normaliser({
+          ...depart,
+          options: { ...depart.options, afficherAstuces: 'oui' }
+        })
+      )
+    ).toBe(attendu)
   })
 
   it('oublie une clé inconnue', () => {
